@@ -45,6 +45,13 @@ const config: Config = {
           soft: '#4a443b',
           muted: '#7a7264',
         },
+        // Phase 0 admin surface tokens (restrained, foundation-only).
+        admin: {
+          forest: '#041C15',
+          ivory: '#F7F2E9',
+          panel: '#FCF9F4',
+          gold: '#B28B4D',
+        },
       },
       fontFamily: {
         display: ['var(--font-display)', 'Cormorant Garamond', 'serif'],
