@@ -49,7 +49,7 @@ export default function BespokePage() {
           </p>
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
             <Button href="/appointments" variant="gold" size="lg">Book a Consultation</Button>
-            <Button href="/builder" variant="light" size="lg">Design a Ring Online</Button>
+            <Button href="/build-a-ring" variant="light" size="lg">Design a Ring Online</Button>
           </div>
         </div>
       </section>

@@ -1,10 +1,10 @@
 import { Hero } from '@/components/home/Hero';
 import { ServicePillars } from '@/components/home/ServicePillars';
+import { BuildYourRingBand } from '@/components/home/BuildYourRingBand';
+import { ShopByShape } from '@/components/home/ShopByShape';
 import { SectionShowcase } from '@/components/home/SectionShowcase';
 import { FeaturedPieces } from '@/components/home/FeaturedPieces';
-import { BespokeBand } from '@/components/home/BespokeBand';
 import { DiamondGuideTeaser } from '@/components/home/DiamondGuideTeaser';
-import { Provenance } from '@/components/home/Provenance';
 import { Testimonials } from '@/components/home/Testimonials';
 import { PressMarquee } from '@/components/home/PressMarquee';
 import { AppointmentCTA } from '@/components/home/AppointmentCTA';
@@ -14,12 +14,12 @@ export default function HomePage() {
     <>
       <Hero />
       <ServicePillars />
-      <SectionShowcase />
+      <BuildYourRingBand />
+      <ShopByShape />
       <FeaturedPieces />
-      <BespokeBand />
+      <SectionShowcase />
       <DiamondGuideTeaser />
       <PressMarquee />
-      <Provenance />
       <Testimonials />
       <AppointmentCTA />
     </>

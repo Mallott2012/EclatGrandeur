@@ -5,7 +5,7 @@
     "name": "Aurora Solitaire",
     "kind": "solitaire-ring",
     "description": "A whisper-thin four-claw band that lifts the stone clear of the finger.",
-    "basePrice": { "amount": 180000, "currency": "GBP" },
+    "basePrice": { "amount": 180000, "currency": "USD" },
     "metals": ["platinum", "white-gold", "yellow-gold", "rose-gold"],
     "shapes": ["round", "oval", "princess", "emerald", "cushion", "pear", "marquise", "radiant", "asscher", "heart"]
   },
@@ -15,7 +15,7 @@
     "name": "Monarch Halo",
     "kind": "halo-ring",
     "description": "A pavé halo and diamond-set shoulders frame the centre stone.",
-    "basePrice": { "amount": 420000, "currency": "GBP" },
+    "basePrice": { "amount": 420000, "currency": "USD" },
     "metals": ["platinum", "white-gold", "yellow-gold"],
     "shapes": ["round", "oval", "cushion", "princess", "radiant"]
   },
@@ -25,7 +25,7 @@
     "name": "Trinity Three-Stone",
     "kind": "three-stone-ring",
     "description": "Two graduated companions flank the centre — past, present, future.",
-    "basePrice": { "amount": 540000, "currency": "GBP" },
+    "basePrice": { "amount": 540000, "currency": "USD" },
     "metals": ["platinum", "white-gold", "yellow-gold", "rose-gold"],
     "shapes": ["round", "oval", "emerald", "cushion", "pear", "radiant"]
   },
@@ -35,7 +35,7 @@
     "name": "Céleste Pavé",
     "kind": "pave-ring",
     "description": "A river of micro-pavé runs the length of the shank.",
-    "basePrice": { "amount": 320000, "currency": "GBP" },
+    "basePrice": { "amount": 320000, "currency": "USD" },
     "metals": ["platinum", "white-gold", "rose-gold"],
     "shapes": ["round", "oval", "cushion", "princess"]
   }

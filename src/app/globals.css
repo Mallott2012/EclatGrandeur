@@ -142,6 +142,40 @@
   .pause {
     animation-play-state: paused;
   }
+
+  /* Dual range slider: only the thumbs are interactive so the two
+     overlaid inputs can each be grabbed independently. */
+  .range-thumb {
+    pointer-events: none;
+  }
+  .range-thumb::-webkit-slider-thumb {
+    pointer-events: auto;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 18px;
+    width: 18px;
+    border-radius: 9999px;
+    background: #ffffff;
+    border: 2px solid theme('colors.champagne.DEFAULT');
+    box-shadow: 0 1px 4px rgba(10, 37, 64, 0.3);
+    cursor: pointer;
+  }
+  .range-thumb::-moz-range-thumb {
+    pointer-events: auto;
+    height: 18px;
+    width: 18px;
+    border-radius: 9999px;
+    background: #ffffff;
+    border: 2px solid theme('colors.champagne.DEFAULT');
+    box-shadow: 0 1px 4px rgba(10, 37, 64, 0.3);
+    cursor: pointer;
+  }
+  .range-thumb::-webkit-slider-runnable-track {
+    background: transparent;
+  }
+  .range-thumb::-moz-range-track {
+    background: transparent;
+  }
 }
 
 /* Respect reduced motion */

@@ -126,7 +126,7 @@ export default function DiamondGuidePage() {
                 not ours: an impartial record of exactly what you own.
               </p>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                <Button href="/builder" variant="gold" size="lg">Design Your Ring</Button>
+                <Button href="/build-a-ring" variant="gold" size="lg">Design Your Ring</Button>
                 <Button href="/appointments" variant="outline" size="lg">Speak to a Specialist</Button>
               </div>
             </div>

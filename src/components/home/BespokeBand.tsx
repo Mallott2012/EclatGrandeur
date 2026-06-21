@@ -44,7 +44,7 @@ export function BespokeBand() {
             </ol>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Button href="/builder" variant="gold" size="lg">Start Designing</Button>
+              <Button href="/build-a-ring" variant="gold" size="lg">Start Designing</Button>
               <Button href="/bespoke" variant="light" size="lg">The Bespoke Atelier</Button>
             </div>
           </div>

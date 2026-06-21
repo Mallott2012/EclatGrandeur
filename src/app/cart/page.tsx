@@ -31,7 +31,7 @@ export default function CartPage() {
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button href="/engagement-rings" variant="primary" size="md">Explore Jewellery</Button>
-          <Button href="/builder" variant="outline" size="md">Design Your Own</Button>
+          <Button href="/build-a-ring" variant="outline" size="md">Design Your Own</Button>
         </div>
       </div>
     );

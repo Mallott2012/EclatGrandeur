@@ -6,5 +6,5 @@ import { usePathname } from 'next/navigation';
 export function HeaderSpacer() {
   const pathname = usePathname();
   if (pathname === '/') return null;
-  return <div className="h-[96px] lg:h-[150px]" aria-hidden />;
+  return <div className="h-[104px] lg:h-[150px]" aria-hidden />;
 }
