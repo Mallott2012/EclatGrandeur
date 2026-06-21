@@ -1,0 +1,78 @@
+[
+  {
+    "slug": "4cs",
+    "title": "Understanding the 4Cs",
+    "excerpt": "Cut, Colour, Clarity and Carat — the four characteristics that define a diamond’s rarity and beauty.",
+    "category": "4cs",
+    "heroImage": { "src": "https://placehold.co/1600x900/16130f/c4a35a?text=The+4Cs", "alt": "The 4Cs", "width": 1600, "height": 900 },
+    "readingTime": 6,
+    "order": 1,
+    "publishedAt": "2026-01-10",
+    "related": ["diamond-certification", "choosing-an-engagement-ring"],
+    "body": [
+      { "type": "paragraph", "text": "Every diamond is judged against four universal characteristics, established by the Gemological Institute of America. Together they describe a stone’s rarity — and its price. Understanding them is the first step to choosing well." },
+      { "type": "heading", "text": "Cut" },
+      { "type": "paragraph", "text": "Cut is the most important of the four. It governs how a diamond returns light — the fire and brilliance the eye reads as sparkle. A superbly cut stone of modest colour will outshine a poorly cut stone of higher grade. We select only Very Good and Excellent cuts." },
+      { "type": "heading", "text": "Colour" },
+      { "type": "paragraph", "text": "Diamonds are graded from D (colourless) to Z. The less colour, the rarer the stone. The difference between adjacent grades is subtle to the untrained eye, which is why expert guidance matters." },
+      { "type": "heading", "text": "Clarity" },
+      { "type": "paragraph", "text": "Clarity measures the tiny natural inclusions formed as the diamond grew. Grades run from Flawless (FL) to Included (I). Most inclusions are invisible without magnification." },
+      { "type": "heading", "text": "Carat" },
+      { "type": "paragraph", "text": "Carat is weight, not size. Two diamonds of equal carat can appear quite different depending on their cut and proportions. Price rises sharply at landmark weights such as 1.00ct and 2.00ct." },
+      { "type": "quote", "text": "Choose the finest cut you can, then balance colour, clarity and carat to your taste and budget." }
+    ]
+  },
+  {
+    "slug": "diamond-certification",
+    "title": "Diamond Certification",
+    "excerpt": "Why an independent GIA report is your guarantee of exactly what you are buying.",
+    "category": "certification",
+    "heroImage": { "src": "https://placehold.co/1600x900/16130f/c4a35a?text=Certification", "alt": "Diamond certification", "width": 1600, "height": 900 },
+    "readingTime": 4,
+    "order": 2,
+    "publishedAt": "2026-01-12",
+    "related": ["4cs"],
+    "body": [
+      { "type": "paragraph", "text": "A diamond grading report is an impartial assessment of a stone’s characteristics, issued by an independent laboratory. It is your assurance that the diamond is precisely as described." },
+      { "type": "heading", "text": "The leading laboratories" },
+      { "type": "list", "items": ["GIA — the Gemological Institute of America, the global benchmark for natural diamonds", "IGI — the International Gemological Institute, widely used for lab-grown stones", "HRD — the Diamond High Council of Antwerp"] },
+      { "type": "paragraph", "text": "Every Éclat Grandeur centre diamond is accompanied by its original report. We invite you to verify it directly with the issuing laboratory." }
+    ]
+  },
+  {
+    "slug": "choosing-an-engagement-ring",
+    "title": "Choosing an Engagement Ring",
+    "excerpt": "From shape to setting to budget — a considered guide to the most important ring you will ever buy.",
+    "category": "buying-guide",
+    "heroImage": { "src": "https://placehold.co/1600x900/16130f/c4a35a?text=Choosing+a+Ring", "alt": "Choosing an engagement ring", "width": 1600, "height": 900 },
+    "readingTime": 7,
+    "order": 3,
+    "publishedAt": "2026-01-15",
+    "related": ["4cs", "diamond-certification"],
+    "body": [
+      { "type": "paragraph", "text": "An engagement ring is a deeply personal choice. These principles will help you navigate it with confidence." },
+      { "type": "heading", "text": "Start with shape" },
+      { "type": "paragraph", "text": "The diamond’s shape sets the character of the ring. The round brilliant is the most luminous; ovals and pears flatter the hand; emerald and asscher cuts offer architectural restraint." },
+      { "type": "heading", "text": "Then the setting" },
+      { "type": "paragraph", "text": "A solitaire celebrates the stone alone. A halo adds presence and sparkle. A three-stone design tells a story of past, present and future. Our Create Your Own experience lets you pair any setting with the diamond of your choice." },
+      { "type": "heading", "text": "Consider the metal" },
+      { "type": "paragraph", "text": "Platinum is the most durable and naturally white. White gold offers the same cool tone at a gentler price. Yellow and rose gold bring warmth that suits many skin tones beautifully." }
+    ]
+  },
+  {
+    "slug": "caring-for-your-diamonds",
+    "title": "Caring for Your Diamonds",
+    "excerpt": "Simple rituals to keep your jewellery brilliant for generations.",
+    "category": "care",
+    "heroImage": { "src": "https://placehold.co/1600x900/16130f/c4a35a?text=Diamond+Care", "alt": "Caring for your diamonds", "width": 1600, "height": 900 },
+    "readingTime": 3,
+    "order": 4,
+    "publishedAt": "2026-01-18",
+    "related": ["4cs"],
+    "body": [
+      { "type": "paragraph", "text": "Diamonds are the hardest natural material on earth, yet their settings deserve gentle care." },
+      { "type": "list", "items": ["Clean gently with warm water, mild soap and a soft brush", "Store pieces separately to avoid scratching", "Remove jewellery before sport, swimming or applying cosmetics", "Have settings inspected by our atelier once a year"] },
+      { "type": "paragraph", "text": "Every Éclat Grandeur client is welcome to bring their pieces to us for complimentary cleaning and inspection." }
+    ]
+  }
+]

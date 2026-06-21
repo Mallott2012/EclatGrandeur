@@ -1,0 +1,67 @@
+[
+  {
+    "id": "set-classic-solitaire",
+    "slug": "classic-solitaire",
+    "name": "Classic Solitaire",
+    "style": "solitaire",
+    "basePrice": { "amount": 180000, "currency": "GBP" },
+    "metals": ["platinum", "white-gold", "yellow-gold", "rose-gold"],
+    "metalPriceDelta": { "platinum": 20000, "yellow-gold": 0, "white-gold": 0, "rose-gold": 0 },
+    "compatibleShapes": ["round", "oval", "princess", "cushion", "emerald", "pear", "radiant", "asscher", "marquise", "heart"],
+    "caratRange": { "min": 0.3, "max": 5 },
+    "images": [{ "src": "https://placehold.co/900x900/16130f/c4a35a?text=Solitaire", "alt": "Classic Solitaire setting" }],
+    "model3d": { "src": "", "metalMaterials": ["band", "prongs"], "stoneNode": "centre-stone" }
+  },
+  {
+    "id": "set-pave-halo",
+    "slug": "pave-halo",
+    "name": "Pavé Halo",
+    "style": "halo",
+    "basePrice": { "amount": 320000, "currency": "GBP" },
+    "metals": ["platinum", "white-gold", "yellow-gold", "rose-gold"],
+    "metalPriceDelta": { "platinum": 25000, "yellow-gold": 0, "white-gold": 0, "rose-gold": 0 },
+    "compatibleShapes": ["round", "oval", "cushion", "princess", "radiant"],
+    "caratRange": { "min": 0.5, "max": 4 },
+    "images": [{ "src": "https://placehold.co/900x900/16130f/c4a35a?text=Pave+Halo", "alt": "Pavé Halo setting" }],
+    "model3d": { "src": "", "metalMaterials": ["band", "halo"], "stoneNode": "centre-stone" }
+  },
+  {
+    "id": "set-three-stone",
+    "slug": "three-stone",
+    "name": "Three Stone Trilogy",
+    "style": "three-stone",
+    "basePrice": { "amount": 480000, "currency": "GBP" },
+    "metals": ["platinum", "white-gold", "yellow-gold"],
+    "metalPriceDelta": { "platinum": 30000, "yellow-gold": 0, "white-gold": 0 },
+    "compatibleShapes": ["round", "oval", "emerald", "cushion", "pear"],
+    "caratRange": { "min": 0.7, "max": 5 },
+    "images": [{ "src": "https://placehold.co/900x900/16130f/c4a35a?text=Trilogy", "alt": "Three Stone setting" }],
+    "model3d": { "src": "", "metalMaterials": ["band"], "stoneNode": "centre-stone" }
+  },
+  {
+    "id": "set-hidden-halo",
+    "slug": "hidden-halo",
+    "name": "Hidden Halo",
+    "style": "hidden-halo",
+    "basePrice": { "amount": 360000, "currency": "GBP" },
+    "metals": ["platinum", "white-gold", "rose-gold"],
+    "metalPriceDelta": { "platinum": 25000, "white-gold": 0, "rose-gold": 0 },
+    "compatibleShapes": ["round", "oval", "pear", "marquise", "cushion"],
+    "caratRange": { "min": 0.5, "max": 4 },
+    "images": [{ "src": "https://placehold.co/900x900/16130f/c4a35a?text=Hidden+Halo", "alt": "Hidden Halo setting" }],
+    "model3d": { "src": "", "metalMaterials": ["band", "hidden-halo"], "stoneNode": "centre-stone" }
+  },
+  {
+    "id": "set-vintage-bezel",
+    "slug": "vintage-bezel",
+    "name": "Vintage Bezel",
+    "style": "bezel",
+    "basePrice": { "amount": 290000, "currency": "GBP" },
+    "metals": ["platinum", "yellow-gold", "rose-gold"],
+    "metalPriceDelta": { "platinum": 20000, "yellow-gold": 0, "rose-gold": 0 },
+    "compatibleShapes": ["round", "oval", "emerald", "asscher", "cushion"],
+    "caratRange": { "min": 0.3, "max": 3 },
+    "images": [{ "src": "https://placehold.co/900x900/16130f/c4a35a?text=Bezel", "alt": "Vintage Bezel setting" }],
+    "model3d": { "src": "", "metalMaterials": ["band", "bezel"], "stoneNode": "centre-stone" }
+  }
+]
