@@ -26,6 +26,8 @@ interface JewelViewerProps {
   fallbackImage: ImageAsset;
   metal?: Metal;
   className?: string;
+  /** Show the metal band + claws (rings). Set false for a loose diamond. */
+  showBand?: boolean;
 }
 
 /**
@@ -39,6 +41,7 @@ export function JewelViewer({
   fallbackImage,
   metal = 'platinum',
   className = '',
+  showBand = true,
 }: JewelViewerProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
@@ -83,7 +86,7 @@ export function JewelViewer({
     >
       {webgl && inView ? (
         <>
-          <Scene modelSrc={modelSrc} metal={metal} />
+          <Scene modelSrc={modelSrc} metal={metal} showBand={showBand} />
           <span className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-luxe text-ink/40">
             Drag to rotate · scroll to zoom
           </span>
