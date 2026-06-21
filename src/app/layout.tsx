@@ -3,8 +3,8 @@ import { Cormorant_Garamond, Jost } from 'next/font/google';
 import './globals.css';
 import { siteConfig } from '@/config/site';
 import { Header } from '@/components/layout/Header';
+import { HeaderSpacer } from '@/components/layout/HeaderSpacer';
 import { Footer } from '@/components/layout/Footer';
-import { AnnouncementBar } from '@/components/layout/AnnouncementBar';
 import { LiveChat } from '@/components/layout/LiveChat';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 
@@ -45,8 +45,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <body className="flex min-h-screen flex-col">
-        <AnnouncementBar />
         <Header />
+        <HeaderSpacer />
         <main className="flex-1">{children}</main>
         <Footer />
         <CartDrawer />

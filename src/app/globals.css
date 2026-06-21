@@ -10,6 +10,7 @@
 
   html {
     scroll-behavior: smooth;
+    scroll-snap-type: y proximity;
   }
 
   body {
@@ -50,5 +51,19 @@
     );
     background-size: 200% 100%;
     @apply animate-shimmer;
+  }
+
+  /* Slow drift for poster images, simulating motion until real video lands. */
+  .ken-burns {
+    animation: ken-burns 18s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes ken-burns {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    transform: scale(1.12) translateY(-1.5%);
   }
 }
