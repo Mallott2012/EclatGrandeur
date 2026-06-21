@@ -1,14 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // The entire catalogue is rendered with a procedural SVG jewellery engine,
+  // so there are no remote image hosts to whitelist.
   images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: 'placehold.co' },
-      { protocol: 'https', hostname: 'images.unsplash.com' },
-    ],
     formats: ['image/avif', 'image/webp'],
   },
-  transpilePackages: ['three'],
 };
 
 export default nextConfig;

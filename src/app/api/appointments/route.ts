@@ -1,23 +1,18 @@
 import { NextResponse } from 'next/server';
-import { appointmentSchema } from '@/lib/validation/enquiry';
-import { notifyEnquiry } from '@/lib/notify';
+import { appointmentSchema } from '@/lib/validation';
+import { notifyConcierge } from '@/lib/notify';
 
-export async function POST(request: Request) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
-  }
-
+export async function POST(req: Request) {
+  const body = await req.json().catch(() => null);
   const parsed = appointmentSchema.safeParse(body);
+
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Validation failed', issues: parsed.error.flatten() },
-      { status: 422 }
+      { ok: false, errors: parsed.error.flatten().fieldErrors },
+      { status: 400 }
     );
   }
 
-  await notifyEnquiry(parsed.data);
+  await notifyConcierge('New appointment request', parsed.data);
   return NextResponse.json({ ok: true });
 }

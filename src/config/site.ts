@@ -1,13 +1,11 @@
-import type { Category } from '@/types/common';
-
 export const siteConfig = {
   name: 'Éclat Grandeur',
-  shortName: 'Éclat Grandeur',
   tagline: 'The Art of the Extraordinary Diamond',
   description:
-    'Éclat Grandeur — rare diamonds and master-crafted fine jewellery. Engagement rings, necklaces, bracelets and earrings, created around the world’s most beautiful stones.',
+    'Éclat Grandeur — rare diamonds and master-crafted fine jewellery. Engagement rings, earrings, necklaces, bracelets and bespoke creations, built around the world’s most beautiful stones.',
   url: 'https://eclatgrandeur.com',
   defaultCurrency: 'GBP' as const,
+  founded: 1924,
   contact: {
     email: 'concierge@eclatgrandeur.com',
     phone: '+44 20 7000 0000',
@@ -22,58 +20,67 @@ export const siteConfig = {
 export interface NavItem {
   label: string;
   href: string;
-  /** Category landing links shown in the mega-menu column. */
-  children?: { label: string; href: string }[];
+  children?: { label: string; href: string; note?: string }[];
 }
 
-const categoryHref = (c: Category) => `/jewellery/${c}`;
-
+/** The five pillars, plus the maison/education columns. */
 export const primaryNav: NavItem[] = [
   {
     label: 'Engagement',
     href: '/engagement-rings',
     children: [
-      { label: 'Engagement Rings', href: '/engagement-rings' },
-      { label: 'Create Your Own', href: '/engagement-rings/builder' },
-      { label: 'Wedding Bands', href: categoryHref('wedding-bands') },
+      { label: 'All Engagement Rings', href: '/engagement-rings' },
+      { label: 'Design Your Own', href: '/builder', note: 'In three steps' },
+      { label: 'Wedding Bands', href: '/wedding-bands' },
+      { label: 'The Diamond Guide', href: '/diamond-guide' },
     ],
   },
   {
-    label: 'Jewellery',
-    href: '/jewellery/necklaces',
+    label: 'Earrings',
+    href: '/earrings',
     children: [
-      { label: 'Necklaces', href: categoryHref('necklaces') },
-      { label: 'Bracelets', href: categoryHref('bracelets') },
-      { label: 'Earrings', href: categoryHref('earrings') },
+      { label: 'All Earrings', href: '/earrings' },
+      { label: 'Diamond Studs', href: '/earrings' },
+      { label: 'Drops & Chandeliers', href: '/earrings' },
+      { label: 'Hoops', href: '/earrings' },
     ],
   },
   {
-    label: 'High Jewellery',
-    href: categoryHref('high-jewellery'),
-  },
-  {
-    label: 'Collections',
-    href: '/collections',
-  },
-  {
-    label: 'The Diamond Guide',
-    href: '/education',
+    label: 'Necklaces',
+    href: '/necklaces',
     children: [
-      { label: 'The 4Cs', href: '/education/4cs' },
-      { label: 'Certification', href: '/education/diamond-certification' },
-      { label: 'Ethical Sourcing', href: '/ethical-sourcing' },
+      { label: 'All Necklaces', href: '/necklaces' },
+      { label: 'Pendants', href: '/necklaces' },
+      { label: 'Rivière Necklaces', href: '/necklaces' },
+      { label: 'High Jewellery', href: '/high-jewellery' },
     ],
   },
   {
-    label: 'Maison',
-    href: '/about',
+    label: 'Bracelets',
+    href: '/bracelets',
     children: [
-      { label: 'Our Story', href: '/about' },
-      { label: 'Ethical Sourcing', href: '/ethical-sourcing' },
-      { label: 'Book an Appointment', href: '/appointments' },
-      { label: 'Contact', href: '/contact' },
+      { label: 'All Bracelets', href: '/bracelets' },
+      { label: 'Tennis Bracelets', href: '/bracelets' },
+      { label: 'Bangles', href: '/bracelets' },
+      { label: 'Chain Bracelets', href: '/bracelets' },
     ],
   },
+  {
+    label: 'Bespoke',
+    href: '/bespoke',
+    children: [
+      { label: 'The Bespoke Atelier', href: '/bespoke' },
+      { label: 'Design Your Own Ring', href: '/builder' },
+      { label: 'Book a Consultation', href: '/appointments' },
+      { label: 'High Jewellery', href: '/high-jewellery' },
+    ],
+  },
+];
+
+export const utilityNav = [
+  { label: 'The Maison', href: '/maison' },
+  { label: 'Diamond Guide', href: '/diamond-guide' },
+  { label: 'Book an Appointment', href: '/appointments' },
 ];
 
 export const footerNav = [
@@ -81,29 +88,85 @@ export const footerNav = [
     title: 'Discover',
     links: [
       { label: 'Engagement Rings', href: '/engagement-rings' },
-      { label: 'Create Your Own', href: '/engagement-rings/builder' },
-      { label: 'Necklaces', href: categoryHref('necklaces') },
-      { label: 'Bracelets', href: categoryHref('bracelets') },
-      { label: 'Earrings', href: categoryHref('earrings') },
-      { label: 'High Jewellery', href: categoryHref('high-jewellery') },
+      { label: 'Earrings', href: '/earrings' },
+      { label: 'Necklaces', href: '/necklaces' },
+      { label: 'Bracelets', href: '/bracelets' },
+      { label: 'Bespoke', href: '/bespoke' },
+      { label: 'High Jewellery', href: '/high-jewellery' },
     ],
   },
   {
     title: 'The Maison',
     links: [
-      { label: 'Our Story', href: '/about' },
-      { label: 'Ethical Sourcing', href: '/ethical-sourcing' },
-      { label: 'The Diamond Guide', href: '/education' },
+      { label: 'Our Story', href: '/maison' },
+      { label: 'Ethical Sourcing', href: '/maison#provenance' },
+      { label: 'The Diamond Guide', href: '/diamond-guide' },
       { label: 'Collections', href: '/collections' },
     ],
   },
   {
     title: 'Client Services',
     links: [
+      { label: 'Design Your Own', href: '/builder' },
       { label: 'Book an Appointment', href: '/appointments' },
-      { label: 'Request a Quote', href: '/enquiry' },
-      { label: 'Contact', href: '/contact' },
+      { label: 'Contact the Concierge', href: '/contact' },
+      { label: 'Shipping & Returns', href: '/contact' },
     ],
+  },
+];
+
+/** Service pillars shown beneath the hero and on PDPs (trust signals). */
+export const servicePillars = [
+  {
+    title: 'Lifetime Guarantee',
+    copy: 'Every creation is warranted for life, with complimentary cleaning and care.',
+    icon: 'shield',
+  },
+  {
+    title: 'GIA-Certified Diamonds',
+    copy: 'Independently graded for cut, colour, clarity and carat. No compromise.',
+    icon: 'gem',
+  },
+  {
+    title: 'Ethically Sourced',
+    copy: 'Fully traceable, conflict-free stones from responsible origins.',
+    icon: 'leaf',
+  },
+  {
+    title: 'Complimentary Delivery',
+    copy: 'Insured, signature delivery worldwide, presented in our signature case.',
+    icon: 'truck',
+  },
+];
+
+export const pressQuotes = [
+  'Vogue',
+  'Financial Times',
+  'Harper’s Bazaar',
+  'Tatler',
+  'Robb Report',
+  'The Telegraph',
+  'Town & Country',
+];
+
+export const testimonials = [
+  {
+    quote:
+      'They found a stone more beautiful than anything I had seen in Bond Street, and built a ring around it that my wife has not taken off since.',
+    author: 'James H.',
+    detail: 'Bespoke engagement ring',
+  },
+  {
+    quote:
+      'The 360° viewer let me see every facet before I committed. It felt less like shopping and more like being let into a secret.',
+    author: 'Amara O.',
+    detail: 'Aurora Solitaire',
+  },
+  {
+    quote:
+      'From the first appointment to the final reveal, every detail was considered. This is how luxury should feel.',
+    author: 'Sofia & Marc',
+    detail: 'Bespoke commission',
   },
 ];
 

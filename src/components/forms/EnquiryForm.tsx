@@ -1,137 +1,80 @@
 'use client';
 
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import type { EnquiryType, EnquirySource } from '@/types/enquiry';
+import { useState } from 'react';
+import { Check } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import type { EnquiryInput } from '@/lib/validation';
 
-interface EnquiryFormProps {
-  type?: EnquiryType;
-  source: EnquirySource;
-  productSlug?: string;
-  builtRing?: { settingSlug: string; diamondSku: string; metal: string };
-  onSuccess?: () => void;
-}
+const field =
+  'w-full border-b border-ink/20 bg-transparent py-2.5 text-sm font-light text-ink placeholder:text-ink/40 focus:border-champagne focus:outline-none';
+const labelCls = 'text-[11px] uppercase tracking-luxe text-ink/55';
 
-interface FormValues {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
-  message?: string;
-}
-
-const fieldClass =
-  'w-full border border-ink/20 bg-transparent px-4 py-3 text-sm font-light text-ink placeholder:text-ink/40 focus:border-champagne focus:outline-none';
-
-export function EnquiryForm({
-  type = 'quote',
-  source,
-  productSlug,
-  builtRing,
-  onSuccess,
-}: EnquiryFormProps) {
+export function EnquiryForm({ context, compact = false }: { context?: string; compact?: boolean }) {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>();
-  const [status, setStatus] = useState<'idle' | 'sent' | 'error'>('idle');
+  } = useForm<EnquiryInput>({ defaultValues: { context } });
+  const [sent, setSent] = useState(false);
 
-  const onSubmit = handleSubmit(async (values) => {
-    const payload = {
-      type,
-      source,
-      productSlug,
-      builtRing,
-      message: values.message,
-      contact: {
-        firstName: values.firstName,
-        lastName: values.lastName,
-        email: values.email,
-        phone: values.phone,
-      },
-    };
-    try {
-      const res = await fetch('/api/enquiry', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error('Request failed');
-      setStatus('sent');
-      onSuccess?.();
-    } catch {
-      setStatus('error');
+  const onSubmit = async (data: EnquiryInput) => {
+    const res = await fetch('/api/enquiry', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...data, context }),
+    });
+    if (res.ok) {
+      setSent(true);
+      reset();
     }
-  });
+  };
 
-  if (status === 'sent') {
+  if (sent) {
     return (
-      <div className="py-8 text-center">
-        <p className="font-display text-2xl text-ink">Thank you</p>
-        <p className="mt-2 text-sm font-light text-ink/70">
-          A member of our concierge will be in touch within one business day.
+      <div className="flex flex-col items-center gap-3 py-10 text-center">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-champagne/15 text-champagne-deep">
+          <Check className="h-6 w-6" />
+        </span>
+        <h3 className="font-display text-2xl">Thank you</h3>
+        <p className="max-w-sm font-light text-ink/60">
+          Your enquiry is with our concierge. We will be in touch within one business day.
         </p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <input
-            className={fieldClass}
-            placeholder="First name"
-            {...register('firstName', { required: true })}
-          />
-          {errors.firstName && (
-            <span className="mt-1 block text-xs text-red-700">Required</span>
-          )}
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+      <div className={compact ? 'flex flex-col gap-5' : 'grid grid-cols-1 gap-5 sm:grid-cols-2'}>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelCls}>Name</label>
+          <input className={field} placeholder="Your name" {...register('name', { required: true, minLength: 2 })} />
+          {errors.name && <span className="text-xs text-red-700">Please enter your name</span>}
         </div>
-        <div>
-          <input
-            className={fieldClass}
-            placeholder="Last name"
-            {...register('lastName', { required: true })}
-          />
-          {errors.lastName && (
-            <span className="mt-1 block text-xs text-red-700">Required</span>
-          )}
+        <div className="flex flex-col gap-1.5">
+          <label className={labelCls}>Email</label>
+          <input className={field} placeholder="you@email.com" {...register('email', { required: true, pattern: /.+@.+\..+/ })} />
+          {errors.email && <span className="text-xs text-red-700">Please enter a valid email</span>}
         </div>
       </div>
-      <div>
-        <input
-          type="email"
-          className={fieldClass}
-          placeholder="Email"
-          {...register('email', { required: true, pattern: /\S+@\S+\.\S+/ })}
+      <div className="flex flex-col gap-1.5">
+        <label className={labelCls}>Phone (optional)</label>
+        <input className={field} placeholder="+44 …" {...register('phone')} />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label className={labelCls}>Message</label>
+        <textarea
+          className={`${field} min-h-24 resize-none`}
+          placeholder="Tell us what you have in mind…"
+          {...register('message', { required: true, minLength: 10 })}
         />
-        {errors.email && (
-          <span className="mt-1 block text-xs text-red-700">
-            Please enter a valid email
-          </span>
-        )}
+        {errors.message && <span className="text-xs text-red-700">Please tell us a little more</span>}
       </div>
-      <input className={fieldClass} placeholder="Phone (optional)" {...register('phone')} />
-      <textarea
-        className={fieldClass}
-        rows={4}
-        placeholder="How may we help?"
-        {...register('message')}
-      />
-      {status === 'error' && (
-        <p className="text-xs text-red-700">
-          Something went wrong. Please try again or email our concierge.
-        </p>
-      )}
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="bg-ink px-7 py-3.5 text-xs uppercase tracking-luxe text-ivory transition hover:bg-ink-soft disabled:opacity-50"
-      >
-        {isSubmitting ? 'Sending…' : 'Submit enquiry'}
-      </button>
+      <Button type="submit" variant="primary" size="lg" disabled={isSubmitting} className="mt-1 w-full sm:w-auto">
+        {isSubmitting ? 'Sending…' : 'Send Enquiry'}
+      </Button>
     </form>
   );
 }

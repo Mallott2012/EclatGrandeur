@@ -10,7 +10,7 @@ import { CartDrawer } from '@/components/cart/CartDrawer';
 
 const display = Cormorant_Garamond({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: ['300', '400', '500', '600'],
   variable: '--font-display',
   display: 'swap',
 });
@@ -29,19 +29,26 @@ export const metadata: Metadata = {
     template: `%s — ${siteConfig.name}`,
   },
   description: siteConfig.description,
+  keywords: [
+    'diamond engagement rings',
+    'fine jewellery',
+    'bespoke diamonds',
+    'diamond earrings',
+    'diamond necklaces',
+    'tennis bracelets',
+    'London jeweller',
+  ],
   openGraph: {
     title: `${siteConfig.name} — ${siteConfig.tagline}`,
     description: siteConfig.description,
     type: 'website',
     siteName: siteConfig.name,
+    locale: 'en_GB',
   },
+  twitter: { card: 'summary_large_image' },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <body className="flex min-h-screen flex-col">

@@ -1,53 +1,47 @@
 import { describe, it, expect } from 'vitest';
-import { enquirySchema, appointmentSchema } from '@/lib/validation/enquiry';
-
-const validContact = {
-  firstName: 'Ada',
-  lastName: 'Lovelace',
-  email: 'ada@example.com',
-};
+import { enquirySchema, appointmentSchema } from '@/lib/validation';
 
 describe('enquirySchema', () => {
-  it('accepts a valid enquiry', () => {
-    const result = enquirySchema.safeParse({
-      type: 'quote',
-      source: 'pdp',
-      contact: validContact,
+  it('accepts a well-formed enquiry', () => {
+    const r = enquirySchema.safeParse({
+      name: 'Ada Lovelace',
+      email: 'ada@example.com',
+      message: 'I would like to discuss a bespoke ring please.',
     });
-    expect(result.success).toBe(true);
+    expect(r.success).toBe(true);
   });
 
   it('rejects an invalid email', () => {
-    const result = enquirySchema.safeParse({
-      type: 'quote',
-      source: 'pdp',
-      contact: { ...validContact, email: 'not-an-email' },
-    });
-    expect(result.success).toBe(false);
+    const r = enquirySchema.safeParse({ name: 'Ada', email: 'nope', message: 'Hello there friend' });
+    expect(r.success).toBe(false);
+  });
+
+  it('rejects a too-short message', () => {
+    const r = enquirySchema.safeParse({ name: 'Ada', email: 'ada@example.com', message: 'hi' });
+    expect(r.success).toBe(false);
   });
 });
 
 describe('appointmentSchema', () => {
-  it('requires at least one preferred date', () => {
-    const result = appointmentSchema.safeParse({
-      type: 'appointment',
-      source: 'appointments',
-      mode: 'in-store',
-      preferredDates: [],
-      contact: validContact,
+  it('accepts a valid appointment request', () => {
+    const r = appointmentSchema.safeParse({
+      name: 'Grace Hopper',
+      email: 'grace@example.com',
+      phone: '+44 20 7000 0000',
+      type: 'atelier',
+      date: '2026-07-01',
     });
-    expect(result.success).toBe(false);
+    expect(r.success).toBe(true);
   });
 
-  it('accepts a valid appointment', () => {
-    const result = appointmentSchema.safeParse({
-      type: 'appointment',
-      source: 'appointments',
-      mode: 'virtual',
-      preferredDates: ['2026-07-01'],
-      interests: ['engagement-rings'],
-      contact: validContact,
+  it('rejects an unknown appointment type', () => {
+    const r = appointmentSchema.safeParse({
+      name: 'Grace',
+      email: 'grace@example.com',
+      phone: '123456',
+      type: 'carrier-pigeon',
+      date: '2026-07-01',
     });
-    expect(result.success).toBe(true);
+    expect(r.success).toBe(false);
   });
 });

@@ -2,12 +2,9 @@
 
 import { usePathname } from 'next/navigation';
 
-/**
- * Reserves space for the fixed header on every page except the home page,
- * where the video windows sit full-bleed beneath the transparent header.
- */
+/** Offsets the fixed header on every page except the home hero (which sits beneath it). */
 export function HeaderSpacer() {
   const pathname = usePathname();
   if (pathname === '/') return null;
-  return <div className="h-[72px]" aria-hidden />;
+  return <div className="h-[96px] lg:h-[150px]" aria-hidden />;
 }

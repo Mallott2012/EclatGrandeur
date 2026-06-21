@@ -8,13 +8,17 @@
     --font-sans: 'Jost';
   }
 
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   html {
     scroll-behavior: smooth;
-    scroll-snap-type: y proximity;
   }
 
   body {
     @apply bg-ivory text-ink font-sans antialiased;
+    text-rendering: optimizeLegibility;
   }
 
   h1,
@@ -22,10 +26,23 @@
   h3,
   h4 {
     @apply font-display;
+    font-feature-settings: 'liga' 1, 'dlig' 1;
   }
 
   ::selection {
     @apply bg-champagne/30 text-ink;
+  }
+
+  /* Refined scrollbar on supporting browsers */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-ivory-deep;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-champagne/50;
+    border-radius: 9999px;
   }
 }
 
@@ -35,35 +52,106 @@
   }
 
   .eyebrow {
-    @apply text-xs uppercase tracking-luxe text-champagne-deep;
+    @apply text-[11px] font-medium uppercase tracking-wide2 text-champagne-deep;
   }
 
+  .eyebrow-light {
+    @apply text-[11px] font-medium uppercase tracking-wide2 text-champagne-soft;
+  }
+
+  /* Animated underline for inline links */
   .link-underline {
     @apply relative inline-block after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-500 after:ease-luxe hover:after:w-full;
   }
 
+  /* Gold gradient text for select display flourishes */
+  .text-gold-foil {
+    background: linear-gradient(
+      100deg,
+      theme('colors.champagne.deep') 0%,
+      theme('colors.champagne.soft') 35%,
+      theme('colors.champagne.leaf') 50%,
+      theme('colors.champagne.soft') 65%,
+      theme('colors.champagne.deep') 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* Thin gold rule with a diamond at centre */
+  .rule-gold {
+    @apply relative h-px w-full bg-gradient-to-r from-transparent via-champagne/50 to-transparent;
+  }
+
+  /* Loading shimmer for media wells */
   .shimmer {
     background-image: linear-gradient(
       90deg,
       theme('colors.ivory.deep') 0%,
-      theme('colors.ivory.DEFAULT') 50%,
+      theme('colors.ivory.warm') 50%,
       theme('colors.ivory.deep') 100%
     );
     background-size: 200% 100%;
     @apply animate-shimmer;
   }
 
-  /* Slow drift for poster images, simulating motion until real video lands. */
-  .ken-burns {
-    animation: ken-burns 18s ease-in-out infinite alternate;
+  /* A reusable "noir" section ground with a faint radial spotlight */
+  .ground-noir {
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 18%, rgba(195, 163, 92, 0.1), transparent 60%),
+      linear-gradient(180deg, theme('colors.noir.DEFAULT') 0%, theme('colors.noir.deep') 100%);
+  }
+
+  .ground-ivory {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 0%, theme('colors.ivory.warm'), transparent 70%),
+      theme('colors.ivory.DEFAULT');
   }
 }
 
-@keyframes ken-burns {
-  0% {
-    transform: scale(1) translateY(0);
+@layer utilities {
+  /* Sheen sweep used on cards/buttons */
+  .with-sheen {
+    position: relative;
+    overflow: hidden;
   }
-  100% {
-    transform: scale(1.12) translateY(-1.5%);
+  .with-sheen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.35),
+      transparent
+    );
+    transform: translateX(-150%) skewX(-18deg);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .group:hover .with-sheen::after {
+    animation: sheen 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .pause {
+    animation-play-state: paused;
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }

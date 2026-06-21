@@ -1,22 +1,21 @@
-import { Award, Gem, RefreshCw, ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Gem, Leaf, Truck } from 'lucide-react';
 
-const badges = [
-  { icon: Award, label: 'GIA Certified', detail: 'Independently graded diamonds' },
-  { icon: Gem, label: 'Ethically Sourced', detail: 'Conflict-free & traceable' },
-  { icon: RefreshCw, label: '30-Day Returns', detail: 'Complimentary & insured' },
-  { icon: ShieldCheck, label: 'Lifetime Care', detail: 'Cleaning & inspection' },
+const items = [
+  { icon: Gem, label: 'GIA-certified diamond' },
+  { icon: ShieldCheck, label: 'Lifetime guarantee' },
+  { icon: Leaf, label: 'Ethically sourced' },
+  { icon: Truck, label: 'Insured delivery' },
 ];
 
 export function TrustBadges() {
   return (
-    <div className="grid grid-cols-2 gap-6 border-y border-ink/10 py-8 md:grid-cols-4">
-      {badges.map((b) => (
-        <div key={b.label} className="flex flex-col items-center gap-2 text-center">
-          <b.icon className="h-6 w-6 text-champagne-deep" strokeWidth={1.25} />
-          <span className="text-xs uppercase tracking-luxe text-ink">{b.label}</span>
-          <span className="text-xs font-light text-ink/55">{b.detail}</span>
-        </div>
+    <ul className="grid grid-cols-2 gap-4 border-y border-ink/10 py-6">
+      {items.map((it) => (
+        <li key={it.label} className="flex items-center gap-3">
+          <it.icon className="h-5 w-5 shrink-0 text-champagne-deep" strokeWidth={1.25} />
+          <span className="text-[12px] font-light text-ink/70">{it.label}</span>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

@@ -1,36 +1,39 @@
+/**
+ * Lightweight notification seam. Logs to the server console by default; if a
+ * RESEND_API_KEY is present the payload is emailed to the concierge inbox.
+ * Swap for your CRM/ESP of choice without touching the API routes.
+ */
 import { siteConfig } from '@/config/site';
 
-/**
- * Deliver an enquiry/appointment notification.
- * v1: logs to the server console; sends via Resend when RESEND_API_KEY is set.
- * Phase 2: route to CRM / Sanity.
- */
-export async function notifyEnquiry(payload: unknown): Promise<void> {
-  const apiKey = process.env.RESEND_API_KEY;
-  const to = process.env.ENQUIRY_NOTIFY_EMAIL ?? siteConfig.contact.email;
+export async function notifyConcierge(subject: string, payload: Record<string, unknown>) {
+  const key = process.env.RESEND_API_KEY;
 
-  if (!apiKey) {
+  if (!key) {
     // eslint-disable-next-line no-console
-    console.info('[enquiry] (no RESEND_API_KEY — logging only)', JSON.stringify(payload));
-    return;
+    console.info(`[concierge] ${subject}`, payload);
+    return { delivered: false as const, channel: 'console' as const };
   }
 
   try {
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${key}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: `${siteConfig.name} <concierge@eclatgrandeur.com>`,
-        to,
-        subject: 'New client enquiry',
-        text: JSON.stringify(payload, null, 2),
+        from: 'Éclat Grandeur <concierge@eclatgrandeur.com>',
+        to: siteConfig.contact.email,
+        subject,
+        text: Object.entries(payload)
+          .map(([k, v]) => `${k}: ${String(v)}`)
+          .join('\n'),
       }),
     });
-  } catch (err) {
+    return { delivered: true as const, channel: 'email' as const };
+  } catch {
     // eslint-disable-next-line no-console
-    console.error('[enquiry] failed to send notification', err);
+    console.error(`[concierge] failed to deliver "${subject}"`, payload);
+    return { delivered: false as const, channel: 'error' as const };
   }
 }

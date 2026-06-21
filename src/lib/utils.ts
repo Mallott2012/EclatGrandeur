@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import type { Currency, Money } from '@/types/common';
+import type { Currency, Money } from '@/types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -12,7 +12,7 @@ const CURRENCY_LOCALE: Record<Currency, string> = {
   EUR: 'en-IE',
 };
 
-/** Format Money (stored in minor units) into a localised currency string. */
+/** Format Money (minor units) into a localised currency string. */
 export function formatMoney(money: Money, opts?: { withDecimals?: boolean }): string {
   const withDecimals = opts?.withDecimals ?? false;
   return new Intl.NumberFormat(CURRENCY_LOCALE[money.currency], {
@@ -21,6 +21,16 @@ export function formatMoney(money: Money, opts?: { withDecimals?: boolean }): st
     minimumFractionDigits: withDecimals ? 2 : 0,
     maximumFractionDigits: withDecimals ? 2 : 0,
   }).format(money.amount / 100);
+}
+
+/** Render a product price line ("From £11,000", "£2,950", "Price on request"). */
+export function priceLabel(p: {
+  price?: Money;
+  priceDisplay: 'exact' | 'from' | 'on-request';
+}): string {
+  if (p.priceDisplay === 'on-request' || !p.price) return 'Price on request';
+  const prefix = p.priceDisplay === 'from' ? 'From ' : '';
+  return `${prefix}${formatMoney(p.price)}`;
 }
 
 export function slugify(input: string): string {
@@ -32,19 +42,7 @@ export function slugify(input: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
-/** Brand-palette placeholder image so layouts read as intentional before real assets. */
-export function placeholder(
-  width: number,
-  height: number,
-  label?: string
-): string {
-  const text = label ? `?text=${encodeURIComponent(label)}` : '';
-  return `https://placehold.co/${width}x${height}/162b1e/c4a35a${text}`;
+export function addMoney(a: Money, b: Money): Money {
+  if (a.currency !== b.currency) throw new Error('Currency mismatch');
+  return { amount: a.amount + b.amount, currency: a.currency };
 }
-
-/** A single shimmer blurDataURL used across Next/Image until real assets land. */
-export const SHIMMER_BLUR =
-  'data:image/svg+xml;base64,' +
-  Buffer.from(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="10"><rect width="8" height="10" fill="#efe8db"/></svg>`
-  ).toString('base64');

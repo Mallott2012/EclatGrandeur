@@ -1,44 +1,41 @@
 import type { MetadataRoute } from 'next';
 import { siteConfig } from '@/config/site';
-import { getAllProductSlugs } from '@/lib/data/products';
-import { getCollections } from '@/lib/data/collections';
-import { getArticles } from '@/lib/data/education';
+import { getAllProductSlugs, getCollections } from '@/lib/data';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteConfig.url;
+  const now = new Date();
 
-  const staticRoutes = [
+  const staticPaths = [
     '',
     '/engagement-rings',
-    '/engagement-rings/builder',
-    '/jewellery/necklaces',
-    '/jewellery/bracelets',
-    '/jewellery/earrings',
-    '/jewellery/wedding-bands',
-    '/jewellery/high-jewellery',
+    '/earrings',
+    '/necklaces',
+    '/bracelets',
+    '/wedding-bands',
+    '/high-jewellery',
+    '/bespoke',
+    '/builder',
     '/collections',
-    '/education',
+    '/diamond-guide',
+    '/maison',
     '/appointments',
-    '/enquiry',
-    '/about',
-    '/ethical-sourcing',
     '/contact',
-  ].map((path) => ({ url: `${base}${path}`, lastModified: new Date() }));
+  ].map((p) => ({ url: `${base}${p}`, lastModified: now, changeFrequency: 'weekly' as const, priority: p === '' ? 1 : 0.7 }));
 
-  const products = getAllProductSlugs().map(({ category, slug }) => ({
-    url: `${base}/jewellery/${category}/${slug}`,
-    lastModified: new Date(),
+  const products = getAllProductSlugs().map((slug) => ({
+    url: `${base}/product/${slug}`,
+    lastModified: now,
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
   }));
 
   const collections = getCollections().map((c) => ({
     url: `${base}/collections/${c.slug}`,
-    lastModified: new Date(),
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
   }));
 
-  const articles = getArticles().map((a) => ({
-    url: `${base}/education/${a.slug}`,
-    lastModified: new Date(),
-  }));
-
-  return [...staticRoutes, ...products, ...collections, ...articles];
+  return [...staticPaths, ...products, ...collections];
 }

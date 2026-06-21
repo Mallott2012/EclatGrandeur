@@ -1,74 +1,16 @@
 [
-  {
-    "id": "dia-001", "sku": "EG-R-101", "shape": "round", "carat": 1.01, "cut": "Excellent", "color": "F", "clarity": "VS1",
-    "price": { "amount": 950000, "currency": "GBP" }, "measurements": "6.45 x 6.48 x 4.01", "fluorescence": "None",
-    "available": true, "type": "natural", "origin": "Botswana",
-    "certification": { "authority": "GIA", "reportNumber": "2201019283", "reportUrl": "https://www.gia.edu/report-check", "ethical": { "conflictFree": true, "traceable": true, "origin": "Botswana" } }
-  },
-  {
-    "id": "dia-002", "sku": "EG-R-102", "shape": "round", "carat": 1.52, "cut": "Excellent", "color": "E", "clarity": "VVS2",
-    "price": { "amount": 1850000, "currency": "GBP" }, "measurements": "7.35 x 7.38 x 4.55", "fluorescence": "Faint",
-    "available": true, "type": "natural", "origin": "Canada",
-    "certification": { "authority": "GIA", "reportNumber": "2201019284", "ethical": { "conflictFree": true, "traceable": true, "origin": "Canada" } }
-  },
-  {
-    "id": "dia-003", "sku": "EG-O-201", "shape": "oval", "carat": 1.71, "cut": "Excellent", "color": "G", "clarity": "VS2",
-    "price": { "amount": 1420000, "currency": "GBP" }, "measurements": "9.10 x 6.20 x 3.80", "fluorescence": "None",
-    "available": true, "type": "natural", "origin": "Botswana",
-    "certification": { "authority": "GIA", "reportNumber": "2201019285", "ethical": { "conflictFree": true, "traceable": true } }
-  },
-  {
-    "id": "dia-004", "sku": "EG-O-202", "shape": "oval", "carat": 2.05, "cut": "Excellent", "color": "F", "clarity": "VS1",
-    "price": { "amount": 2650000, "currency": "GBP" }, "measurements": "9.80 x 6.70 x 4.10", "fluorescence": "None",
-    "available": true, "type": "natural", "origin": "Namibia",
-    "certification": { "authority": "GIA", "reportNumber": "2201019286", "ethical": { "conflictFree": true, "traceable": true } }
-  },
-  {
-    "id": "dia-005", "sku": "EG-E-301", "shape": "emerald", "carat": 1.80, "cut": "Very Good", "color": "D", "clarity": "VVS1",
-    "price": { "amount": 2200000, "currency": "GBP" }, "measurements": "8.10 x 6.00 x 3.90", "fluorescence": "None",
-    "available": true, "type": "natural", "origin": "Botswana",
-    "certification": { "authority": "GIA", "reportNumber": "2201019287", "ethical": { "conflictFree": true, "traceable": true } }
-  },
-  {
-    "id": "dia-006", "sku": "EG-C-401", "shape": "cushion", "carat": 1.40, "cut": "Excellent", "color": "G", "clarity": "SI1",
-    "price": { "amount": 980000, "currency": "GBP" }, "measurements": "6.80 x 6.60 x 4.30", "fluorescence": "Medium",
-    "available": true, "type": "natural", "origin": "South Africa",
-    "certification": { "authority": "GIA", "reportNumber": "2201019288", "ethical": { "conflictFree": true, "traceable": true } }
-  },
-  {
-    "id": "dia-007", "sku": "EG-P-501", "shape": "pear", "carat": 1.62, "cut": "Very Good", "color": "F", "clarity": "VS2",
-    "price": { "amount": 1280000, "currency": "GBP" }, "measurements": "10.10 x 6.40 x 3.95", "fluorescence": "None",
-    "available": true, "type": "natural", "origin": "Botswana",
-    "certification": { "authority": "GIA", "reportNumber": "2201019289", "ethical": { "conflictFree": true, "traceable": true } }
-  },
-  {
-    "id": "dia-008", "sku": "EG-PR-601", "shape": "princess", "carat": 1.10, "cut": "Excellent", "color": "H", "clarity": "VS1",
-    "price": { "amount": 720000, "currency": "GBP" }, "measurements": "5.60 x 5.58 x 4.05", "fluorescence": "None",
-    "available": true, "type": "lab-grown", "origin": "Laboratory",
-    "certification": { "authority": "IGI", "reportNumber": "LG2201019290", "ethical": { "conflictFree": true, "traceable": true, "origin": "Lab-grown" } }
-  },
-  {
-    "id": "dia-009", "sku": "EG-R-103", "shape": "round", "carat": 2.51, "cut": "Excellent", "color": "D", "clarity": "IF",
-    "price": { "amount": 5800000, "currency": "GBP" }, "measurements": "8.70 x 8.74 x 5.40", "fluorescence": "None",
-    "available": true, "type": "natural", "origin": "Botswana",
-    "certification": { "authority": "GIA", "reportNumber": "2201019291", "ethical": { "conflictFree": true, "traceable": true } }
-  },
-  {
-    "id": "dia-010", "sku": "EG-RA-701", "shape": "radiant", "carat": 1.90, "cut": "Excellent", "color": "F", "clarity": "VS2",
-    "price": { "amount": 1520000, "currency": "GBP" }, "measurements": "7.60 x 6.10 x 4.20", "fluorescence": "Faint",
-    "available": true, "type": "natural", "origin": "Canada",
-    "certification": { "authority": "GIA", "reportNumber": "2201019292", "ethical": { "conflictFree": true, "traceable": true } }
-  },
-  {
-    "id": "dia-011", "sku": "EG-A-801", "shape": "asscher", "carat": 1.25, "cut": "Very Good", "color": "E", "clarity": "VVS2",
-    "price": { "amount": 1100000, "currency": "GBP" }, "measurements": "6.20 x 6.18 x 4.10", "fluorescence": "None",
-    "available": true, "type": "natural", "origin": "Botswana",
-    "certification": { "authority": "GIA", "reportNumber": "2201019293", "ethical": { "conflictFree": true, "traceable": true } }
-  },
-  {
-    "id": "dia-012", "sku": "EG-M-901", "shape": "marquise", "carat": 1.33, "cut": "Very Good", "color": "G", "clarity": "VS1",
-    "price": { "amount": 890000, "currency": "GBP" }, "measurements": "11.20 x 5.60 x 3.50", "fluorescence": "None",
-    "available": true, "type": "natural", "origin": "Russia",
-    "certification": { "authority": "GIA", "reportNumber": "2201019294", "ethical": { "conflictFree": true, "traceable": true } }
-  }
+  { "id": "dia-1", "shape": "round", "carat": 0.7, "colour": "F", "clarity": "VS1", "cut": "Ideal", "price": { "amount": 380000, "currency": "GBP" }, "report": "GIA 2185047321", "authority": "GIA" },
+  { "id": "dia-2", "shape": "round", "carat": 1.0, "colour": "E", "clarity": "VVS2", "cut": "Ideal", "price": { "amount": 920000, "currency": "GBP" }, "report": "GIA 6204188841", "authority": "GIA" },
+  { "id": "dia-3", "shape": "round", "carat": 1.5, "colour": "G", "clarity": "VS2", "cut": "Excellent", "price": { "amount": 1480000, "currency": "GBP" }, "report": "GIA 1209471562", "authority": "GIA" },
+  { "id": "dia-4", "shape": "round", "carat": 2.01, "colour": "D", "clarity": "IF", "cut": "Ideal", "price": { "amount": 4850000, "currency": "GBP" }, "report": "GIA 7311904455", "authority": "GIA" },
+  { "id": "dia-5", "shape": "oval", "carat": 1.2, "colour": "F", "clarity": "VS1", "cut": "Excellent", "price": { "amount": 1180000, "currency": "GBP" }, "report": "GIA 5223017789", "authority": "GIA" },
+  { "id": "dia-6", "shape": "oval", "carat": 2.05, "colour": "G", "clarity": "VVS2", "cut": "Excellent", "price": { "amount": 3650000, "currency": "GBP" }, "report": "GIA 2204417781", "authority": "GIA" },
+  { "id": "dia-7", "shape": "emerald", "carat": 1.51, "colour": "E", "clarity": "VVS1", "cut": "Very Good", "price": { "amount": 2150000, "currency": "GBP" }, "report": "GIA 6201337742", "authority": "GIA" },
+  { "id": "dia-8", "shape": "emerald", "carat": 3.02, "colour": "F", "clarity": "VS1", "cut": "Very Good", "price": { "amount": 6900000, "currency": "GBP" }, "report": "GIA 1228847190", "authority": "GIA" },
+  { "id": "dia-9", "shape": "cushion", "carat": 1.3, "colour": "G", "clarity": "VS2", "cut": "Very Good", "price": { "amount": 980000, "currency": "GBP" }, "report": "IGI 561204887", "authority": "IGI" },
+  { "id": "dia-10", "shape": "pear", "carat": 1.41, "colour": "F", "clarity": "VS1", "cut": "Excellent", "price": { "amount": 1320000, "currency": "GBP" }, "report": "GIA 3204117756", "authority": "GIA" },
+  { "id": "dia-11", "shape": "princess", "carat": 1.0, "colour": "G", "clarity": "VS1", "cut": "Excellent", "price": { "amount": 720000, "currency": "GBP" }, "report": "IGI 449120071", "authority": "IGI" },
+  { "id": "dia-12", "shape": "radiant", "carat": 1.7, "colour": "F", "clarity": "VS2", "cut": "Excellent", "price": { "amount": 1560000, "currency": "GBP" }, "report": "GIA 2207741193", "authority": "GIA" },
+  { "id": "dia-13", "shape": "round", "carat": 0.5, "colour": "H", "clarity": "SI1", "cut": "Very Good", "price": { "amount": 195000, "currency": "GBP" }, "report": "GIA 1185220041", "authority": "GIA" },
+  { "id": "dia-14", "shape": "marquise", "carat": 1.25, "colour": "G", "clarity": "VS1", "cut": "Excellent", "price": { "amount": 1090000, "currency": "GBP" }, "report": "GIA 6209914488", "authority": "GIA" }
 ]
