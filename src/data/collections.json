@@ -1,0 +1,47 @@
+[
+  {
+    "id": "col-aurora",
+    "slug": "aurora",
+    "name": "Aurora",
+    "tagline": "Light, captured",
+    "description": "Inspired by the first light of dawn, the Aurora collection sets exceptional brilliant-cut diamonds in fluid, luminous settings that seem to move with the wearer.",
+    "heroImage": {
+      "src": "https://placehold.co/1600x900/16130f/c4a35a?text=Aurora",
+      "alt": "Aurora collection",
+      "width": 1600,
+      "height": 900
+    },
+    "productSlugs": ["aurora-solitaire-ring", "aurora-pendant", "aurora-line-bracelet"],
+    "featured": true
+  },
+  {
+    "id": "col-monarch",
+    "slug": "monarch",
+    "name": "Monarch",
+    "tagline": "Sovereign brilliance",
+    "description": "Bold, architectural and unapologetically grand. Monarch celebrates the rarest stones with settings worthy of a crown.",
+    "heroImage": {
+      "src": "https://placehold.co/1600x900/16130f/c4a35a?text=Monarch",
+      "alt": "Monarch collection",
+      "width": 1600,
+      "height": 900
+    },
+    "productSlugs": ["monarch-emerald-necklace", "monarch-halo-ring"],
+    "featured": true
+  },
+  {
+    "id": "col-eternelle",
+    "slug": "eternelle",
+    "name": "Éternelle",
+    "tagline": "Forever, in line",
+    "description": "A study in rhythm and repetition — diamonds set edge to edge in an unbroken line, the purest expression of devotion.",
+    "heroImage": {
+      "src": "https://placehold.co/1600x900/16130f/c4a35a?text=Eternelle",
+      "alt": "Éternelle collection",
+      "width": 1600,
+      "height": 900
+    },
+    "productSlugs": ["eternelle-tennis-bracelet", "eternelle-eternity-band", "aurora-studs"],
+    "featured": false
+  }
+]
