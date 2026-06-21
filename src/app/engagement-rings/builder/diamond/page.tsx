@@ -3,14 +3,37 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Check } from 'lucide-react';
 import { useBuilder } from '@/lib/builder/store';
 import { getDiamonds, getSettingBySlug } from '@/lib/data/diamonds';
 import { compatibleDiamonds } from '@/lib/builder/compatibility';
+import { DiamondShapeSvg } from '@/components/product/DiamondShapeSvg';
 import { DIAMOND_SHAPE_LABELS, type DiamondShape } from '@/types/common';
 import type { Diamond } from '@/types/diamond';
 import { formatMoney, cn } from '@/lib/utils';
 
 type SortKey = 'price-asc' | 'price-desc' | 'carat-desc';
+
+function qualityTier(cut: string, color: string, clarity: string): string {
+  const topColor = ['D', 'E'].includes(color);
+  const topClarity = ['FL', 'IF', 'VVS1', 'VVS2'].includes(clarity);
+  if (topColor && topClarity && cut === 'Excellent') return 'Exceptional rarity';
+  if (topColor && topClarity) return 'Outstanding quality';
+  if (cut === 'Excellent' && ['F', 'G'].includes(color)) return 'Superb brilliance';
+  return 'Beautiful to the eye';
+}
+
+function originLabel(origin?: string, type?: string): string {
+  if (type === 'lab-grown') return 'Lab-grown · sustainably created';
+  const map: Record<string, string> = {
+    Botswana: 'Botswana · ethically sourced',
+    Canada: 'Canada · fully traceable',
+    Namibia: 'Namibia · conflict-free',
+    'South Africa': 'South Africa · certified ethical',
+    Russia: 'Russia · GIA verified',
+  };
+  return origin ? (map[origin] ?? `${origin} · conflict-free`) : '';
+}
 
 export default function DiamondStep() {
   const router = useRouter();
@@ -45,136 +68,278 @@ export default function DiamondStep() {
   const choose = (d: Diamond) => {
     setDiamond(d.sku);
     router.push(
-      settingSlug
-        ? '/engagement-rings/builder/review'
-        : '/engagement-rings/builder/setting'
+      settingSlug ? '/engagement-rings/builder/review' : '/engagement-rings/builder/setting'
     );
   };
 
   return (
-    <div className="container-luxe py-14">
-      <div className="mb-10 text-center">
+    <div className="pb-24">
+      {/* Header */}
+      <div className="container-luxe py-14 text-center">
         <span className="eyebrow">Step Two</span>
-        <h1 className="mt-3 font-display text-4xl font-light text-ink">Choose Your Diamond</h1>
-        {setting && (
-          <p className="mt-2 text-sm font-light text-ink/60">
-            Showing diamonds compatible with the {setting.name} setting.
+        <h1 className="mt-4 font-display text-5xl font-light text-ink md:text-6xl">
+          Choose Your Diamond
+        </h1>
+        {setting ? (
+          <p className="mt-4 text-sm font-light text-ink/55">
+            Showing stones compatible with the{' '}
+            <span className="text-ink">{setting.name}</span>.
+          </p>
+        ) : (
+          <p className="mt-4 text-sm font-light text-ink/55">
+            No setting chosen yet —{' '}
+            <Link
+              href="/engagement-rings/builder/setting"
+              className="text-ink underline underline-offset-4 hover:text-champagne-deep"
+            >
+              choose a setting first
+            </Link>{' '}
+            to filter compatible stones.
           </p>
         )}
       </div>
 
-      {/* Filters */}
-      <div className="mb-8 flex flex-col gap-4 border-y border-ink/10 py-5">
-        <div className="flex flex-wrap gap-2">
-          <FilterChip active={shape === null} onClick={() => setShape(null)}>
-            All Shapes
-          </FilterChip>
-          {shapes.map((s) => (
-            <FilterChip key={s} active={shape === s} onClick={() => setShape(s)}>
-              {DIAMOND_SHAPE_LABELS[s]}
-            </FilterChip>
-          ))}
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex gap-2">
-            {(['all', 'natural', 'lab-grown'] as const).map((t) => (
-              <FilterChip key={t} active={type === t} onClick={() => setType(t)}>
-                {t === 'all' ? 'All' : t === 'natural' ? 'Natural' : 'Lab-Grown'}
-              </FilterChip>
+      {/* Shape selector */}
+      <div className="border-y border-ink/10">
+        <div className="container-luxe overflow-x-auto">
+          <div className="flex min-w-max items-end gap-0 py-5 md:min-w-0 md:justify-center">
+            <ShapeButton
+              label="All"
+              active={shape === null}
+              onClick={() => setShape(null)}
+            />
+            {shapes.map((s) => (
+              <ShapeButton
+                key={s}
+                shape={s}
+                label={DIAMOND_SHAPE_LABELS[s]}
+                active={shape === s}
+                onClick={() => setShape(shape === s ? null : s)}
+              />
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Filter bar */}
+      <div className="container-luxe flex items-center justify-between py-6">
+        {/* Type toggle */}
+        <div className="inline-flex border border-ink/15">
+          {(['all', 'natural', 'lab-grown'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setType(t)}
+              className={cn(
+                'px-5 py-2.5 text-[10px] uppercase tracking-luxe transition-colors duration-200',
+                type === t ? 'bg-ink text-ivory' : 'text-ink/50 hover:text-ink'
+              )}
+            >
+              {t === 'all' ? 'All' : t === 'natural' ? 'Natural' : 'Lab-Grown'}
+            </button>
+          ))}
+        </div>
+
+        {/* Count + sort */}
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] uppercase tracking-luxe text-ink/40">
+            {diamonds.length} {diamonds.length === 1 ? 'stone' : 'stones'}
+          </span>
+          <span className="text-ink/20">·</span>
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
-            className="border border-ink/20 bg-transparent px-4 py-2 text-xs uppercase tracking-luxe text-ink focus:border-champagne focus:outline-none"
+            className="bg-transparent text-[10px] uppercase tracking-luxe text-ink/50 outline-none hover:text-ink"
           >
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-            <option value="carat-desc">Carat: High to Low</option>
+            <option value="price-asc">Price ↑</option>
+            <option value="price-desc">Price ↓</option>
+            <option value="carat-desc">Carat ↓</option>
           </select>
         </div>
       </div>
 
-      {!setting && (
-        <p className="mb-6 text-center text-xs font-light text-ink/60">
-          No setting chosen yet — you’ll pick one next.{' '}
-          <Link href="/engagement-rings/builder/setting" className="underline">
-            Choose a setting first
-          </Link>
-        </p>
-      )}
-
-      {/* Diamond table */}
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[680px] border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-ink/15 text-left text-[10px] uppercase tracking-luxe text-ink/50">
-              <th className="py-3 pr-4 font-normal">Shape</th>
-              <th className="py-3 pr-4 font-normal">Carat</th>
-              <th className="py-3 pr-4 font-normal">Cut</th>
-              <th className="py-3 pr-4 font-normal">Colour</th>
-              <th className="py-3 pr-4 font-normal">Clarity</th>
-              <th className="py-3 pr-4 font-normal">Cert</th>
-              <th className="py-3 pr-4 font-normal">Price</th>
-              <th className="py-3 font-normal" />
-            </tr>
-          </thead>
-          <tbody>
-            {diamonds.map((d) => (
-              <tr
-                key={d.id}
-                className={cn(
-                  'border-b border-ink/5 font-light transition hover:bg-ivory-deep/40',
-                  diamondSku === d.sku && 'bg-champagne/10'
-                )}
-              >
-                <td className="py-4 pr-4">{DIAMOND_SHAPE_LABELS[d.shape]}</td>
-                <td className="py-4 pr-4">{d.carat.toFixed(2)}</td>
-                <td className="py-4 pr-4">{d.cut}</td>
-                <td className="py-4 pr-4">{d.color}</td>
-                <td className="py-4 pr-4">{d.clarity}</td>
-                <td className="py-4 pr-4 text-xs">{d.certification.authority}</td>
-                <td className="py-4 pr-4">{formatMoney(d.price)}</td>
-                <td className="py-4">
-                  <button
-                    onClick={() => choose(d)}
-                    className="border border-ink/30 px-4 py-2 text-[10px] uppercase tracking-luxe text-ink transition hover:border-ink hover:bg-ink hover:text-ivory"
-                  >
-                    Select
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {diamonds.length === 0 && (
-          <p className="py-12 text-center text-sm font-light text-ink/60">
-            No diamonds match your selection.
+      {/* Diamond grid */}
+      <div className="container-luxe">
+        {diamonds.length === 0 ? (
+          <p className="py-24 text-center text-sm font-light text-ink/45">
+            No stones match your selection.
           </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-px bg-ink/8 sm:grid-cols-2 lg:grid-cols-3">
+            {diamonds.map((d) => (
+              <DiamondCard
+                key={d.id}
+                diamond={d}
+                selected={d.sku === diamondSku}
+                onSelect={() => choose(d)}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-function FilterChip({
+// ─── Shape selector button ───────────────────────────────────────────────────
+
+function ShapeButton({
+  shape,
+  label,
   active,
   onClick,
-  children,
 }: {
+  shape?: DiamondShape;
+  label: string;
   active: boolean;
   onClick: () => void;
-  children: React.ReactNode;
 }) {
+  const shortLabel = shape ? label.split(' ')[0] : label;
+
   return (
     <button
       onClick={onClick}
       className={cn(
-        'border px-4 py-2 text-xs uppercase tracking-luxe transition',
-        active ? 'border-ink bg-ink text-ivory' : 'border-ink/20 hover:border-ink'
+        'group flex flex-col items-center gap-2 px-4 pb-0 transition-colors duration-200',
+        active ? 'text-ink' : 'text-ink/30 hover:text-ink/60'
       )}
     >
-      {children}
+      {shape ? (
+        <DiamondShapeSvg shape={shape} size={30} />
+      ) : (
+        <span className="flex h-[30px] w-[30px] items-center justify-center">
+          <span className="grid grid-cols-2 gap-1">
+            {[0, 1, 2, 3].map((i) => (
+              <span
+                key={i}
+                className={cn(
+                  'h-1.5 w-1.5 rounded-full transition-colors duration-200',
+                  active ? 'bg-ink' : 'bg-ink/30 group-hover:bg-ink/60'
+                )}
+              />
+            ))}
+          </span>
+        </span>
+      )}
+      <span
+        className={cn(
+          'text-[8px] uppercase tracking-luxe transition-colors duration-200',
+          active ? 'text-champagne-deep' : ''
+        )}
+      >
+        {shortLabel}
+      </span>
+      <span
+        className={cn(
+          'h-px w-full transition-all duration-300',
+          active ? 'bg-champagne' : 'bg-transparent'
+        )}
+      />
     </button>
+  );
+}
+
+// ─── Diamond card ────────────────────────────────────────────────────────────
+
+function DiamondCard({
+  diamond: d,
+  selected,
+  onSelect,
+}: {
+  diamond: Diamond;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const tier = qualityTier(d.cut, d.color, d.clarity);
+  const origin = originLabel(d.origin, d.type);
+
+  return (
+    <div className={cn('group relative flex flex-col bg-ivory transition-all duration-300')}>
+      {/* Champagne border overlay when selected */}
+      {selected && (
+        <div className="pointer-events-none absolute inset-0 z-10 border-2 border-champagne" />
+      )}
+
+      {/* Selected badge */}
+      {selected && (
+        <span className="absolute right-4 top-4 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-champagne text-ivory shadow-sm">
+          <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+        </span>
+      )}
+
+      {/* ── Dark upper half ──────────────────────────────────────── */}
+      <div
+        className={cn(
+          'relative flex flex-col items-center justify-center px-8 py-12 transition-colors duration-500',
+          selected ? 'bg-ink-soft' : 'bg-ink group-hover:bg-ink-soft'
+        )}
+      >
+        {/* Diamond silhouette */}
+        <div
+          className={cn(
+            'transition-colors duration-500',
+            selected
+              ? 'text-champagne-soft'
+              : 'text-ivory/50 group-hover:text-ivory/80'
+          )}
+        >
+          <DiamondShapeSvg shape={d.shape} size={80} />
+        </div>
+
+        {/* Carat — hero stat */}
+        <div className="mt-7 flex items-baseline gap-1.5 text-ivory">
+          <span className="font-display text-5xl font-light leading-none">
+            {d.carat.toFixed(2)}
+          </span>
+          <span className="text-[9px] uppercase tracking-luxe text-champagne-soft/80">ct</span>
+        </div>
+
+        {/* Quality descriptor */}
+        <p className="mt-2 text-[9px] uppercase tracking-luxe text-ivory/30">{tier}</p>
+      </div>
+
+      {/* ── Ivory lower half ─────────────────────────────────────── */}
+      <div className="flex flex-1 flex-col p-6">
+        {/* Shape eyebrow */}
+        <span className="eyebrow mb-3">{DIAMOND_SHAPE_LABELS[d.shape]}</span>
+
+        {/* Character line */}
+        <p className="text-sm font-light leading-relaxed text-ink/70">
+          {d.cut} Cut &nbsp;·&nbsp; Colour&nbsp;{d.color} &nbsp;·&nbsp; {d.clarity}
+        </p>
+
+        {/* Origin / provenance */}
+        {origin && (
+          <p className="mt-1.5 text-xs font-light leading-relaxed text-ink/40">{origin}</p>
+        )}
+
+        {/* Certification */}
+        <p className="mt-1.5 text-[9px] uppercase tracking-luxe text-ink/30">
+          {d.certification.authority} Certified
+          {d.certification.reportNumber && (
+            <span className="ml-1 font-light normal-case tracking-wide text-ink/25">
+              #{d.certification.reportNumber}
+            </span>
+          )}
+        </p>
+
+        <div className="mt-auto pt-6">
+          {/* Price */}
+          <p className="font-display text-2xl text-ink">{formatMoney(d.price)}</p>
+
+          {/* CTA */}
+          <button
+            onClick={onSelect}
+            className={cn(
+              'mt-4 w-full border py-4 text-[10px] uppercase tracking-luxe transition-all duration-300',
+              selected
+                ? 'border-champagne bg-champagne text-ivory'
+                : 'border-ink/20 text-ink/70 hover:border-ink hover:bg-ink hover:text-ivory'
+            )}
+          >
+            {selected ? 'Stone Selected ✓' : 'Choose this Stone'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
