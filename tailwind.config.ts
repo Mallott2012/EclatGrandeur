@@ -2,7 +2,7 @@ import type { Config } from 'tailwindcss';
 
 /**
  * Éclat Grandeur design tokens.
- * Restrained luxury palette: ink/charcoal, cream/ivory ground, champagne-gold accent.
+ * Palette: ivory ground (primary) · deep forest green (secondary) · champagne-gold accent.
  * Typography pairs a serif display (Cormorant) with a clean sans (body).
  */
 const config: Config = {
@@ -11,8 +11,8 @@ const config: Config = {
     extend: {
       colors: {
         ink: {
-          DEFAULT: '#16130f',
-          soft: '#2a251e',
+          DEFAULT: '#162b1e',
+          soft: '#243d2e',
         },
         ivory: {
           DEFAULT: '#f7f3ec',

@@ -39,7 +39,7 @@ export function placeholder(
   label?: string
 ): string {
   const text = label ? `?text=${encodeURIComponent(label)}` : '';
-  return `https://placehold.co/${width}x${height}/16130f/c4a35a${text}`;
+  return `https://placehold.co/${width}x${height}/162b1e/c4a35a${text}`;
 }
 
 /** A single shimmer blurDataURL used across Next/Image until real assets land. */
