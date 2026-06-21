@@ -56,18 +56,18 @@ export function JewelTile({
 
       <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center text-white">
         {eyebrow && (
-          <span className="text-[10px] uppercase tracking-luxe text-white/70">
+          <span className="text-[9px] uppercase tracking-luxe text-white/70">
             {eyebrow}
           </span>
         )}
         <h2
           className={`mt-2 font-display font-light leading-tight ${
-            large ? 'text-4xl md:text-6xl' : 'text-2xl md:text-3xl'
+            large ? 'text-3xl md:text-4xl' : 'text-lg md:text-xl'
           }`}
         >
           {title}
         </h2>
-        <span className="mt-3 text-[10px] uppercase tracking-luxe text-white/0 transition-colors duration-500 group-hover:text-white/90">
+        <span className="mt-3 text-[9px] uppercase tracking-luxe text-white/0 transition-colors duration-500 group-hover:text-white/90">
           Explore
         </span>
       </div>
