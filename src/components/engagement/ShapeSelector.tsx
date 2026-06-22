@@ -26,39 +26,51 @@ interface Props {
 
 export function ShapeSelector({ selected, onChange }: Props) {
   return (
-    <div className="flex items-center gap-8 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+    <div className="flex items-end gap-6 lg:gap-8" style={{ minWidth: 'max-content' }}>
       {SHAPES.map(({ id, label, viewBox, path }) => {
         const active = selected === id;
         return (
           <button
             key={id}
             type="button"
-            onClick={() => onChange(id === selected ? (null as unknown as DiamondShape) : id)}
-            className="flex-shrink-0 flex flex-col items-center gap-3 focus:outline-none"
+            onClick={() => onChange(id)}
+            className="flex flex-col items-center gap-2 focus:outline-none group"
           >
-            <div style={{ width: 40, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 36, height: 40, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
               <svg viewBox={viewBox} width="100%" height="100%">
                 <path
                   d={path}
-                  fill={active ? `${GREEN}18` : 'none'}
-                  stroke={active ? GREEN : `${GREEN}55`}
+                  fill="none"
+                  stroke={active ? GREEN : '#aaa'}
                   strokeWidth={active ? 1.5 : 1}
-                  style={{ transition: 'all 0.15s' }}
+                  style={{ transition: 'stroke 0.15s' }}
                 />
               </svg>
             </div>
             <span
-              className="font-sans uppercase"
+              className="font-sans"
               style={{
-                fontSize: 8,
-                letterSpacing: '0.22em',
-                color: active ? GREEN : `${GREEN}77`,
+                fontSize: 9,
+                letterSpacing: '0.2em',
+                color: active ? GREEN : '#999',
+                textTransform: 'uppercase',
                 fontWeight: active ? 500 : 400,
                 transition: 'color 0.15s',
               }}
             >
               {label}
             </span>
+            {/* active dot — like Tiffany */}
+            <span
+              style={{
+                display: 'block',
+                width: 4,
+                height: 4,
+                borderRadius: '50%',
+                backgroundColor: active ? GREEN : 'transparent',
+                transition: 'background 0.15s',
+              }}
+            />
           </button>
         );
       })}
