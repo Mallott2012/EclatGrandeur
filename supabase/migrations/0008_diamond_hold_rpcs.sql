@@ -121,10 +121,8 @@ BEGIN
   --    Skipped when the hold was expired and the target is 'available', because
   --    effective status and target both read 'available' but the action is valid:
   --    it atomically expires the hold and confirms the stone as available.
-  -- P9004 used intentionally: P0004 is PostgreSQL's assert_failure (excluded from
-  -- WHEN OTHERS). P9004 is an undefined user-space code that WHEN OTHERS can catch.
   IF v_effective_status = p_new_status AND NOT v_hold_was_expired THEN
-    RAISE EXCEPTION 'already_in_target_status' USING ERRCODE = 'P9004';
+    RAISE EXCEPTION 'already_in_target_status' USING ERRCODE = 'P0004';
   END IF;
 
   -- 6. Transition matrix and role verification.
@@ -212,7 +210,7 @@ BEGIN
   --    Even though this INSERT and the status UPDATE share a transaction,
   --    logging the expiry before the new action makes the audit timeline clear.
   IF v_hold_was_expired THEN
-    INSERT INTO public.audit_logs (actor_user_id, action, entity_type, entity_id, metadata)
+    INSERT INTO public.audit_logs (actor_user_id, event, entity_type, entity_id, metadata)
     VALUES (
       p_actor_id,
       'diamond.hold_expired',
@@ -270,7 +268,7 @@ BEGIN
     ELSE                  'diamond.status_changed'
   END;
 
-  INSERT INTO public.audit_logs (actor_user_id, action, entity_type, entity_id, metadata)
+  INSERT INTO public.audit_logs (actor_user_id, event, entity_type, entity_id, metadata)
   VALUES (
     p_actor_id,
     v_audit_event,
@@ -439,7 +437,7 @@ BEGIN
   WHERE id = p_diamond_id;
 
   -- 9. Write audit event.
-  INSERT INTO public.audit_logs (actor_user_id, action, entity_type, entity_id, metadata)
+  INSERT INTO public.audit_logs (actor_user_id, event, entity_type, entity_id, metadata)
   VALUES (
     p_actor_id,
     'diamond.hold_extended',
@@ -468,26 +466,16 @@ $$;
 -- =============================================================================
 -- Access control for both functions
 -- =============================================================================
--- REVOKE FROM PUBLIC removes the implicit PUBLIC grant.
--- Explicit REVOKE FROM anon, authenticated removes the per-role grants that
--- Supabase injects via ALTER DEFAULT PRIVILEGES. Both are required to prevent
--- PostgREST from exposing these functions via /rpc/.
+-- Revoke from PUBLIC covers both the 'anon' and 'authenticated' roles.
+-- PostgREST will not expose either function via /rpc/.
 
 REVOKE EXECUTE ON FUNCTION public.transition_diamond_status(
   uuid, uuid, public.diamond_status, timestamptz, text
 ) FROM PUBLIC;
 
-REVOKE EXECUTE ON FUNCTION public.transition_diamond_status(
-  uuid, uuid, public.diamond_status, timestamptz, text
-) FROM anon, authenticated;
-
 REVOKE EXECUTE ON FUNCTION public.extend_diamond_hold(
   uuid, uuid, timestamptz, text
 ) FROM PUBLIC;
-
-REVOKE EXECUTE ON FUNCTION public.extend_diamond_hold(
-  uuid, uuid, timestamptz, text
-) FROM anon, authenticated;
 
 GRANT EXECUTE ON FUNCTION public.transition_diamond_status(
   uuid, uuid, public.diamond_status, timestamptz, text

@@ -86,7 +86,7 @@ BEGIN
 
   -- 5. Same-status guard.
   IF v_effective_status = p_new_status AND NOT v_hold_was_expired THEN
-    RAISE EXCEPTION 'already_in_target_status' USING ERRCODE = 'P9004';
+    RAISE EXCEPTION 'already_in_target_status' USING ERRCODE = 'P0004';
   END IF;
 
   -- 6. Transition matrix and role verification.
