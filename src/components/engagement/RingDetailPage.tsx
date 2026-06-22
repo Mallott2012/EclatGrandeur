@@ -3,10 +3,18 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronRight, ChevronLeft, Share2 } from 'lucide-react';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import { DiamondSelector } from './DiamondSelector';
 
-const GREEN = '#1a2b1a';
+const G      = '#1a2b1a';
+const BORDER = '#e8e8e8';
+
+const METALS = [
+  { id: 'platinum',        label: 'Platinum',        swatch: '#d0d0d0' },
+  { id: 'white_gold_18k',  label: '18k White Gold',  swatch: '#c0c0c0' },
+  { id: 'yellow_gold_18k', label: '18k Yellow Gold', swatch: '#c9a84c' },
+  { id: 'rose_gold_18k',   label: '18k Rose Gold',   swatch: '#c47d68' },
+];
 
 interface Diamond {
   id: string;
@@ -17,350 +25,276 @@ interface Diamond {
   price: number;
 }
 
-interface RingData {
-  slug: string;
-  name: string;
-  subtitle: string;
-  basePrice: number;
-  metal: string;
-  description: string;
-  image: string;
-  images?: string[];
-  setting: string;
-  materials: string[];
-}
-
-// All rings catalogue — in production this would come from the DB
-const RINGS: Record<string, RingData> = {
-  'eclat-solitaire': {
-    slug: 'eclat-solitaire',
-    name: 'The Éclat Solitaire',
-    subtitle: 'Engagement Ring in Platinum',
-    basePrice: 4800,
-    metal: 'Platinum',
-    description: 'A modern interpretation of the classic six-prong solitaire. The elevated basket setting allows maximum light to enter the diamond from every angle, bringing out its natural brilliance and fire.',
-    image: '/images/engagement/hero-solitaire.png',
-    setting: 'Solitaire',
-    materials: ['Platinum', '18k White Gold', '18k Yellow Gold', '18k Rose Gold'],
-  },
-  'lumiere-halo': {
-    slug: 'lumiere-halo',
-    name: 'Lumière Halo',
-    subtitle: 'Engagement Ring with Diamond Halo',
-    basePrice: 6200,
-    metal: '18k White Gold',
-    description: 'A halo of pavé-set diamonds encircles the centre stone, creating an illusion of greater size and unrivalled brilliance. The split shank adds a contemporary elegance.',
-    image: '/images/engagement/hero-halo.png',
-    setting: 'Halo',
-    materials: ['18k White Gold', 'Platinum', '18k Yellow Gold'],
-  },
-  'trilogy-three-stone': {
-    slug: 'trilogy-three-stone',
-    name: 'Trilogy Three Stone',
-    subtitle: 'Engagement Ring in 18k White Gold',
-    basePrice: 7500,
-    metal: '18k White Gold',
-    description: 'Three diamonds representing the past, present, and future of your love story. Each stone is individually set in a seamless arc of precious metal.',
-    image: '/images/engagement/hero-three-stone.png',
-    setting: 'Three Stone',
-    materials: ['18k White Gold', 'Platinum', '18k Rose Gold'],
-  },
-  'eclat-pave': {
-    slug: 'eclat-pave',
-    name: 'Éclat Pavé',
-    subtitle: 'Engagement Ring with Pavé Band',
-    basePrice: 3900,
-    metal: 'Platinum',
-    description: 'Micro-pavé diamonds run the full circumference of the band, ensuring brilliance from every angle. The flush-set shank is crafted to sit perfectly against a wedding band.',
-    image: '/images/engagement/hero-pave.png',
-    setting: 'Pavé',
-    materials: ['Platinum', '18k White Gold'],
-  },
-  'signature-solitaire': {
-    slug: 'signature-solitaire',
-    name: 'Signature Solitaire',
-    subtitle: 'Engagement Ring in Platinum',
-    basePrice: 5200,
-    metal: 'Platinum',
-    description: 'Our signature four-prong design, refined over decades. The minimal prong structure lets the diamond speak for itself — clean, modern, and utterly timeless.',
-    image: '/images/engagement/hero-solitaire.png',
-    setting: 'Solitaire',
-    materials: ['Platinum', '18k White Gold', '18k Yellow Gold', '18k Rose Gold'],
-  },
-  'constellation-halo': {
-    slug: 'constellation-halo',
-    name: 'Constellation Halo',
-    subtitle: 'Engagement Ring in 18k Yellow Gold',
-    basePrice: 8100,
-    metal: '18k Yellow Gold',
-    description: 'A celestial double-halo design with 64 individually set diamonds creating a starburst effect around the centre stone. Available in warm or cool tones.',
-    image: '/images/engagement/hero-halo.png',
-    setting: 'Halo',
-    materials: ['18k Yellow Gold', 'Platinum', '18k Rose Gold'],
-  },
-  'classic-round': {
-    slug: 'classic-round',
-    name: 'Classic Round Brilliant',
-    subtitle: 'Engagement Ring in Platinum',
-    basePrice: 5500,
-    metal: 'Platinum',
-    description: 'The quintessential engagement ring. A round brilliant diamond in a six-claw platinum mount — the style that has defined engagement rings for over a century.',
-    image: '/images/engagement/hero-collection.png',
-    setting: 'Solitaire',
-    materials: ['Platinum', '18k White Gold'],
-  },
-  'vintage-pave': {
-    slug: 'vintage-pave',
-    name: 'Vintage Pavé Band',
-    subtitle: 'Engagement Ring with Diamond Accents',
-    basePrice: 2475,
-    metal: 'Platinum',
-    description: 'Inspired by Edwardian milgrain detailing, this ring features hand-engraved shoulders and a delicate pavé band. A ring for those who appreciate jewellery with a story.',
-    image: '/images/engagement/hero-pave.png',
-    setting: 'Vintage',
-    materials: ['Platinum', '18k White Gold', '18k Yellow Gold'],
-  },
-  'oval-side-stone': {
-    slug: 'oval-side-stone',
-    name: 'Oval Side Stone',
-    subtitle: 'Engagement Ring in 18k Rose Gold',
-    basePrice: 10300,
-    metal: '18k Rose Gold',
-    description: 'An oval centre diamond flanked by two elegant trillion-cut side stones. The elongated shape flatters the finger and creates a distinctly modern silhouette.',
-    image: '/images/engagement/hero-three-stone.png',
-    setting: 'Three Stone',
-    materials: ['18k Rose Gold', '18k Yellow Gold', 'Platinum'],
-  },
+const RINGS: Record<string, {
+  name: string; subtitle: string; basePrice: number;
+  description: string; images: string[]; materials: string[];
+}> = {
+  'eclat-solitaire':    { name: 'The Éclat Solitaire',  subtitle: 'Engagement Ring', basePrice: 4800,  materials: ['Platinum', '18k White Gold', '18k Yellow Gold', '18k Rose Gold'], images: ['/images/rings/ring-1.png', '/images/rings/ring-3.png', '/images/rings/ring-7.png'], description: 'The Éclat Solitaire is the definitive expression of the solitaire engagement ring. A single brilliant-cut diamond elevated on a slender platinum band, placing all focus on the diamond. Handcrafted to order in our London atelier.' },
+  'lumiere-halo':       { name: 'Lumière Halo',         subtitle: 'Engagement Ring', basePrice: 6200,  materials: ['Platinum', '18k White Gold', '18k Yellow Gold'], images: ['/images/rings/ring-2.png', '/images/rings/ring-5.png', '/images/rings/ring-8.png'], description: 'A brilliant-cut diamond encircled by a halo of pavé-set diamonds, dramatically amplifying the appearance of the centre stone. Set in platinum with a split-shank band.' },
+  'trilogy':            { name: 'The Trilogy',          subtitle: 'Three Stone Engagement Ring', basePrice: 7500, materials: ['Platinum', '18k White Gold'], images: ['/images/rings/ring-3.png', '/images/rings/ring-1.png', '/images/rings/ring-9.png'], description: 'Three brilliant diamonds representing the past, present and future. The Trilogy is one of the most meaningful and enduring of all engagement ring designs.' },
+  'oval-solitaire':     { name: 'Oval Solitaire',       subtitle: 'Engagement Ring', basePrice: 3850,  materials: ['Platinum', '18k White Gold', '18k Rose Gold'], images: ['/images/rings/ring-4.png', '/images/rings/ring-2.png', '/images/rings/ring-6.png'], description: 'An elongated oval brilliant-cut diamond in a classic four-claw solitaire setting. The oval silhouette creates the appearance of longer, more slender fingers.' },
+  'constellation':      { name: 'Constellation Pavé',  subtitle: 'Pavé Band Engagement Ring', basePrice: 4100, materials: ['Platinum', '18k White Gold', '18k Yellow Gold'], images: ['/images/rings/ring-5.png', '/images/rings/ring-4.png', '/images/rings/ring-8.png'], description: 'A brilliant-cut centre diamond set above a band of continuous pavé-set diamonds. Each stone hand-selected and individually set for seamless, scintillating brilliance.' },
+  'cushion-soleste':    { name: 'Cushion Soleste',      subtitle: 'Halo Engagement Ring', basePrice: 5650, materials: ['Platinum', '18k Yellow Gold'], images: ['/images/rings/ring-6.png', '/images/rings/ring-2.png', '/images/rings/ring-5.png'], description: 'A cushion-cut diamond surrounded by two rows of brilliants in the signature Soleste halo setting. The double halo creates exceptional fire and brilliance.' },
+  'emerald-solitaire':  { name: 'Emerald Solitaire',   subtitle: 'Engagement Ring', basePrice: 4450,  materials: ['Platinum', '18k White Gold'], images: ['/images/rings/ring-7.png', '/images/rings/ring-3.png', '/images/rings/ring-9.png'], description: 'The architectural clarity of an emerald-cut diamond in a clean four-claw setting. Step-cut facets create broad flashes of light distinct from brilliant-cut diamonds.' },
+  'vintage-halo':       { name: 'Vintage Halo',        subtitle: 'Vintage-Style Engagement Ring', basePrice: 6200, materials: ['Platinum', '18k White Gold'], images: ['/images/rings/ring-8.png', '/images/rings/ring-1.png', '/images/rings/ring-4.png'], description: 'Inspired by the jewellery of the Art Deco period, the Vintage Halo features milgrain detailing and hand-engraving around a brilliant-cut diamond halo.' },
+  'princess-solitaire': { name: 'Princess Solitaire',  subtitle: 'Engagement Ring', basePrice: 3700,  materials: ['Platinum', '18k White Gold', '18k Yellow Gold'], images: ['/images/rings/ring-9.png', '/images/rings/ring-6.png', '/images/rings/ring-2.png'], description: 'A square princess-cut diamond in a modern four-claw solitaire. The sharp corners maximise the diamond\'s brilliance and surface area.' },
 };
+
+const FALLBACK = RINGS['eclat-solitaire'];
 
 interface Props { slug: string; }
 
 export function RingDetailPage({ slug }: Props) {
-  const ring = RINGS[slug] ?? RINGS['eclat-solitaire'];
+  const ring = RINGS[slug] ?? FALLBACK;
 
-  const [selectedMetal,   setSelectedMetal]   = useState(ring.metal);
-  const [selectedDiamond, setSelectedDiamond] = useState<Diamond | null>(null);
-  const [diamondOpen,     setDiamondOpen]     = useState(false);
+  const [selectedMetal,   setSelectedMetal]   = useState(ring.materials[0]);
+  const [activeImage,     setActiveImage]     = useState(0);
   const [metalOpen,       setMetalOpen]       = useState(false);
+  const [diamondOpen,     setDiamondOpen]     = useState(false);
+  const [selectedDiamond, setSelectedDiamond] = useState<Diamond | null>(null);
 
-  const totalPrice = ring.basePrice + (selectedDiamond?.price ?? 0);
-  const formattedPrice = selectedDiamond
+  const totalPrice  = ring.basePrice + (selectedDiamond?.price ?? 0);
+  const displayPrice = selectedDiamond
     ? `£${totalPrice.toLocaleString('en-GB')}`
     : `Starting from £${ring.basePrice.toLocaleString('en-GB')}`;
 
+  const metalMeta = METALS.find(m => m.label === selectedMetal) ?? METALS[0];
+
   return (
-    <div style={{ backgroundColor: '#fff', color: GREEN, minHeight: '100vh' }}>
+    <>
+      <div className="min-h-screen bg-white" style={{ color: G }}>
 
-      {/* Breadcrumb */}
-      <div className="px-6 lg:px-10 pt-5 pb-4 flex items-center gap-2" style={{ borderBottom: '1px solid #eee' }}>
-        <Link href="/" className="font-sans" style={{ fontSize: 11, color: '#aaa', letterSpacing: '0.08em' }}>Home</Link>
-        <ChevronRight className="w-3 h-3" style={{ color: '#ccc' }} strokeWidth={1.5} />
-        <Link href="/engagement-rings" className="font-sans" style={{ fontSize: 11, color: '#aaa', letterSpacing: '0.08em' }}>
-          Engagement Rings
-        </Link>
-        <ChevronRight className="w-3 h-3" style={{ color: '#ccc' }} strokeWidth={1.5} />
-        <span className="font-sans" style={{ fontSize: 11, color: GREEN, letterSpacing: '0.08em' }}>{ring.name}</span>
-      </div>
+        {/* ── BREADCRUMB ─────────────────────────────────────────────────── */}
+        <nav className="flex items-center gap-2 px-8 lg:px-14 py-5" style={{ borderBottom: `1px solid ${BORDER}` }} aria-label="Breadcrumb">
+          <Link href="/" className="font-sans" style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Home</Link>
+          <ChevronRight className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#ddd' }} strokeWidth={1.5} />
+          <Link href="/engagement-rings" className="font-sans" style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Engagement Rings</Link>
+          <ChevronRight className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#ddd' }} strokeWidth={1.5} />
+          <span className="font-sans" style={{ fontSize: 11, color: G, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{ring.name}</span>
+        </nav>
 
-      {/* Main 2-col layout */}
-      <div className="flex flex-col lg:flex-row">
+        {/* ── SPLIT LAYOUT ───────────────────────────────────────────────── */}
+        <div className="flex flex-col lg:flex-row">
 
-        {/* ── LEFT — large ring image ────────────────────────────────────── */}
-        <div
-          className="lg:sticky lg:top-0 lg:self-start flex-1"
-          style={{ backgroundColor: '#ffffff', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 32px' }}
-        >
-          <div className="relative w-full max-w-sm" style={{ aspectRatio: '1/1' }}>
-            <Image
-              src={ring.image}
-              alt={ring.name}
-              fill
-              className="object-contain"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
-            />
-          </div>
+          {/* LEFT — image panel, sticky on desktop */}
+          <div className="lg:w-[58%] lg:sticky lg:top-0 lg:h-screen flex flex-col bg-white">
 
-          {/* Caption under image */}
-          {selectedDiamond && (
-            <div className="mt-8 text-center">
-              <p className="font-sans" style={{ fontSize: 13, color: '#888', letterSpacing: '0.04em' }}>
-                {selectedDiamond.carat.toFixed(2)} ct · {selectedDiamond.cut} Cut · {selectedMetal}
-              </p>
-              <p className="font-display mt-1" style={{ fontSize: 20, fontWeight: 300, color: GREEN }}>
-                £{(ring.basePrice + selectedDiamond.price).toLocaleString('en-GB')}
-              </p>
-              <p className="font-sans mt-1" style={{ fontSize: 11, color: '#aaa', letterSpacing: '0.08em' }}>
-                Complimentary delivery & returns
-              </p>
+            {/* Main image */}
+            <div className="flex-1 flex items-center justify-center p-10 lg:p-16">
+              <div className="relative w-full" style={{ maxWidth: 500, aspectRatio: '1/1' }}>
+                <Image
+                  key={activeImage}
+                  src={ring.images[activeImage]}
+                  alt={`${ring.name} — view ${activeImage + 1}`}
+                  fill
+                  className="object-contain"
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 58vw"
+                />
+              </div>
             </div>
-          )}
 
-          {/* Share */}
-          <button
-            type="button"
-            className="absolute top-4 right-4 p-2 rounded-full"
-            style={{ color: '#bbb' }}
-            aria-label="Share"
-          >
-            <Share2 className="w-4 h-4" strokeWidth={1.5} />
-          </button>
-        </div>
-
-        {/* ── RIGHT — configuration panel ───────────────────────────────── */}
-        <div
-          className="lg:w-96 xl:w-[420px] px-8 py-10 flex flex-col gap-6"
-          style={{ borderLeft: '1px solid #eee', flexShrink: 0 }}
-        >
-          {/* Name + subtitle + price */}
-          <div>
-            <h1 className="font-display" style={{ fontSize: 'clamp(22px, 3vw, 30px)', fontWeight: 300, lineHeight: 1.2, letterSpacing: '0.02em' }}>
-              {ring.name}
-            </h1>
-            <p className="font-sans mt-1.5" style={{ fontSize: 13, color: '#777', fontWeight: 300 }}>
-              {ring.subtitle}
-            </p>
-            <p className="font-sans mt-3" style={{ fontSize: 15, color: GREEN, fontWeight: 400, letterSpacing: '0.02em' }}>
-              {formattedPrice}
-            </p>
-          </div>
-
-          <div style={{ height: 1, backgroundColor: '#eee' }} />
-
-          {/* Ring style row */}
-          <button
-            type="button"
-            onClick={() => setMetalOpen(v => !v)}
-            className="flex items-center justify-between w-full"
-          >
-            <span className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.3em', color: '#aaa' }}>Ring Style</span>
-            <span className="flex items-center gap-2 font-sans" style={{ fontSize: 13, color: GREEN }}>
-              {selectedMetal}
-              <ChevronRight className="w-3.5 h-3.5" strokeWidth={1.5} />
-            </span>
-          </button>
-
-          {/* Metal chooser inline */}
-          {metalOpen && (
-            <div className="grid grid-cols-3 gap-3">
-              {ring.materials.map(m => (
+            {/* Thumbnail row */}
+            <div className="flex items-center justify-center gap-3 pb-8">
+              {ring.images.map((img, i) => (
                 <button
-                  key={m}
+                  key={i}
                   type="button"
-                  onClick={() => { setSelectedMetal(m); setMetalOpen(false); }}
-                  className="flex flex-col items-center gap-2 py-3 px-2 border transition-colors"
+                  onClick={() => setActiveImage(i)}
+                  aria-label={`View ${i + 1}`}
+                  className="relative flex-shrink-0"
                   style={{
-                    borderColor: selectedMetal === m ? GREEN : '#e5e5e5',
-                    backgroundColor: selectedMetal === m ? '#f8f8f6' : '#fff',
+                    width: 60, height: 60,
+                    border: i === activeImage ? `1px solid ${G}` : `1px solid ${BORDER}`,
+                    padding: 4,
+                    transition: 'border-color 0.2s',
                   }}
                 >
-                  {/* Metal swatch dot */}
-                  <span
-                    className="rounded-full"
-                    style={{
-                      width: 16, height: 16,
-                      backgroundColor:
-                        m.includes('Yellow') ? '#d4a843' :
-                        m.includes('Rose')   ? '#c8856a' :
-                        m.includes('White')  ? '#c8c8c8' :
-                        '#b0b0b0',
-                    }}
-                  />
-                  <span className="font-sans text-center" style={{ fontSize: 10, color: GREEN, lineHeight: 1.3, letterSpacing: '0.04em' }}>
-                    {m.replace('18k ', '')}
-                  </span>
+                  <Image src={img} alt="" fill className="object-contain" sizes="60px" />
                 </button>
               ))}
             </div>
-          )}
+          </div>
 
-          {/* Diamond row */}
-          <button
-            type="button"
-            onClick={() => setDiamondOpen(true)}
-            className="flex items-center justify-between w-full"
+          {/* RIGHT — configuration panel */}
+          <div
+            className="lg:w-[42%] px-8 lg:px-12 pt-12 pb-20 flex flex-col"
+            style={{ borderLeft: `1px solid ${BORDER}` }}
           >
-            <span className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.3em', color: '#aaa' }}>Diamond</span>
-            <span className="flex items-center gap-2 font-sans" style={{ fontSize: 13, color: GREEN }}>
-              {selectedDiamond
-                ? `${selectedDiamond.carat.toFixed(2)} ct · ${selectedDiamond.color} · ${selectedDiamond.clarity}`
-                : 'Select a Diamond'}
-              <ChevronRight className="w-3.5 h-3.5" strokeWidth={1.5} />
-            </span>
-          </button>
 
-          <div style={{ height: 1, backgroundColor: '#eee' }} />
+            {/* Name */}
+            <h1
+              className="font-display"
+              style={{ fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 300, letterSpacing: '0.04em', color: G, lineHeight: 1.15 }}
+            >
+              {ring.name}
+            </h1>
 
-          {/* CTA */}
-          {selectedDiamond ? (
+            {/* Subtitle + price on same row, exactly like Tiffany */}
+            <div className="flex items-baseline justify-between mt-2 gap-4">
+              <p className="font-sans" style={{ fontSize: 13, color: '#999', fontWeight: 300, letterSpacing: '0.03em' }}>
+                {ring.subtitle}
+              </p>
+              <p className="font-sans flex-shrink-0" style={{ fontSize: 14, color: G, fontWeight: 400 }}>
+                {displayPrice}
+              </p>
+            </div>
+
+            {/* Divider */}
+            <div className="mt-8 mb-0" style={{ height: 1, backgroundColor: BORDER }} />
+
+            {/* Ring Style row — label left, current metal + chevron right */}
             <button
               type="button"
-              className="w-full font-sans uppercase py-4 transition-opacity hover:opacity-80"
-              style={{ fontSize: 11, letterSpacing: '0.3em', backgroundColor: GREEN, color: '#fff' }}
+              onClick={() => setMetalOpen(v => !v)}
+              className="flex items-center justify-between w-full py-4 text-left"
+              style={{ borderBottom: `1px solid ${BORDER}` }}
             >
-              Add to Bag — £{(ring.basePrice + selectedDiamond.price).toLocaleString('en-GB')}
+              <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
+                Ring Style
+              </span>
+              <span className="flex items-center gap-2">
+                <span
+                  style={{
+                    width: 12, height: 12, borderRadius: '50%',
+                    backgroundColor: metalMeta.swatch,
+                    border: '1px solid #ddd', flexShrink: 0,
+                  }}
+                />
+                <span className="font-sans" style={{ fontSize: 13, color: G, fontWeight: 300 }}>
+                  {selectedMetal}
+                </span>
+                <ChevronDown
+                  className="w-3.5 h-3.5"
+                  style={{ color: '#bbb', transition: 'transform 0.2s', transform: metalOpen ? 'rotate(180deg)' : 'none' }}
+                  strokeWidth={1.5}
+                />
+              </span>
             </button>
-          ) : (
+
+            {/* Metal dropdown */}
+            {metalOpen && (
+              <div style={{ borderBottom: `1px solid ${BORDER}` }}>
+                {ring.materials.map(m => {
+                  const meta = METALS.find(x => x.label === m) ?? METALS[0];
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => { setSelectedMetal(m); setMetalOpen(false); }}
+                      className="flex items-center gap-3 w-full px-2 py-3 font-sans"
+                      style={{
+                        fontSize: 13, color: selectedMetal === m ? G : '#666',
+                        fontWeight: selectedMetal === m ? 400 : 300,
+                        backgroundColor: selectedMetal === m ? '#f9f9f9' : 'transparent',
+                      }}
+                    >
+                      <span style={{ width: 14, height: 14, borderRadius: '50%', backgroundColor: meta.swatch, border: '1px solid #ddd', flexShrink: 0 }} />
+                      {m}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Diamond row */}
+            <div className="flex items-center justify-between py-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
+              <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
+                Diamond
+              </span>
+              {selectedDiamond ? (
+                <button
+                  type="button"
+                  onClick={() => setDiamondOpen(true)}
+                  className="font-sans"
+                  style={{ fontSize: 13, color: G, fontWeight: 300, textDecoration: 'underline', textUnderlineOffset: 3 }}
+                >
+                  {selectedDiamond.carat.toFixed(2)} ct · {selectedDiamond.color} · {selectedDiamond.clarity}
+                </button>
+              ) : (
+                <span className="font-sans" style={{ fontSize: 13, color: '#bbb', fontWeight: 300 }}>
+                  Not yet selected
+                </span>
+              )}
+            </div>
+
+            {/* SELECT A DIAMOND — full-width dark button, exactly Tiffany */}
             <button
               type="button"
               onClick={() => setDiamondOpen(true)}
-              className="w-full font-sans uppercase py-4 transition-opacity hover:opacity-80"
-              style={{ fontSize: 11, letterSpacing: '0.3em', backgroundColor: GREEN, color: '#fff' }}
+              className="w-full font-sans uppercase mt-8 py-4"
+              style={{ fontSize: 11, letterSpacing: '0.28em', backgroundColor: G, color: '#fff' }}
             >
-              Select a Diamond
+              {selectedDiamond ? 'Change Diamond' : 'Select a Diamond'}
             </button>
-          )}
 
-          {/* Expert link */}
-          <button
-            type="button"
-            className="flex items-center justify-center gap-2 font-sans"
-            style={{ fontSize: 12, color: '#888', letterSpacing: '0.04em' }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-            </svg>
-            Need a Diamond Expert?
-          </button>
+            {/* Secondary CTA once diamond chosen */}
+            {selectedDiamond && (
+              <button
+                type="button"
+                className="w-full font-sans uppercase mt-3 py-4"
+                style={{
+                  fontSize: 11, letterSpacing: '0.28em',
+                  backgroundColor: '#fff', color: G,
+                  border: `1px solid ${G}`,
+                }}
+              >
+                Add to Bag — £{totalPrice.toLocaleString('en-GB')}
+              </button>
+            )}
 
-          <div style={{ height: 1, backgroundColor: '#eee' }} />
+            {/* Expert link — exactly Tiffany */}
+            <p className="font-sans text-center mt-5" style={{ fontSize: 12, color: '#aaa', letterSpacing: '0.02em' }}>
+              Need an Éclat Diamond Expert?{' '}
+              <Link
+                href="/contact"
+                style={{ color: G, textDecoration: 'underline', textUnderlineOffset: 3 }}
+              >
+                Book an appointment
+              </Link>
+            </p>
 
-          {/* Description */}
-          <div>
-            <p className="font-sans uppercase mb-3" style={{ fontSize: 10, letterSpacing: '0.3em', color: '#aaa' }}>About this Ring</p>
-            <p className="font-sans" style={{ fontSize: 13, color: '#555', lineHeight: 1.8, fontWeight: 300 }}>
+            {/* Divider */}
+            <div className="mt-10 mb-8" style={{ height: 1, backgroundColor: BORDER }} />
+
+            {/* Description */}
+            <p className="font-sans" style={{ fontSize: 13, color: '#666', lineHeight: 1.85, fontWeight: 300, letterSpacing: '0.02em' }}>
               {ring.description}
             </p>
-          </div>
 
-          {/* Service promises */}
-          <div className="flex flex-col gap-3 pt-2">
-            {[
-              'Complimentary Delivery & Returns',
-              'Certificate of Authenticity',
-              'Lifetime Resizing & Cleaning',
-              'Gift-Ready Presentation Box',
-            ].map(item => (
-              <div key={item} className="flex items-center gap-3">
-                <div style={{ width: 3, height: 3, borderRadius: '50%', backgroundColor: '#ccc', flexShrink: 0 }} />
-                <span className="font-sans" style={{ fontSize: 12, color: '#888', fontWeight: 300 }}>{item}</span>
-              </div>
-            ))}
-          </div>
+            {/* Service promises — thin rule between, exactly Tiffany */}
+            <div className="mt-10">
+              {[
+                'Complimentary shipping on all orders',
+                'Complimentary gift packaging',
+                'Free engraving service',
+                'Lifetime warranty & servicing',
+              ].map(item => (
+                <div
+                  key={item}
+                  className="flex items-center gap-3 py-4 font-sans"
+                  style={{ fontSize: 12, color: '#888', borderTop: `1px solid ${BORDER}`, fontWeight: 300, letterSpacing: '0.02em' }}
+                >
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: '#ccc', flexShrink: 0 }} />
+                  {item}
+                </div>
+              ))}
+            </div>
 
+          </div>
         </div>
       </div>
 
-      {/* ── DIAMOND SELECTOR DRAWER ────────────────────────────────────── */}
+      {/* ── DIAMOND SELECTOR DRAWER ────────────────────────────────────────── */}
       {diamondOpen && (
-        <>
+        <div
+          className="fixed inset-0 z-40"
+          onClick={(e) => { if (e.target === e.currentTarget) setDiamondOpen(false); }}
+        >
+          <div className="absolute inset-0 bg-black/15" />
           <div
-            className="fixed inset-0 z-40 bg-black/20"
-            onClick={() => setDiamondOpen(false)}
-          />
-          <div
-            className="fixed right-0 top-0 bottom-0 z-50 flex flex-col bg-white"
-            style={{ width: 'min(520px, 95vw)', boxShadow: '-4px 0 32px rgba(0,0,0,0.1)' }}
+            className="absolute right-0 top-0 bottom-0 flex flex-col bg-white"
+            style={{ width: 'min(520px, 96vw)', boxShadow: '-4px 0 40px rgba(0,0,0,0.10)' }}
           >
             <DiamondSelector
               onClose={() => setDiamondOpen(false)}
@@ -368,9 +302,8 @@ export function RingDetailPage({ slug }: Props) {
               selectedId={selectedDiamond?.id ?? null}
             />
           </div>
-        </>
+        </div>
       )}
-
-    </div>
+    </>
   );
 }

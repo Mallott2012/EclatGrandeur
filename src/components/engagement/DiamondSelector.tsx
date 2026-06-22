@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { X, ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react';
+import { X, ChevronUp, ChevronDown } from 'lucide-react';
 
-const GREEN = '#1a2b1a';
+const G      = '#1a2b1a';
+const BORDER = '#e8e8e8';
 
-const COLORS    = ['D', 'E', 'F', 'G', 'H', 'I'];
-const CLARITIES = ['VS2', 'VS1', 'VVS2', 'VVS1', 'IF', 'FL'];
+const COLORS    = ['D', 'E', 'F', 'G', 'H', 'I'] as const;
+const CLARITIES = ['VS2', 'VS1', 'VVS2', 'VVS1', 'IF', 'FL'] as const;
 
-// Placeholder diamond data matching Tiffany table format
 const DIAMONDS = [
   { id: 'd1',  carat: 1.00, color: 'D', clarity: 'VVS1', cut: 'Excellent', price: 8500  },
   { id: 'd2',  carat: 1.01, color: 'E', clarity: 'VS1',  cut: 'Excellent', price: 7200  },
@@ -27,18 +27,12 @@ const DIAMONDS = [
   { id: 'd15', carat: 2.10, color: 'G', clarity: 'VS2',  cut: 'Excellent', price: 16800 },
 ];
 
-type SortKey = 'carat' | 'color' | 'clarity' | 'price';
-type SortDir = 'asc' | 'desc';
+type Diamond  = typeof DIAMONDS[0];
+type SortKey  = 'carat' | 'color' | 'clarity' | 'price';
+type SortDir  = 'asc' | 'desc';
 
-interface Props {
-  onClose: () => void;
-  onSelect: (diamond: typeof DIAMONDS[0]) => void;
-  selectedId: string | null;
-}
-
-function RangeSlider({
-  label, min, max, value, onChange, format,
-}: {
+// ─── Dual range slider ────────────────────────────────────────────────────────
+function RangeSlider({ label, min, max, value, onChange, format }: {
   label: string;
   min: number; max: number;
   value: [number, number];
@@ -46,66 +40,58 @@ function RangeSlider({
   format: (n: number) => string;
 }) {
   const pct = (v: number) => ((v - min) / (max - min)) * 100;
-
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.25em', color: '#aaa' }}>{label}</span>
-      </div>
-      <div className="flex items-center gap-3 mb-3">
-        <span className="font-sans border px-2 py-1" style={{ fontSize: 11, color: GREEN, borderColor: '#ddd', minWidth: 52, textAlign: 'center' }}>
+      <p className="font-sans uppercase mb-3" style={{ fontSize: 9, letterSpacing: '0.28em', color: '#bbb' }}>{label}</p>
+      <div className="flex items-center gap-2 mb-4">
+        <span className="font-sans border px-2 py-1 text-center" style={{ fontSize: 11, color: G, borderColor: BORDER, minWidth: 56 }}>
           {format(value[0])}
         </span>
-        <span className="font-sans" style={{ fontSize: 11, color: '#ccc' }}>—</span>
-        <span className="font-sans border px-2 py-1" style={{ fontSize: 11, color: GREEN, borderColor: '#ddd', minWidth: 52, textAlign: 'center' }}>
+        <span style={{ fontSize: 11, color: '#ccc' }}>—</span>
+        <span className="font-sans border px-2 py-1 text-center" style={{ fontSize: 11, color: G, borderColor: BORDER, minWidth: 56 }}>
           {format(value[1])}
         </span>
       </div>
       {/* Track */}
-      <div className="relative h-px bg-gray-200 mx-1">
-        <div
-          className="absolute h-px bg-gray-800"
-          style={{ left: `${pct(value[0])}%`, right: `${100 - pct(value[1])}%` }}
+      <div className="relative h-px mx-1" style={{ backgroundColor: '#e0e0e0' }}>
+        <div className="absolute h-px" style={{ backgroundColor: G, left: `${pct(value[0])}%`, right: `${100 - pct(value[1])}%` }} />
+        <input type="range" min={min} max={max} step={(max - min) / 100} value={value[0]}
+          onChange={e => { const v = Number(e.target.value); if (v < value[1]) onChange([v, value[1]]); }}
+          className="absolute inset-0 w-full opacity-0 cursor-pointer" style={{ height: 20, top: -10 }}
         />
-        {/* Min thumb */}
-        <input
-          type="range" min={min} max={max} step={(max - min) / 100}
-          value={value[0]}
-          onChange={e => {
-            const v = Number(e.target.value);
-            if (v < value[1]) onChange([v, value[1]]);
-          }}
-          className="absolute inset-0 w-full opacity-0 cursor-pointer h-4 -top-2"
+        <input type="range" min={min} max={max} step={(max - min) / 100} value={value[1]}
+          onChange={e => { const v = Number(e.target.value); if (v > value[0]) onChange([value[0], v]); }}
+          className="absolute inset-0 w-full opacity-0 cursor-pointer" style={{ height: 20, top: -10 }}
         />
-        {/* Max thumb */}
-        <input
-          type="range" min={min} max={max} step={(max - min) / 100}
-          value={value[1]}
-          onChange={e => {
-            const v = Number(e.target.value);
-            if (v > value[0]) onChange([value[0], v]);
-          }}
-          className="absolute inset-0 w-full opacity-0 cursor-pointer h-4 -top-2"
-        />
-        <div className="absolute w-3 h-3 rounded-full bg-white border-2 border-gray-800 -top-1.5 -translate-x-1/2 pointer-events-none" style={{ left: `${pct(value[0])}%` }} />
-        <div className="absolute w-3 h-3 rounded-full bg-white border-2 border-gray-800 -top-1.5 -translate-x-1/2 pointer-events-none" style={{ left: `${pct(value[1])}%` }} />
+        <span className="absolute pointer-events-none" style={{ left: `${pct(value[0])}%`, top: -5, transform: 'translateX(-50%)', width: 11, height: 11, borderRadius: '50%', backgroundColor: '#fff', border: `2px solid ${G}`, display: 'inline-block' }} />
+        <span className="absolute pointer-events-none" style={{ left: `${pct(value[1])}%`, top: -5, transform: 'translateX(-50%)', width: 11, height: 11, borderRadius: '50%', backgroundColor: '#fff', border: `2px solid ${G}`, display: 'inline-block' }} />
       </div>
     </div>
   );
 }
 
-export function DiamondSelector({ onClose, onSelect, selectedId }: Props) {
-  const [activeTab,    setActiveTab]    = useState<'select' | 'guide'>('select');
-  const [caratRange,   setCaratRange]   = useState<[number, number]>([0.5, 3.0]);
-  const [priceRange,   setPriceRange]   = useState<[number, number]>([5000, 25000]);
-  const [activeColors, setActiveColors] = useState<string[]>([]);
-  const [activeClarities, setActiveClarities] = useState<string[]>([]);
-  const [showAdvanced, setShowAdvanced] = useState(true);
-  const [sortKey,      setSortKey]      = useState<SortKey>('carat');
-  const [sortDir,      setSortDir]      = useState<SortDir>('asc');
+// ─── Props ────────────────────────────────────────────────────────────────────
+interface Props {
+  onClose:    () => void;
+  onSelect:   (d: Diamond) => void;
+  selectedId: string | null;
+}
 
-  const toggleColor   = (c: string) => setActiveColors(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
-  const toggleClarity = (c: string) => setActiveClarities(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
+export function DiamondSelector({ onClose, onSelect, selectedId }: Props) {
+  const [activeTab,      setActiveTab]      = useState<'select' | 'guide'>('select');
+  const [caratRange,     setCaratRange]     = useState<[number, number]>([0.5, 3.0]);
+  const [priceRange,     setPriceRange]     = useState<[number, number]>([5000, 25000]);
+  const [activeColors,   setActiveColors]   = useState<string[]>([]);
+  const [activeClarities,setActiveClarities]= useState<string[]>([]);
+  const [sortKey,        setSortKey]        = useState<SortKey>('carat');
+  const [sortDir,        setSortDir]        = useState<SortDir>('asc');
+  const [hoveredId,      setHoveredId]      = useState<string | null>(null);
+
+  // current selection in the table (before confirming)
+  const [pendingId, setPendingId] = useState<string | null>(selectedId);
+
+  const toggleColor   = (c: string) => setActiveColors(p => p.includes(c) ? p.filter(x => x !== c) : [...p, c]);
+  const toggleClarity = (c: string) => setActiveClarities(p => p.includes(c) ? p.filter(x => x !== c) : [...p, c]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -117,8 +103,8 @@ export function DiamondSelector({ onClose, onSelect, selectedId }: Props) {
 
   const filtered = DIAMONDS
     .filter(d => d.carat >= caratRange[0] && d.carat <= caratRange[1])
-    .filter(d => d.price >= priceRange[0] && d.price <= priceRange[1])
-    .filter(d => activeColors.length === 0    || activeColors.includes(d.color))
+    .filter(d => d.price >= priceRange[0]  && d.price <= priceRange[1])
+    .filter(d => activeColors.length    === 0 || activeColors.includes(d.color))
     .filter(d => activeClarities.length === 0 || activeClarities.includes(d.clarity))
     .sort((a, b) => {
       let diff = 0;
@@ -129,65 +115,67 @@ export function DiamondSelector({ onClose, onSelect, selectedId }: Props) {
       return sortDir === 'asc' ? diff : -diff;
     });
 
-  const SortIcon = ({ col }: { col: SortKey }) => (
-    sortKey === col
-      ? sortDir === 'asc'
-        ? <ChevronUp className="w-2.5 h-2.5 inline ml-0.5" strokeWidth={2} />
-        : <ChevronDown className="w-2.5 h-2.5 inline ml-0.5" strokeWidth={2} />
-      : <ArrowUpDown className="w-2.5 h-2.5 inline ml-0.5 opacity-30" strokeWidth={2} />
-  );
+  function SortArrow({ col }: { col: SortKey }) {
+    if (sortKey !== col) return <span style={{ display: 'inline-block', width: 8, marginLeft: 2, opacity: 0.25, fontSize: 8 }}>↕</span>;
+    return sortDir === 'asc'
+      ? <ChevronUp   className="inline-block ml-0.5 w-2.5 h-2.5" strokeWidth={2} />
+      : <ChevronDown className="inline-block ml-0.5 w-2.5 h-2.5" strokeWidth={2} />;
+  }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white">
 
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid #eee' }}>
-        <div className="flex gap-6">
+      {/* ── HEADER — tabs + close ───────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-7 pt-6 pb-0" style={{ borderBottom: `1px solid ${BORDER}` }}>
+        <div className="flex gap-7">
           {(['select', 'guide'] as const).map(tab => (
             <button
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className="font-sans pb-1"
+              className="font-sans pb-4"
               style={{
-                fontSize: 13,
-                color: activeTab === tab ? GREEN : '#aaa',
-                fontWeight: activeTab === tab ? 500 : 300,
+                fontSize: 13, color: activeTab === tab ? G : '#aaa',
+                fontWeight: activeTab === tab ? 400 : 300,
                 letterSpacing: '0.04em',
-                borderBottom: activeTab === tab ? `1px solid ${GREEN}` : '1px solid transparent',
+                borderBottom: activeTab === tab ? `1px solid ${G}` : '1px solid transparent',
+                transition: 'color 0.15s',
               }}
             >
               {tab === 'select' ? 'Select a Diamond' : 'Guide to Diamonds'}
             </button>
           ))}
         </div>
-        <button type="button" onClick={onClose} aria-label="Close">
-          <X className="w-4 h-4" strokeWidth={1.5} style={{ color: '#999' }} />
+        <button type="button" onClick={onClose} aria-label="Close" className="pb-4">
+          <X className="w-4 h-4" strokeWidth={1.5} style={{ color: '#aaa' }} />
         </button>
       </div>
 
-      {activeTab === 'guide' ? (
-        <div className="flex-1 px-6 py-8 overflow-y-auto">
-          <h3 className="font-display" style={{ fontSize: 22, fontWeight: 300, color: GREEN, marginBottom: 16 }}>
-            The Four Cs
-          </h3>
+      {/* ── GUIDE TAB ───────────────────────────────────────────────────── */}
+      {activeTab === 'guide' && (
+        <div className="flex-1 overflow-y-auto px-7 py-8">
+          <h3 className="font-display mb-6" style={{ fontSize: 24, fontWeight: 300, color: G }}>The Four Cs</h3>
           {[
-            { title: 'Cut', desc: 'The most important factor in a diamond\'s beauty. An excellent cut maximises brilliance, fire, and scintillation.' },
-            { title: 'Colour', desc: 'Graded D (colourless) to Z. D–F are colourless and most rare; G–H appear near-colourless to the naked eye.' },
+            { title: 'Cut',     desc: 'The most important factor in a diamond\'s beauty. An excellent cut maximises brilliance, fire, and scintillation.' },
+            { title: 'Colour',  desc: 'Graded D (colourless) to Z. D–F are colourless and most rare; G–H appear near-colourless to the naked eye.' },
             { title: 'Clarity', desc: 'Measures inclusions and blemishes. FL (flawless) to VS1 are eye-clean — inclusions invisible without magnification.' },
-            { title: 'Carat', desc: 'The weight of the diamond. One carat = 0.2 grams. Larger diamonds are rarer and exponentially more valuable.' },
+            { title: 'Carat',   desc: 'The weight of the diamond. One carat = 0.2 grams. Larger diamonds are rarer and exponentially more valuable.' },
           ].map(item => (
-            <div key={item.title} className="mb-6" style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: 20 }}>
-              <p className="font-sans uppercase mb-2" style={{ fontSize: 10, letterSpacing: '0.3em', color: '#aaa' }}>{item.title}</p>
-              <p className="font-sans" style={{ fontSize: 13, color: '#555', lineHeight: 1.7, fontWeight: 300 }}>{item.desc}</p>
+            <div key={item.title} className="py-6" style={{ borderBottom: `1px solid ${BORDER}` }}>
+              <p className="font-sans uppercase mb-2" style={{ fontSize: 9, letterSpacing: '0.28em', color: '#bbb' }}>{item.title}</p>
+              <p className="font-sans" style={{ fontSize: 13, color: '#555', lineHeight: 1.8, fontWeight: 300 }}>{item.desc}</p>
             </div>
           ))}
         </div>
-      ) : (
+      )}
+
+      {/* ── SELECT TAB ──────────────────────────────────────────────────── */}
+      {activeTab === 'select' && (
         <>
-          {/* Filters */}
-          <div className="px-6 py-5 flex flex-col gap-6" style={{ borderBottom: '1px solid #eee' }}>
-            <div className="grid grid-cols-2 gap-6">
+          {/* Filters section */}
+          <div className="px-7 py-6" style={{ borderBottom: `1px solid ${BORDER}` }}>
+            {/* Two range sliders side by side */}
+            <div className="grid grid-cols-2 gap-8 mb-7">
               <RangeSlider
                 label="Carat Weight"
                 min={0.5} max={3.0}
@@ -200,159 +188,180 @@ export function DiamondSelector({ onClose, onSelect, selectedId }: Props) {
                 min={2000} max={30000}
                 value={priceRange}
                 onChange={setPriceRange}
-                format={n => `£${(n / 1000).toFixed(0)}k`}
+                format={n => `£${Math.round(n / 1000)}k`}
               />
             </div>
 
-            {/* Toggle colour/clarity */}
-            <button
-              type="button"
-              onClick={() => setShowAdvanced(v => !v)}
-              className="flex items-center gap-1.5 font-sans self-start"
-              style={{ fontSize: 10, color: '#bbb', letterSpacing: '0.15em', textTransform: 'uppercase' }}
-            >
-              {showAdvanced ? 'Hide filters' : 'Colour & Clarity'}
-              {showAdvanced ? <ChevronUp className="w-3 h-3" strokeWidth={1.5} /> : <ChevronDown className="w-3 h-3" strokeWidth={1.5} />}
-            </button>
-
-            {showAdvanced && (
-              <div className="grid grid-cols-2 gap-6">
-                {/* Color */}
-                <div>
-                  <p className="font-sans uppercase mb-3" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#aaa' }}>Colour</p>
-                  <div className="flex gap-2">
-                    {COLORS.map(c => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => toggleColor(c)}
-                        className="flex items-center justify-center font-sans border rounded-full transition-colors"
-                        style={{
-                          width: 32, height: 32, fontSize: 11,
-                          borderColor: activeColors.includes(c) ? GREEN : '#ddd',
-                          backgroundColor: activeColors.includes(c) ? GREEN : '#fff',
-                          color: activeColors.includes(c) ? '#fff' : '#444',
-                          fontWeight: 400,
-                        }}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Clarity */}
-                <div>
-                  <p className="font-sans uppercase mb-3" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#aaa' }}>Clarity</p>
-                  <div className="flex flex-wrap gap-2">
-                    {CLARITIES.map(c => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => toggleClarity(c)}
-                        className="font-sans border px-2 py-1 transition-colors"
-                        style={{
-                          fontSize: 10, letterSpacing: '0.05em',
-                          borderColor: activeClarities.includes(c) ? GREEN : '#ddd',
-                          backgroundColor: activeClarities.includes(c) ? GREEN : '#fff',
-                          color: activeClarities.includes(c) ? '#fff' : '#444',
-                        }}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+            {/* Colour row — letter circles, exactly Tiffany */}
+            <div className="mb-5">
+              <p className="font-sans uppercase mb-3" style={{ fontSize: 9, letterSpacing: '0.28em', color: '#bbb' }}>Colour</p>
+              <div className="flex gap-2">
+                {COLORS.map(c => {
+                  const on = activeColors.includes(c);
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => toggleColor(c)}
+                      className="flex items-center justify-center font-sans rounded-full"
+                      style={{
+                        width: 34, height: 34, fontSize: 11,
+                        border: `1px solid ${on ? G : '#ddd'}`,
+                        backgroundColor: on ? G : '#fff',
+                        color: on ? '#fff' : '#555',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {c}
+                    </button>
+                  );
+                })}
               </div>
-            )}
+            </div>
+
+            {/* Clarity row — pill buttons, exactly Tiffany */}
+            <div>
+              <p className="font-sans uppercase mb-3" style={{ fontSize: 9, letterSpacing: '0.28em', color: '#bbb' }}>Clarity</p>
+              <div className="flex flex-wrap gap-2">
+                {CLARITIES.map(c => {
+                  const on = activeClarities.includes(c);
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => toggleClarity(c)}
+                      className="font-sans px-3 py-1.5"
+                      style={{
+                        fontSize: 10, letterSpacing: '0.08em',
+                        border: `1px solid ${on ? G : '#ddd'}`,
+                        backgroundColor: on ? G : '#fff',
+                        color: on ? '#fff' : '#555',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {c}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
-          {/* Results table */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="px-6 pt-4 pb-2 flex items-center justify-between">
-              <span className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.3em', color: '#aaa' }}>
-                Results
-              </span>
-              <span className="font-sans" style={{ fontSize: 11, color: '#aaa' }}>{filtered.length} diamonds</span>
-            </div>
-
-            {/* Column headers */}
-            <div
-              className="grid px-6 pb-2"
-              style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr 32px', borderBottom: '1px solid #eee' }}
+          {/* Results header */}
+          <div className="flex items-center justify-between px-7 pt-4 pb-2">
+            <span className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.28em', color: '#bbb' }}>Results</span>
+            <button
+              type="button"
+              onClick={() => { setActiveColors([]); setActiveClarities([]); setCaratRange([0.5, 3.0]); setPriceRange([5000, 25000]); }}
+              className="font-sans"
+              style={{ fontSize: 10, color: '#bbb', letterSpacing: '0.1em', textDecoration: 'underline', textUnderlineOffset: 3 }}
             >
-              {(['carat', 'color', 'clarity', 'price'] as SortKey[]).map(col => (
-                <button
-                  key={col}
-                  type="button"
-                  onClick={() => toggleSort(col)}
-                  className="font-sans uppercase text-left flex items-center gap-0.5"
-                  style={{ fontSize: 9, letterSpacing: '0.25em', color: sortKey === col ? GREEN : '#aaa' }}
-                >
-                  {col === 'carat' ? 'Carat Wt' : col.charAt(0).toUpperCase() + col.slice(1)}
-                  <SortIcon col={col} />
-                </button>
-              ))}
-            </div>
+              Hide Filters
+            </button>
+          </div>
 
+          {/* Table headers — exactly Tiffany: CARAT WEIGHT ↑ COLOR ↑ CLARITY ↑ PRICE ↑ */}
+          <div
+            className="grid px-7 py-2"
+            style={{ gridTemplateColumns: '1fr 0.7fr 0.9fr 1fr 28px', borderBottom: `1px solid ${BORDER}` }}
+          >
+            {(['carat', 'color', 'clarity', 'price'] as SortKey[]).map(col => (
+              <button
+                key={col}
+                type="button"
+                onClick={() => toggleSort(col)}
+                className="font-sans uppercase text-left"
+                style={{
+                  fontSize: 9, letterSpacing: '0.22em',
+                  color: sortKey === col ? G : '#bbb',
+                  fontWeight: sortKey === col ? 500 : 400,
+                }}
+              >
+                {col === 'carat' ? 'Carat Wt' : col.charAt(0).toUpperCase() + col.slice(1)}
+                <SortArrow col={col} />
+              </button>
+            ))}
+            <span />
+          </div>
+
+          {/* Scrollable rows */}
+          <div className="flex-1 overflow-y-auto">
             {filtered.length === 0 ? (
-              <div className="py-12 text-center px-6">
-                <p className="font-sans" style={{ fontSize: 13, color: '#bbb' }}>No diamonds match your filters.</p>
+              <div className="py-16 text-center px-7">
+                <p className="font-sans" style={{ fontSize: 13, color: '#ccc' }}>No diamonds match your filters.</p>
               </div>
             ) : (
-              <div>
-                {filtered.map(d => (
+              filtered.map(d => {
+                const isPending = pendingId === d.id;
+                const isHovered = hoveredId === d.id;
+                return (
                   <button
                     key={d.id}
                     type="button"
-                    onClick={() => onSelect(d)}
-                    className="grid w-full px-6 py-3.5 text-left transition-colors hover:bg-gray-50"
+                    onClick={() => setPendingId(d.id)}
+                    onMouseEnter={() => setHoveredId(d.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                    className="grid w-full px-7 py-4 text-left"
                     style={{
-                      gridTemplateColumns: '1fr 1fr 1fr 1fr 32px',
-                      borderBottom: '1px solid #f5f5f5',
-                      backgroundColor: selectedId === d.id ? '#f8f8f6' : undefined,
+                      gridTemplateColumns: '1fr 0.7fr 0.9fr 1fr 28px',
+                      borderBottom: `1px solid ${BORDER}`,
+                      backgroundColor: isPending || isHovered ? '#f9f9f9' : '#fff',
+                      transition: 'background-color 0.12s',
                     }}
                   >
-                    <span className="font-sans" style={{ fontSize: 12, color: GREEN }}>{d.carat.toFixed(2)}</span>
+                    <span className="font-sans" style={{ fontSize: 12, color: G }}>{d.carat.toFixed(2)}</span>
                     <span className="font-sans" style={{ fontSize: 12, color: '#555' }}>{d.color}</span>
                     <span className="font-sans" style={{ fontSize: 12, color: '#555' }}>{d.clarity}</span>
                     <span className="font-sans" style={{ fontSize: 12, color: '#555' }}>£{d.price.toLocaleString('en-GB')}</span>
+                    {/* Radio circle — exactly Tiffany */}
                     <span
-                      className="flex items-center justify-center rounded-full border-2 self-center"
+                      className="self-center flex-shrink-0 flex items-center justify-center rounded-full"
                       style={{
                         width: 18, height: 18,
-                        borderColor: selectedId === d.id ? GREEN : '#ccc',
-                        backgroundColor: selectedId === d.id ? GREEN : '#fff',
+                        border: `1.5px solid ${isPending ? G : '#ccc'}`,
+                        backgroundColor: '#fff',
                       }}
-                    />
+                    >
+                      {isPending && (
+                        <span style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: G, display: 'block' }} />
+                      )}
+                    </span>
                   </button>
-                ))}
-              </div>
+                );
+              })
             )}
           </div>
 
-          {/* Footer */}
+          {/* Footer — expert link left, SELECT THIS DIAMOND right */}
           <div
-            className="grid px-4 py-3 gap-3"
-            style={{ gridTemplateColumns: '1fr 1fr', borderTop: '1px solid #eee' }}
+            className="flex items-center gap-3 px-5 py-4"
+            style={{ borderTop: `1px solid ${BORDER}` }}
           >
             <button
               type="button"
-              className="font-sans uppercase py-3 border"
-              style={{ fontSize: 10, letterSpacing: '0.2em', color: GREEN, borderColor: GREEN }}
+              className="flex-1 font-sans uppercase py-3.5"
+              style={{
+                fontSize: 10, letterSpacing: '0.2em',
+                color: G, border: `1px solid ${G}`,
+                backgroundColor: '#fff',
+              }}
             >
               Need an Expert?
             </button>
             <button
               type="button"
+              disabled={!pendingId}
               onClick={() => {
-                const sel = filtered.find(d => d.id === selectedId);
-                if (sel) onSelect(sel);
-                onClose();
+                const d = filtered.find(x => x.id === pendingId) ?? DIAMONDS.find(x => x.id === pendingId);
+                if (d) onSelect(d);
               }}
-              disabled={!selectedId}
-              className="font-sans uppercase py-3 transition-opacity disabled:opacity-40"
-              style={{ fontSize: 10, letterSpacing: '0.2em', backgroundColor: GREEN, color: '#fff' }}
+              className="flex-1 font-sans uppercase py-3.5"
+              style={{
+                fontSize: 10, letterSpacing: '0.2em',
+                backgroundColor: pendingId ? G : '#ccc',
+                color: '#fff',
+                transition: 'background-color 0.15s',
+              }}
             >
               Select This Diamond
             </button>
