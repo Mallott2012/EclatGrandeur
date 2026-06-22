@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useFormState as useActionState } from 'react-dom'
 import { useFormStatus } from 'react-dom'
 import type { DiamondSimpleResult } from '@/app/admin/(console)/diamonds/types'
 import { DIAMOND_SIMPLE_INITIAL } from '@/app/admin/(console)/diamonds/types'

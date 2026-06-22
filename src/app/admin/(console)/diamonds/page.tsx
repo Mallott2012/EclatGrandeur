@@ -98,5 +98,4 @@ function StatusBadge({ status }: { status: DiamondStatus }) {
   }
 }
 
-// Re-export for usage
-export { CUT_LABELS, CLARITY_ORDER, COLOUR_ORDER }
+

@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useFormState as useActionState } from 'react-dom'
 import { useFormStatus } from 'react-dom'
 import {
   DIAMOND_CUTS,
