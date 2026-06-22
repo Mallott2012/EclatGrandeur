@@ -4,7 +4,6 @@ import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
-import { ShapeSelector, type DiamondShape } from './ShapeSelector';
 import type { RingSettingRecord, RingMetal } from '@/lib/ring-settings/types';
 
 const G      = '#1a2b1a';
@@ -42,7 +41,6 @@ const RINGS = [
 interface Props { settings: RingSettingRecord[]; }
 
 export function EngagementRingPage({ settings: _settings }: Props) {
-  const [activeShape,   setActiveShape]   = useState<DiamondShape | null>(null);
   const [activeSetting, setActiveSetting] = useState<string | null>(null);
   const [activeMetal,   setActiveMetal]   = useState<RingMetal | null>(null);
   const [filtersOpen,   setFiltersOpen]   = useState(false);
@@ -54,11 +52,10 @@ export function EngagementRingPage({ settings: _settings }: Props) {
 
   const clearAll = useCallback(() => {
     setActiveSetting(null);
-    setActiveShape(null);
     setActiveMetal(null);
   }, []);
 
-  const activeFilterCount = [activeSetting, activeShape, activeMetal].filter(Boolean).length;
+  const activeFilterCount = [activeSetting, activeMetal].filter(Boolean).length;
 
   return (
     <div className="min-h-screen bg-white" style={{ color: G }}>
@@ -71,14 +68,6 @@ export function EngagementRingPage({ settings: _settings }: Props) {
         >
           Engagement Rings
         </h1>
-      </div>
-
-      {/* ── SHAPE SELECTOR ───────────────────────────────────────────────── */}
-      <div className="overflow-x-auto px-6 lg:px-14" style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, scrollbarWidth: 'none' }}>
-        <ShapeSelector
-          selected={activeShape}
-          onChange={s => setActiveShape(prev => prev === s ? null : s)}
-        />
       </div>
 
       {/* ── SORT / COUNT / FILTER BAR — sticky ───────────────────────────── */}
@@ -163,16 +152,6 @@ export function EngagementRingPage({ settings: _settings }: Props) {
             >
               {SETTINGS.find(s => s.id === activeSetting)?.label}
               <X className="w-3 h-3" strokeWidth={2} />
-            </button>
-          )}
-          {activeShape && (
-            <button
-              type="button"
-              onClick={() => setActiveShape(null)}
-              className="flex items-center gap-1.5 font-sans px-3 py-1 capitalize"
-              style={{ fontSize: 11, color: G, border: `1px solid ${G}`, letterSpacing: '0.05em' }}
-            >
-              {activeShape} <X className="w-3 h-3" strokeWidth={2} />
             </button>
           )}
           {activeMetal && (
