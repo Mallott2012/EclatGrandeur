@@ -3,11 +3,12 @@
 import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronDown, SlidersHorizontal, X, ChevronRight } from 'lucide-react';
+import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import { ShapeSelector, type DiamondShape } from './ShapeSelector';
 import type { RingSettingRecord, RingMetal } from '@/lib/ring-settings/types';
 
 const GREEN = '#1a2b1a';
+const BORDER = '#e8e8e8';
 
 const SETTINGS = [
   { id: 'solitaire',   label: 'Solitaire' },
@@ -26,16 +27,23 @@ const METALS: { id: RingMetal; label: string }[] = [
 
 const SORT_OPTIONS = ['Featured', 'Price: Low to High', 'Price: High to Low', 'Newest'];
 
+// Tiffany-style ring images scraped from their site as placeholders
+const TIFFANY_IMAGES = [
+  'https://media.tiffany.com/is/image/Tiffany/EcomItemM/the-tiffany-setting-engagement-ring-11254893_949996_ED.jpg',
+  'https://media.tiffany.com/is/image/Tiffany/EcomItemM/the-tiffany-setting-engagement-ring-11254893_1013096_ED.jpg',
+  'https://media.tiffany.com/is/image/Tiffany/EcomItemM/pave-tiffany-setting-engagement-ring-GRP07454_949996_ED.jpg',
+  'https://media.tiffany.com/is/image/Tiffany/EcomItemM/tiffany-harmony-round-brilliant-engagement-ring-60696180_979395_ED.jpg',
+  'https://media.tiffany.com/is/image/Tiffany/EcomItemM/tiffany-true-engagement-ring-with-a-round-brilliant-diamond-and-a-tiffany-true-band-62128830_979395_ED.jpg',
+  'https://media.tiffany.com/is/image/Tiffany/EcomItemM/tiffany-soleste-halo-engagement-ring-GRP07459_979395_ED.jpg',
+];
+
 const PLACEHOLDER_RINGS = [
-  { id: 'p1', name: 'The Éclat Solitaire',      subtitle: 'Engagement Ring in Platinum',          price: 'Starting from £4,800',  image: '/images/engagement/hero-solitaire.png',   setting: 'solitaire',   slug: 'eclat-solitaire',     materials: 3 },
-  { id: 'p2', name: 'Lumière Halo',              subtitle: 'Engagement Ring with Diamond Halo',    price: 'Starting from £6,200',  image: '/images/engagement/hero-halo.png',         setting: 'halo',        slug: 'lumiere-halo',        materials: 2 },
-  { id: 'p3', name: 'Trilogy Three Stone',       subtitle: 'Engagement Ring in 18k White Gold',    price: 'Starting from £7,500',  image: '/images/engagement/hero-three-stone.png',  setting: 'three-stone', slug: 'trilogy-three-stone', materials: 3 },
-  { id: 'p4', name: 'Éclat Pavé',               subtitle: 'Engagement Ring with Pavé Band',       price: 'Starting from £3,900',  image: '/images/engagement/hero-pave.png',         setting: 'pave',        slug: 'eclat-pave',          materials: 2 },
-  { id: 'p5', name: 'Signature Solitaire',       subtitle: 'Engagement Ring in Platinum',          price: 'Starting from £5,200',  image: '/images/engagement/hero-solitaire.png',   setting: 'solitaire',   slug: 'signature-solitaire', materials: 4 },
-  { id: 'p6', name: 'Constellation Halo',        subtitle: 'Engagement Ring in 18k Yellow Gold',   price: 'Starting from £8,100',  image: '/images/engagement/hero-halo.png',         setting: 'halo',        slug: 'constellation-halo',  materials: 3 },
-  { id: 'p7', name: 'Classic Round Brilliant',   subtitle: 'Engagement Ring in Platinum',          price: 'Starting from £5,500',  image: '/images/engagement/hero-collection.png',  setting: 'solitaire',   slug: 'classic-round',       materials: 2 },
-  { id: 'p8', name: 'Vintage Pavé Band',         subtitle: 'Engagement Ring with Diamond Accents', price: 'Starting from £2,475',  image: '/images/engagement/hero-pave.png',         setting: 'vintage',     slug: 'vintage-pave',        materials: 3 },
-  { id: 'p9', name: 'Oval Side Stone',           subtitle: 'Engagement Ring in 18k Rose Gold',     price: 'Starting from £10,300', image: '/images/engagement/hero-three-stone.png',  setting: 'three-stone', slug: 'oval-side-stone',     materials: 2 },
+  { id: 'p1', name: 'The Éclat Solitaire',    subtitle: 'Engagement Ring in Platinum',           price: 'Starting from £4,800',  image: TIFFANY_IMAGES[0], setting: 'solitaire',   slug: 'eclat-solitaire',     materials: 3 },
+  { id: 'p2', name: 'The Éclat Solitaire',    subtitle: 'Engagement Ring in 18k Yellow Gold',    price: 'Starting from £4,800',  image: TIFFANY_IMAGES[1], setting: 'solitaire',   slug: 'eclat-solitaire-gold',materials: 3 },
+  { id: 'p3', name: 'Pavé Éclat Setting',     subtitle: 'Engagement Ring with Pavé Band',        price: 'Starting from £28,600', image: TIFFANY_IMAGES[2], setting: 'pave',        slug: 'pave-eclat',          materials: 2 },
+  { id: 'p4', name: 'Harmonie Solitaire',     subtitle: 'Engagement Ring in Platinum',           price: 'Starting from £6,100',  image: TIFFANY_IMAGES[3], setting: 'solitaire',   slug: 'harmonie-solitaire',  materials: 4 },
+  { id: 'p5', name: 'Éternité Solitaire',     subtitle: 'Engagement Ring with Diamond Band',     price: 'Starting from £5,200',  image: TIFFANY_IMAGES[4], setting: 'solitaire',   slug: 'eternite-solitaire',  materials: 3 },
+  { id: 'p6', name: 'Lumière Halo',           subtitle: 'Engagement Ring with Diamond Halo',     price: 'Starting from £6,200',  image: TIFFANY_IMAGES[5], setting: 'halo',        slug: 'lumiere-halo',        materials: 3 },
 ];
 
 interface Props { settings: RingSettingRecord[]; }
@@ -60,59 +68,40 @@ export function EngagementRingPage({ settings }: Props) {
   const activeFilterCount = [activeSetting, activeShape, activeMetal].filter(Boolean).length;
 
   return (
-    <div style={{ backgroundColor: '#fff', color: GREEN, minHeight: '100vh' }}>
+    <div style={{ backgroundColor: '#fff', color: GREEN }}>
 
-      {/* ── PAGE HEADER ──────────────────────────────────────────────────── */}
-      <div className="px-6 lg:px-16 pt-10 pb-6">
-        <nav className="flex items-center gap-2 mb-6" aria-label="Breadcrumb">
-          <Link href="/" className="font-sans" style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Home</Link>
-          <ChevronRight className="w-2.5 h-2.5" style={{ color: '#ddd' }} strokeWidth={1.5} />
-          <span className="font-sans" style={{ fontSize: 11, color: '#888', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Engagement Rings</span>
-        </nav>
-        <h1
-          className="font-display"
-          style={{ fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 300, letterSpacing: '0.06em', lineHeight: 1.05, color: '#111' }}
-        >
-          Engagement Rings
-        </h1>
-        <p className="font-sans mt-4 max-w-md" style={{ fontSize: 13, color: '#aaa', lineHeight: 1.8, fontWeight: 300, letterSpacing: '0.02em' }}>
-          Each ring is individually handcrafted in our London atelier.
-          Choose your setting, select your diamond, and create something made to last forever.
-        </p>
-      </div>
-
-      {/* ── TOOLBAR — Sort / Count / Filters ─────────────────────────────── */}
+      {/* ── TOOLBAR: SORT BY / COUNT / FILTERS — exact Tiffany ─────────── */}
       <div
-        className="sticky top-0 z-20 flex items-center justify-between px-6 lg:px-16 bg-white"
-        style={{ height: 48, borderTop: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0' }}
+        className="flex items-center px-8 lg:px-14 bg-white"
+        style={{ height: 52, borderBottom: `1px solid ${BORDER}` }}
       >
-        {/* Sort */}
-        <div className="relative">
+        {/* Sort By */}
+        <div className="relative flex-1">
           <button
             type="button"
             onClick={() => setSortOpen(v => !v)}
-            className="flex items-center gap-1.5 font-sans"
-            style={{ fontSize: 11, letterSpacing: '0.16em', color: GREEN, textTransform: 'uppercase' }}
+            className="flex items-center gap-1.5 font-sans border px-4 py-1.5"
+            style={{ fontSize: 11, letterSpacing: '0.12em', color: GREEN, borderColor: BORDER, textTransform: 'uppercase' }}
           >
-            Sort By: <span style={{ fontWeight: 500 }}>{activeSort}</span>
+            Sort By
             <ChevronDown className="w-3 h-3" strokeWidth={1.5} />
           </button>
           {sortOpen && (
             <div
-              className="absolute top-full left-0 mt-1 bg-white border py-1 z-30"
-              style={{ minWidth: 200, borderColor: '#e5e5e5', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}
+              className="absolute top-full left-0 mt-0.5 bg-white z-30"
+              style={{ minWidth: 200, border: `1px solid ${BORDER}`, boxShadow: '0 8px 24px rgba(0,0,0,0.06)' }}
             >
               {SORT_OPTIONS.map(opt => (
                 <button
                   key={opt}
                   type="button"
                   onClick={() => { setActiveSort(opt); setSortOpen(false); }}
-                  className="block w-full text-left px-4 py-2.5 font-sans"
+                  className="block w-full text-left px-5 py-3 font-sans"
                   style={{
-                    fontSize: 12,
-                    color: activeSort === opt ? GREEN : '#555',
-                    fontWeight: activeSort === opt ? 500 : 400,
-                    backgroundColor: activeSort === opt ? '#f8f8f6' : 'transparent',
+                    fontSize: 12, color: activeSort === opt ? GREEN : '#666',
+                    fontWeight: activeSort === opt ? 500 : 300,
+                    letterSpacing: '0.03em',
+                    backgroundColor: activeSort === opt ? '#f8f8f8' : 'transparent',
                   }}
                 >
                   {opt}
@@ -122,38 +111,45 @@ export function EngagementRingPage({ settings }: Props) {
           )}
         </div>
 
-        {/* Count */}
-        <p className="font-sans" style={{ fontSize: 11, color: '#999', letterSpacing: '0.1em' }}>
-          {count} {count === 1 ? 'Product' : 'Products'}
-        </p>
+        {/* Centre: page title */}
+        <div className="flex-1 text-center">
+          <h1
+            className="font-display"
+            style={{ fontSize: 'clamp(18px, 2.5vw, 26px)', fontWeight: 300, letterSpacing: '0.04em', color: GREEN, lineHeight: 1 }}
+          >
+            Engagement Rings
+          </h1>
+          <p className="font-sans mt-0.5" style={{ fontSize: 10, color: '#bbb', letterSpacing: '0.1em' }}>
+            {count} {count === 1 ? 'product' : 'products'}
+          </p>
+        </div>
 
         {/* Filters */}
-        <button
-          type="button"
-          onClick={() => setFiltersOpen(true)}
-          className="flex items-center gap-2 font-sans"
-          style={{ fontSize: 11, letterSpacing: '0.16em', color: GREEN, textTransform: 'uppercase' }}
-        >
-          <SlidersHorizontal className="w-3.5 h-3.5" strokeWidth={1.5} />
-          Filters
-          {activeFilterCount > 0 && (
-            <span
-              className="flex items-center justify-center font-sans"
-              style={{
-                width: 16, height: 16, borderRadius: '50%',
-                backgroundColor: GREEN, color: '#fff', fontSize: 9,
-              }}
-            >
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
+        <div className="flex-1 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setFiltersOpen(true)}
+            className="flex items-center gap-2 font-sans border px-4 py-1.5"
+            style={{ fontSize: 11, letterSpacing: '0.12em', color: GREEN, borderColor: BORDER, textTransform: 'uppercase' }}
+          >
+            Filters
+            <SlidersHorizontal className="w-3 h-3" strokeWidth={1.5} />
+            {activeFilterCount > 0 && (
+              <span
+                className="flex items-center justify-center rounded-full font-sans"
+                style={{ width: 16, height: 16, backgroundColor: GREEN, color: '#fff', fontSize: 9 }}
+              >
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
-      {/* ── SHAPE ROW ─────────────────────────────────────────────────────── */}
+      {/* ── SHAPE ROW — single scrollable row exactly like Tiffany ─────── */}
       <div
-        className="px-6 lg:px-16 overflow-x-auto"
-        style={{ borderBottom: '1px solid #f0f0f0', scrollbarWidth: 'none' }}
+        className="overflow-x-auto px-8 lg:px-14"
+        style={{ borderBottom: `1px solid ${BORDER}`, scrollbarWidth: 'none' }}
       >
         <ShapeSelector
           selected={activeShape}
@@ -161,199 +157,177 @@ export function EngagementRingPage({ settings }: Props) {
         />
       </div>
 
-      {/* ── ACTIVE FILTER CHIPS ───────────────────────────────────────────── */}
+      {/* ── ACTIVE CHIPS ─────────────────────────────────────────────────── */}
       {activeFilterCount > 0 && (
-        <div className="flex items-center gap-3 px-6 lg:px-10 py-3 flex-wrap" style={{ borderBottom: '1px solid #eee' }}>
+        <div className="flex items-center gap-3 px-8 lg:px-14 py-3 flex-wrap" style={{ borderBottom: `1px solid ${BORDER}` }}>
           {activeSetting && (
             <button
               type="button"
               onClick={() => setActiveSetting(null)}
               className="flex items-center gap-1.5 font-sans px-3 py-1 border"
-              style={{ fontSize: 11, color: GREEN, borderColor: GREEN, letterSpacing: '0.08em' }}
+              style={{ fontSize: 11, color: GREEN, borderColor: GREEN, letterSpacing: '0.06em' }}
             >
               {SETTINGS.find(s => s.id === activeSetting)?.label}
-              <X className="w-3 h-3" strokeWidth={1.5} />
+              <X className="w-3 h-3" strokeWidth={2} />
             </button>
           )}
           {activeShape && (
             <button
               type="button"
               onClick={() => setActiveShape(null)}
-              className="flex items-center gap-1.5 font-sans px-3 py-1 border"
-              style={{ fontSize: 11, color: GREEN, borderColor: GREEN, letterSpacing: '0.08em', textTransform: 'capitalize' }}
+              className="flex items-center gap-1.5 font-sans px-3 py-1 border capitalize"
+              style={{ fontSize: 11, color: GREEN, borderColor: GREEN, letterSpacing: '0.06em' }}
             >
-              {activeShape}
-              <X className="w-3 h-3" strokeWidth={1.5} />
+              {activeShape} <X className="w-3 h-3" strokeWidth={2} />
             </button>
           )}
           <button
             type="button"
             onClick={clearAll}
             className="font-sans underline"
-            style={{ fontSize: 11, color: '#999', letterSpacing: '0.08em' }}
+            style={{ fontSize: 11, color: '#aaa', letterSpacing: '0.06em' }}
           >
             Clear all
           </button>
         </div>
       )}
 
-      {/* ── RING GRID ─────────────────────────────────────────────────────── */}
-      <div className="px-6 lg:px-16 py-12">
-        {rings.length === 0 ? (
-          <div className="py-24 text-center">
-            <p className="font-sans" style={{ fontSize: 14, color: '#aaa' }}>No rings match your selection.</p>
-            <button type="button" onClick={clearAll} className="font-sans underline mt-4" style={{ fontSize: 12, color: GREEN }}>
-              Clear filters
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-16">
-            {rings.map(ring => (
-              <Link key={ring.id} href={`/engagement-rings/${ring.slug}`} className="group block text-center">
+      {/* ── RING GRID — exact Tiffany: 3 cols, ring floats on white ─────── */}
+      <div className="px-8 lg:px-14 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14">
+          {rings.map(ring => (
+            <Link key={ring.id} href={`/engagement-rings/${ring.slug}`} className="group block text-center">
 
-                {/* Image — pure white bg, object-contain, subtle hover zoom */}
-                <div className="relative w-full overflow-hidden" style={{ aspectRatio: '1/1', backgroundColor: '#ffffff' }}>
-                  <Image
-                    src={ring.image}
-                    alt={ring.name}
-                    fill
-                    className="object-contain transition-transform duration-700 group-hover:scale-[1.04]"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  />
-                  {/* Materials badge — Tiffany style: bottom centre, white pill */}
-                  {ring.materials > 1 && (
-                    <div
-                      className="absolute bottom-3 left-1/2 -translate-x-1/2 font-sans"
-                      style={{
-                        fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase',
-                        backgroundColor: '#fff', border: '1px solid #e8e8e8',
-                        padding: '4px 12px', whiteSpace: 'nowrap', color: '#888',
-                      }}
-                    >
-                      {ring.materials} Materials
-                    </div>
-                  )}
-                </div>
+              {/* Ring image — pure white, NO background container, ring floats */}
+              <div
+                className="relative w-full overflow-hidden"
+                style={{ aspectRatio: '4/3', backgroundColor: '#fff' }}
+              >
+                <Image
+                  src={ring.image}
+                  alt={ring.name}
+                  fill
+                  className="object-contain transition-transform duration-700 group-hover:scale-[1.04]"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  unoptimized
+                />
+                {/* Materials badge — thin border, white bg, bottom centre, exact Tiffany */}
+                {ring.materials > 1 && (
+                  <div
+                    className="absolute bottom-3 left-1/2 -translate-x-1/2 font-sans whitespace-nowrap"
+                    style={{
+                      fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase',
+                      backgroundColor: '#fff', border: `1px solid ${BORDER}`,
+                      padding: '4px 14px', color: '#888',
+                    }}
+                  >
+                    {ring.materials} Materials
+                  </div>
+                )}
+              </div>
 
-                {/* 3-line text — centred, thin, airy */}
-                <div className="mt-4">
-                  <p className="font-sans" style={{ fontSize: 13, fontWeight: 300, color: '#111', lineHeight: 1.5, letterSpacing: '0.01em' }}>
-                    {ring.name}
-                  </p>
-                  <p className="font-sans mt-0.5" style={{ fontSize: 12, color: '#999', fontWeight: 300, lineHeight: 1.5 }}>
-                    {ring.subtitle}
-                  </p>
-                  <p className="font-sans mt-0.5" style={{ fontSize: 12, color: '#999', fontWeight: 300 }}>
-                    {ring.price}
-                  </p>
-                </div>
+              {/* 3 lines — name / subtitle / price — centred, thin weight */}
+              <div className="mt-5">
+                <p className="font-sans" style={{ fontSize: 13, fontWeight: 400, color: GREEN, letterSpacing: '0.01em', lineHeight: 1.5 }}>
+                  {ring.name}
+                </p>
+                <p className="font-sans mt-0.5" style={{ fontSize: 12, color: '#888', fontWeight: 300, lineHeight: 1.5 }}>
+                  {ring.subtitle}
+                </p>
+                <p className="font-sans mt-0.5" style={{ fontSize: 12, color: '#888', fontWeight: 300 }}>
+                  {ring.price}
+                </p>
+              </div>
 
-              </Link>
-            ))}
-          </div>
-        )}
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* ── FILTERS DRAWER ────────────────────────────────────────────────── */}
       {filtersOpen && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setFiltersOpen(false)} />
+          <div className="fixed inset-0 z-40 bg-black/15" onClick={() => setFiltersOpen(false)} />
           <div
             className="fixed right-0 top-0 bottom-0 z-50 flex flex-col bg-white overflow-y-auto"
-            style={{ width: 320, boxShadow: '-2px 0 20px rgba(0,0,0,0.1)' }}
+            style={{ width: 300, boxShadow: '-4px 0 32px rgba(0,0,0,0.08)' }}
           >
-            <div
-              className="flex items-center justify-between px-6 py-5"
-              style={{ borderBottom: '1px solid #eee' }}
-            >
-              <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.3em', color: GREEN }}>Filters</span>
-              <button type="button" onClick={() => setFiltersOpen(false)} aria-label="Close filters">
-                <X className="w-4 h-4" strokeWidth={1.5} style={{ color: GREEN }} />
+            <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: `1px solid ${BORDER}` }}>
+              <span className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.35em', color: GREEN }}>Filters</span>
+              <button type="button" onClick={() => setFiltersOpen(false)} aria-label="Close">
+                <X className="w-4 h-4" strokeWidth={1.5} style={{ color: '#999' }} />
               </button>
             </div>
 
             <div className="px-6 py-8 flex flex-col gap-10 flex-1">
-
-              {/* Setting style */}
+              {/* Setting */}
               <div>
-                <p className="font-sans uppercase mb-5" style={{ fontSize: 10, letterSpacing: '0.3em', color: '#aaa' }}>
+                <p className="font-sans uppercase mb-5" style={{ fontSize: 9, letterSpacing: '0.35em', color: '#bbb' }}>
                   Setting Style
                 </p>
-                <div className="flex flex-col">
-                  {SETTINGS.map(s => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => setActiveSetting(prev => prev === s.id ? null : s.id)}
-                      className="flex items-center justify-between py-3 font-sans text-left"
-                      style={{
-                        fontSize: 13,
-                        color: activeSetting === s.id ? GREEN : '#444',
-                        fontWeight: activeSetting === s.id ? 500 : 300,
-                        borderBottom: '1px solid #f0f0f0',
-                        letterSpacing: '0.03em',
-                      }}
-                    >
-                      {s.label}
-                      {activeSetting === s.id && (
-                        <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: GREEN, display: 'inline-block' }} />
-                      )}
-                    </button>
-                  ))}
-                </div>
+                {SETTINGS.map(s => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setActiveSetting(prev => prev === s.id ? null : s.id)}
+                    className="flex items-center justify-between w-full py-3 font-sans text-left"
+                    style={{
+                      fontSize: 13, color: activeSetting === s.id ? GREEN : '#555',
+                      fontWeight: activeSetting === s.id ? 400 : 300,
+                      borderBottom: `1px solid ${BORDER}`, letterSpacing: '0.02em',
+                    }}
+                  >
+                    {s.label}
+                    {activeSetting === s.id && (
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: GREEN, display: 'inline-block' }} />
+                    )}
+                  </button>
+                ))}
               </div>
 
               {/* Metal */}
               <div>
-                <p className="font-sans uppercase mb-5" style={{ fontSize: 10, letterSpacing: '0.3em', color: '#aaa' }}>
+                <p className="font-sans uppercase mb-5" style={{ fontSize: 9, letterSpacing: '0.35em', color: '#bbb' }}>
                   Metal
                 </p>
-                <div className="flex flex-col">
-                  {METALS.map(m => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => setActiveMetal(prev => prev === m.id ? null : m.id)}
-                      className="flex items-center justify-between py-3 font-sans text-left"
-                      style={{
-                        fontSize: 13,
-                        color: activeMetal === m.id ? GREEN : '#444',
-                        fontWeight: activeMetal === m.id ? 500 : 300,
-                        borderBottom: '1px solid #f0f0f0',
-                        letterSpacing: '0.03em',
-                      }}
-                    >
-                      {m.label}
-                      {activeMetal === m.id && (
-                        <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: GREEN, display: 'inline-block' }} />
-                      )}
-                    </button>
-                  ))}
-                </div>
+                {METALS.map(m => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setActiveMetal(prev => prev === m.id ? null : m.id)}
+                    className="flex items-center justify-between w-full py-3 font-sans text-left"
+                    style={{
+                      fontSize: 13, color: activeMetal === m.id ? GREEN : '#555',
+                      fontWeight: activeMetal === m.id ? 400 : 300,
+                      borderBottom: `1px solid ${BORDER}`, letterSpacing: '0.02em',
+                    }}
+                  >
+                    {m.label}
+                    {activeMetal === m.id && (
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: GREEN, display: 'inline-block' }} />
+                    )}
+                  </button>
+                ))}
               </div>
 
               {activeFilterCount > 0 && (
                 <button
                   type="button"
                   onClick={() => { clearAll(); setFiltersOpen(false); }}
-                  className="font-sans uppercase text-left"
-                  style={{ fontSize: 10, letterSpacing: '0.25em', color: '#aaa', textDecoration: 'underline' }}
+                  className="font-sans underline self-start"
+                  style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.1em' }}
                 >
                   Clear all filters
                 </button>
               )}
             </div>
 
-            {/* Apply button */}
-            <div className="px-6 py-5" style={{ borderTop: '1px solid #eee' }}>
+            <div className="px-6 py-5" style={{ borderTop: `1px solid ${BORDER}` }}>
               <button
                 type="button"
                 onClick={() => setFiltersOpen(false)}
                 className="w-full font-sans uppercase py-3"
-                style={{
-                  fontSize: 11, letterSpacing: '0.25em',
-                  backgroundColor: GREEN, color: '#fff',
-                }}
+                style={{ fontSize: 10, letterSpacing: '0.3em', backgroundColor: GREEN, color: '#fff' }}
               >
                 View {count} {count === 1 ? 'Ring' : 'Rings'}
               </button>
