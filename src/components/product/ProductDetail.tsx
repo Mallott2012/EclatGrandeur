@@ -55,7 +55,23 @@ export function ProductDetail({ product }: { product: Product }) {
             )}
           </div>
 
-          <div className="mt-8">
+          {product.category === 'engagement-rings' && (
+            <div className="mt-8">
+              <Link
+                href={`/product/${product.slug}/customise`}
+                className="flex w-full items-center justify-center gap-2 rounded-sm bg-ink px-6 py-4 text-[11px] uppercase tracking-luxe text-ivory transition-colors duration-300 hover:bg-ink-soft"
+              >
+                Select Your Diamond
+              </Link>
+              <div className="relative my-6 flex items-center">
+                <div className="flex-1 border-t border-ink/10" />
+                <span className="mx-4 text-[10px] uppercase tracking-luxe text-ink/30">or</span>
+                <div className="flex-1 border-t border-ink/10" />
+              </div>
+            </div>
+          )}
+
+          <div className={product.category === 'engagement-rings' ? '' : 'mt-8'}>
             <BuyOrEnquire product={product} />
           </div>
 

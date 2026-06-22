@@ -52,6 +52,12 @@ const config: Config = {
           soft: '#3c5066',
           muted: '#6b7d8f',
         },
+        // antique gold — luxury selector accent (not the Nile blue)
+        gold: {
+          DEFAULT: '#b8965a',
+          soft: '#d4b48a',
+          deep: '#8a6e3c',
+        },
         // commerce signal red (sale / price drops)
         sale: '#c8102e',
       },
