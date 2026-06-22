@@ -10,7 +10,7 @@ import { ConsultationCTA } from './ConsultationCTA';
 import type { RingSettingRecord, RingMetal } from '@/lib/ring-settings/types';
 
 const GREEN = '#1a2b1a';
-const IVORY = '#e8e2d4';
+const IVORY = '#ffffff';
 const GOLD  = '#b8965a';
 
 const HERO_IMAGES = [
@@ -61,7 +61,7 @@ export function EngagementRingPage({ settings }: Props) {
   }
 
   return (
-    <div className="flex" style={{ minHeight: '100vh', backgroundColor: IVORY }}>
+    <div className="flex items-start" style={{ backgroundColor: IVORY }}>
 
       {/* ── LEFT: sticky hero panel ──────────────────────────────────────── */}
       <div
@@ -129,7 +129,7 @@ export function EngagementRingPage({ settings }: Props) {
 
       {/* ── RIGHT: scrolling selector journey ──────────────────────────── */}
       <div
-        className="flex-1 overflow-y-auto"
+        className="flex-1 min-w-0"
         style={{ backgroundColor: IVORY }}
       >
         {/* mobile hero — shown only below lg */}

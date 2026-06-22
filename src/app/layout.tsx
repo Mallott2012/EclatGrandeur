@@ -51,10 +51,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable}`} style={{ backgroundColor: '#e8e2d4' }}>
-      <body className="flex h-dvh flex-col overflow-hidden">
+    <html lang="en" className={`${display.variable} ${sans.variable}`} style={{ backgroundColor: '#ffffff' }}>
+      <body className="flex min-h-dvh flex-col">
         <Header />
-        <main className="min-h-0 flex-1">{children}</main>
+        <main className="flex-1 flex flex-col">{children}</main>
       </body>
     </html>
   );

@@ -7,7 +7,7 @@ import type { DiamondShape } from './ShapeSelector';
 import type { RingMetal } from '@/lib/ring-settings/types';
 
 const GREEN = '#1a2b1a';
-const IVORY = '#e8e2d4';
+const IVORY = '#ffffff';
 const GOLD  = '#b8965a';
 
 // Placeholder rings for when DB has no data yet

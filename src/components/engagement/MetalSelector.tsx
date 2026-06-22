@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import type { RingMetal } from '@/lib/ring-settings/types';
 
 const GREEN = '#1a2b1a';
-const IVORY = '#e8e2d4';
+const IVORY = '#ffffff';
 const GOLD  = '#b8965a';
 
 const METALS: { id: RingMetal; label: string; sublabel: string; swatch: string }[] = [

@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 
 const GREEN = '#1a2b1a';
-const IVORY = '#e8e2d4';
+const IVORY = '#ffffff';
 const GOLD  = '#b8965a';
 
 export type DiamondShape =

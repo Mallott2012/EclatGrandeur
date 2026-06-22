@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type { RingSettingRecord } from '@/lib/ring-settings/types';
 
 const GREEN = '#1a2b1a';
-const IVORY = '#e8e2d4';
+const IVORY = '#ffffff';
 const GOLD  = '#b8965a';
 
 // Fallback setting styles shown when no DB data is available
