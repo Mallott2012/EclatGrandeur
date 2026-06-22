@@ -216,9 +216,7 @@ export function JewelleryDetailPage({ product, config }: Props) {
           {showDiamond && (
             <div className="flex items-center justify-between py-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
               <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
-                {isTotalCarat
-                  ? (product.caratIsPair ? 'Total Carat Weight (Pair)' : 'Total Carat Weight')
-                  : (isPair ? 'Diamonds (Pair)' : 'Diamond')}
+                {isPair ? 'Diamonds (Pair)' : 'Diamond'}
               </span>
               {hasSelection ? (
                 <button
@@ -247,9 +245,7 @@ export function JewelleryDetailPage({ product, config }: Props) {
               className="w-full font-sans uppercase mt-8 py-4"
               style={{ fontSize: 11, letterSpacing: '0.28em', backgroundColor: G, color: '#fff' }}
             >
-              {hasSelection
-                ? (isTotalCarat ? 'Change Carat Weight' : 'Change Diamond')
-                : (isTotalCarat ? 'Select Carat Weight' : 'Select a Diamond')}
+              {hasSelection ? 'Change Diamond' : 'Select a Diamond'}
             </button>
           )}
 

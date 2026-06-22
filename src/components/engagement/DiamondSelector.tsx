@@ -181,9 +181,7 @@ export function DiamondSelector({
                 transition: 'color 0.15s',
               }}
             >
-              {tab === 'select'
-                ? (totalCaratMode ? 'Select Carat Weight' : 'Select a Diamond')
-                : 'Guide to Diamonds'}
+              {tab === 'select' ? 'Select a Diamond' : 'Guide to Diamonds'}
             </button>
           ))}
         </div>
@@ -247,9 +245,8 @@ export function DiamondSelector({
               />
             </div>
 
-            {/* Colour + Clarity — only shown for individual stone mode */}
-            {!totalCaratMode && (
-              <>
+            {/* Colour + Clarity — always shown */}
+            <>
                 <div className="mb-5">
                   <p className="font-sans uppercase mb-3" style={{ fontSize: 9, letterSpacing: '0.28em', color: '#bbb' }}>Colour</p>
                   <div className="flex gap-2">
@@ -283,8 +280,7 @@ export function DiamondSelector({
                     })}
                   </div>
                 </div>
-              </>
-            )}
+            </>
           </div>
 
           {/* Results header */}
@@ -307,18 +303,15 @@ export function DiamondSelector({
             </button>
           </div>
 
-          {/* Table headers */}
+          {/* Table headers — always 4 data columns */}
           <div
             className="grid px-7 py-2"
             style={{
-              gridTemplateColumns: totalCaratMode ? '1fr 1fr 28px' : '1fr 0.7fr 0.9fr 1fr 28px',
+              gridTemplateColumns: '1fr 0.7fr 0.9fr 1fr 28px',
               borderBottom: `1px solid ${BORDER}`,
             }}
           >
-            {(totalCaratMode
-              ? (['carat', 'price'] as SortKey[])
-              : (['carat', 'color', 'clarity', 'price'] as SortKey[])
-            ).map(col => (
+            {(['carat', 'color', 'clarity', 'price'] as SortKey[]).map(col => (
               <button
                 key={col}
                 type="button"
@@ -326,7 +319,9 @@ export function DiamondSelector({
                 className="font-sans uppercase text-left"
                 style={{ fontSize: 9, letterSpacing: '0.22em', color: sortKey === col ? G : '#bbb', fontWeight: sortKey === col ? 500 : 400 }}
               >
-                {col === 'carat' ? (totalCaratMode ? 'Total Carat' : 'Carat Wt') : col.charAt(0).toUpperCase() + col.slice(1)}
+                {col === 'carat'
+                  ? (totalCaratMode ? 'Total Carat' : 'Carat Wt')
+                  : col.charAt(0).toUpperCase() + col.slice(1)}
                 <SortArrow col={col} />
               </button>
             ))}
@@ -356,27 +351,36 @@ export function DiamondSelector({
                     onMouseLeave={() => setHoveredId(null)}
                     className="grid w-full px-7 py-4 text-left"
                     style={{
-                      gridTemplateColumns: totalCaratMode ? '1fr 1fr 28px' : '1fr 0.7fr 0.9fr 1fr 28px',
+                      gridTemplateColumns: '1fr 0.7fr 0.9fr 1fr 28px',
                       borderBottom: `1px solid ${BORDER}`,
                       backgroundColor: isPending || isHovered ? '#f9f9f9' : '#fff',
                       transition: 'background-color 0.12s',
                     }}
                   >
+                    {/* Carat */}
                     <span className="font-sans" style={{ fontSize: 12, color: G }}>
                       {d.carat % 1 === 0 ? `${d.carat}.0ct` : `${d.carat}ct`}
                       {pairMode && totalCaratMode && (
                         <span style={{ fontSize: 10, color: '#999', marginLeft: 6 }}>
-                          (2 × {d.carat / 2}ct)
+                          (2×{(d.carat / 2)}ct)
                         </span>
                       )}
                     </span>
-                    {!totalCaratMode && (
-                      <>
-                        <span className="font-sans" style={{ fontSize: 12, color: '#555' }}>{d.color}</span>
-                        <span className="font-sans" style={{ fontSize: 12, color: '#555' }}>{d.clarity}</span>
-                      </>
-                    )}
+                    {/* Colour — for tiers show selected filter or "Any" */}
+                    <span className="font-sans" style={{ fontSize: 12, color: '#555' }}>
+                      {totalCaratMode
+                        ? (activeColors.length === 1 ? activeColors[0] : activeColors.length > 1 ? activeColors.join('/') : 'Any')
+                        : d.color}
+                    </span>
+                    {/* Clarity — for tiers show selected filter or "Any" */}
+                    <span className="font-sans" style={{ fontSize: 12, color: '#555' }}>
+                      {totalCaratMode
+                        ? (activeClarities.length === 1 ? activeClarities[0] : activeClarities.length > 1 ? activeClarities.join('/') : 'Any')
+                        : d.clarity}
+                    </span>
+                    {/* Price */}
                     <span className="font-sans" style={{ fontSize: 12, color: '#555' }}>{displayPrice}</span>
+                    {/* Radio */}
                     <span
                       className="self-center flex-shrink-0 flex items-center justify-center rounded-full"
                       style={{ width: 18, height: 18, border: `1.5px solid ${isPending ? G : '#ccc'}`, backgroundColor: '#fff' }}
@@ -406,7 +410,7 @@ export function DiamondSelector({
               style={{ backgroundColor: pendingId ? G : '#ccc', color: '#fff', transition: 'background-color 0.15s' }}
             >
               <span style={{ fontSize: 10, letterSpacing: '0.2em' }}>
-                {totalCaratMode ? 'Select This Weight' : pairMode ? 'Select This Pair' : 'Select This Diamond'}
+                {pairMode ? 'Select This Pair' : 'Select This Diamond'}
               </span>
               {pendingDiamond && (
                 <span style={{ fontSize: 9, letterSpacing: '0.1em', opacity: 0.75 }}>
