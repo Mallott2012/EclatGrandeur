@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
+// Note: redirect is still used by logoutAction below.
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { writeAuditLog } from '@/lib/audit';
@@ -13,6 +14,7 @@ const loginSchema = z.object({
 
 export interface LoginState {
   error?: string;
+  success?: boolean;
 }
 
 export async function loginAction(_prev: LoginState, formData: FormData): Promise<LoginState> {
@@ -61,7 +63,10 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
     metadata: { roles },
   });
 
-  redirect('/admin');
+  // Return success — do NOT call redirect() here. redirect() inside a Server
+  // Action discards the Set-Cookie headers that Supabase wrote, so the session
+  // never reaches the browser. The client component does router.push instead.
+  return { success: true };
 }
 
 export async function logoutAction(): Promise<void> {

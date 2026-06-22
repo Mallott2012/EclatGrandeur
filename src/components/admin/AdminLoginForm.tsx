@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useFormState, useFormStatus } from 'react-dom';
 import { loginAction, type LoginState } from '@/app/admin/login/actions';
 
@@ -19,7 +21,17 @@ function SubmitButton() {
 }
 
 export function AdminLoginForm() {
+  const router = useRouter();
   const [state, formAction] = useFormState(loginAction, initialState);
+
+  // When the server action returns success, the session cookies are already
+  // set in the browser. Navigate client-side so the new page request includes
+  // those cookies — using redirect() inside the action would have discarded them.
+  useEffect(() => {
+    if (state.success) {
+      router.push('/admin');
+    }
+  }, [state.success, router]);
 
   return (
     <form action={formAction} className="space-y-5">
