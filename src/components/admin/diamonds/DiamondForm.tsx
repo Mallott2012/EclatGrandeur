@@ -1,304 +1,244 @@
 'use client'
 
-import { useState } from 'react'
-import { useFormState, useFormStatus } from 'react-dom'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
+import {
+  DIAMOND_CUTS,
+  DIAMOND_COLOURS,
+  DIAMOND_CLARITIES,
+  DIAMOND_GRADES,
+  DIAMOND_FLUORESCENCES,
+  RING_METALS,
+} from '@/lib/diamonds/schemas'
+import {
+  CUT_LABELS,
+  GRADE_LABELS,
+  FLUORESCENCE_LABELS,
+  METAL_LABELS,
+  type DiamondCut,
+  type DiamondColour,
+  type DiamondClarity,
+  type DiamondGrade,
+  type DiamondFluorescence,
+} from '@/lib/diamonds/types'
 import type { DiamondActionResult } from '@/app/admin/(console)/diamonds/types'
 import { DIAMOND_ACTION_INITIAL } from '@/app/admin/(console)/diamonds/types'
-import {
-  DIAMOND_SHAPES,
-  DIAMOND_COLOUR_GRADES,
-  FANCY_COLOUR_INTENSITIES,
-  DIAMOND_CLARITIES,
-  DIAMOND_CUTS,
-  DIAMOND_FINISHES,
-  DIAMOND_FLUORESCENCES,
-  CERTIFICATE_LABS,
-  DIAMOND_ORIGINS,
-} from '@/lib/diamonds/schemas'
-import { FANCY_HUES } from '@/lib/diamonds/types'
-
-interface SupplierOption {
-  id:   string
-  code: string
-  name: string
-}
 
 interface DefaultValues {
-  origin?:                 string | null
-  supplier_id?:            string | null
-  supplier_sku?:           string | null
-  colour_category?:        string | null
-  colour_grade?:           string | null
-  fancy_colour_hue?:       string | null
-  fancy_colour_intensity?: string | null
-  fancy_colour_overtone?:  string | null
-  shape?:                  string | null
-  carat?:                  number | null
-  clarity?:                string | null
-  cut?:                    string | null
-  polish?:                 string | null
-  symmetry?:               string | null
-  fluorescence?:           string | null
-  meas_length_mm?:         number | null
-  meas_width_mm?:          number | null
-  meas_depth_mm?:          number | null
-  table_pct?:              number | null
-  depth_pct?:              number | null
-  girdle?:                 string | null
-  culet?:                  string | null
-  cert_lab?:               string | null
-  cert_number?:            string | null
-  retail_price_amount?:    number | null
-  retail_price_currency?:  string | null
-  supplier_cost_amount?:   number | null
-  supplier_cost_currency?: string | null
-  selection_note?:         string | null
-  internal_notes?:         string | null
-  is_visible?:             boolean
+  ring_setting_id?:    string | null
+  cut?:                DiamondCut | null
+  carat?:              number | null
+  colour?:             DiamondColour | null
+  clarity?:            DiamondClarity | null
+  cut_grade?:          DiamondGrade | null
+  polish?:             DiamondGrade | null
+  symmetry?:           DiamondGrade | null
+  fluorescence?:       DiamondFluorescence | null
+  gia_report_number?:  string | null
+  gia_report_date?:    string | null
+  gia_report_url?:     string | null
+  measurement_length?: number | null
+  measurement_width?:  number | null
+  measurement_depth?:  number | null
+  depth_pct?:          number | null
+  table_pct?:          number | null
+  price_gbp?:          number | null
+  is_published?:       boolean
+  notes?:              string | null
 }
 
 interface Props {
-  action:          (state: DiamondActionResult, formData: FormData) => Promise<DiamondActionResult>
-  supplierOptions: SupplierOption[]
-  defaultValues?:  DefaultValues
-  submitLabel:     string
-  cancelHref:      string
+  action:         (state: DiamondActionResult, formData: FormData) => Promise<DiamondActionResult>
+  defaultValues?: DefaultValues
+  submitLabel:    string
+  cancelHref:     string
 }
 
-export function DiamondForm({ action, supplierOptions, defaultValues: dv = {}, submitLabel, cancelHref }: Props) {
-  const [state, formAction] = useFormState(action, DIAMOND_ACTION_INITIAL)
-  const [colourCat, setColourCat] = useState<'standard' | 'fancy'>(
-    (dv.colour_category as 'standard' | 'fancy') ?? 'standard',
-  )
-
+export function DiamondForm({ action, defaultValues: dv = {}, submitLabel, cancelHref }: Props) {
+  const [state, formAction] = useActionState(action, DIAMOND_ACTION_INITIAL)
   const fe = state.success ? {} : (state.fieldErrors ?? {})
 
   return (
     <form action={formAction} className="space-y-8">
-      {/* Top-level error banner */}
       {!state.success && state.message && (
         <div className="rounded border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-300">
           {state.message}
         </div>
       )}
 
-      {/* ── Origin & supplier ── */}
-      <Fieldset title="Origin & supplier">
+      {/* ── 4Cs ── */}
+      <Fieldset title="4Cs">
         <Grid>
-          <Field label="Origin" required error={fe.origin}>
-            <Select name="origin" defaultValue={dv.origin ?? 'natural'}>
-              {DIAMOND_ORIGINS.map((o) => <option key={o} value={o}>{fmt(o)}</option>)}
-            </Select>
-          </Field>
-
-          <Field label="Supplier" error={fe.supplier_id}>
-            <Select name="supplier_id" defaultValue={dv.supplier_id ?? ''}>
-              <option value="">— None —</option>
-              {supplierOptions.map((s) => (
-                <option key={s.id} value={s.id}>{s.code} — {s.name}</option>
+          <Field label="Cut" required error={fe.cut}>
+            <Select name="cut" defaultValue={dv.cut ?? ''} required>
+              <option value="">— Select cut —</option>
+              {DIAMOND_CUTS.map((c) => (
+                <option key={c} value={c}>{CUT_LABELS[c]}</option>
               ))}
             </Select>
           </Field>
 
-          <Field label="Supplier SKU" error={fe.supplier_sku}>
-            <Input name="supplier_sku" defaultValue={dv.supplier_sku ?? ''} />
-          </Field>
-        </Grid>
-      </Fieldset>
-
-      {/* ── Shape & grading ── */}
-      <Fieldset title="Shape & grading">
-        <Grid>
-          <Field label="Shape" required error={fe.shape}>
-            <Select name="shape" defaultValue={dv.shape ?? ''}>
-              <option value="">— Select —</option>
-              {DIAMOND_SHAPES.map((s) => <option key={s} value={s}>{fmt(s)}</option>)}
-            </Select>
-          </Field>
-
           <Field label="Carat" required error={fe.carat}>
-            <Input name="carat" type="number" step="0.001" min="0.001" defaultValue={dv.carat?.toString() ?? ''} />
+            <Input name="carat" type="number" step="0.001" min="0.001"
+              defaultValue={dv.carat != null ? String(dv.carat) : ''}
+              placeholder="e.g. 1.020" required />
+          </Field>
+
+          <Field label="Colour" required error={fe.colour}>
+            <Select name="colour" defaultValue={dv.colour ?? ''} required>
+              <option value="">— Select colour —</option>
+              {DIAMOND_COLOURS.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </Select>
           </Field>
 
           <Field label="Clarity" required error={fe.clarity}>
-            <Select name="clarity" defaultValue={dv.clarity ?? ''}>
-              <option value="">— Select —</option>
-              {DIAMOND_CLARITIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </Select>
-          </Field>
-
-          <Field label="Cut" error={fe.cut}>
-            <Select name="cut" defaultValue={dv.cut ?? ''}>
-              <option value="">— None —</option>
-              {DIAMOND_CUTS.map((c) => <option key={c} value={c}>{c}</option>)}
-            </Select>
-          </Field>
-
-          <Field label="Polish" required error={fe.polish}>
-            <Select name="polish" defaultValue={dv.polish ?? ''}>
-              <option value="">— Select —</option>
-              {DIAMOND_FINISHES.map((f) => <option key={f} value={f}>{f}</option>)}
-            </Select>
-          </Field>
-
-          <Field label="Symmetry" required error={fe.symmetry}>
-            <Select name="symmetry" defaultValue={dv.symmetry ?? ''}>
-              <option value="">— Select —</option>
-              {DIAMOND_FINISHES.map((f) => <option key={f} value={f}>{f}</option>)}
-            </Select>
-          </Field>
-
-          <Field label="Fluorescence" required error={fe.fluorescence}>
-            <Select name="fluorescence" defaultValue={dv.fluorescence ?? 'None'}>
-              {DIAMOND_FLUORESCENCES.map((f) => <option key={f} value={f}>{f}</option>)}
+            <Select name="clarity" defaultValue={dv.clarity ?? ''} required>
+              <option value="">— Select clarity —</option>
+              {DIAMOND_CLARITIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
             </Select>
           </Field>
         </Grid>
       </Fieldset>
 
-      {/* ── Colour ── */}
-      <Fieldset title="Colour">
-        <div className="mb-4 flex gap-4">
-          {(['standard', 'fancy'] as const).map((cat) => (
-            <label key={cat} className="flex cursor-pointer items-center gap-2 text-sm text-neutral-300">
-              <input
-                type="radio"
-                name="colour_category"
-                value={cat}
-                checked={colourCat === cat}
-                onChange={() => setColourCat(cat)}
-                className="accent-amber-500"
-              />
-              {fmt(cat)}
-            </label>
-          ))}
-        </div>
+      {/* ── Cut grades ── */}
+      <Fieldset title="Cut grades">
+        <Grid>
+          <Field label="Cut grade" error={fe.cut_grade}>
+            <Select name="cut_grade" defaultValue={dv.cut_grade ?? ''}>
+              <option value="">— Optional —</option>
+              {DIAMOND_GRADES.map((g) => (
+                <option key={g} value={g}>{GRADE_LABELS[g]}</option>
+              ))}
+            </Select>
+          </Field>
 
-        {colourCat === 'standard' ? (
-          <Grid>
-            <Field label="Colour grade" required error={fe.colour_grade}>
-              <Select name="colour_grade" defaultValue={dv.colour_grade ?? ''}>
-                <option value="">— Select —</option>
-                {DIAMOND_COLOUR_GRADES.map((g) => <option key={g} value={g}>{g}</option>)}
-              </Select>
-            </Field>
-          </Grid>
-        ) : (
-          <Grid>
-            <Field label="Hue" required error={fe.fancy_colour_hue}>
-              <Select name="fancy_colour_hue" defaultValue={dv.fancy_colour_hue ?? ''}>
-                <option value="">— Select —</option>
-                {FANCY_HUES.map((h) => <option key={h} value={h}>{fmt(h)}</option>)}
-              </Select>
-            </Field>
-            <Field label="Intensity" required error={fe.fancy_colour_intensity}>
-              <Select name="fancy_colour_intensity" defaultValue={dv.fancy_colour_intensity ?? ''}>
-                <option value="">— Select —</option>
-                {FANCY_COLOUR_INTENSITIES.map((i) => <option key={i} value={i}>{i}</option>)}
-              </Select>
-            </Field>
-            <Field label="Overtone" error={fe.fancy_colour_overtone}>
-              <Input name="fancy_colour_overtone" defaultValue={dv.fancy_colour_overtone ?? ''} placeholder="e.g. Pinkish" />
-            </Field>
-          </Grid>
-        )}
+          <Field label="Polish" error={fe.polish}>
+            <Select name="polish" defaultValue={dv.polish ?? ''}>
+              <option value="">— Optional —</option>
+              {DIAMOND_GRADES.map((g) => (
+                <option key={g} value={g}>{GRADE_LABELS[g]}</option>
+              ))}
+            </Select>
+          </Field>
+
+          <Field label="Symmetry" error={fe.symmetry}>
+            <Select name="symmetry" defaultValue={dv.symmetry ?? ''}>
+              <option value="">— Optional —</option>
+              {DIAMOND_GRADES.map((g) => (
+                <option key={g} value={g}>{GRADE_LABELS[g]}</option>
+              ))}
+            </Select>
+          </Field>
+
+          <Field label="Fluorescence" error={fe.fluorescence}>
+            <Select name="fluorescence" defaultValue={dv.fluorescence ?? 'none'}>
+              {DIAMOND_FLUORESCENCES.map((f) => (
+                <option key={f} value={f}>{FLUORESCENCE_LABELS[f]}</option>
+              ))}
+            </Select>
+          </Field>
+        </Grid>
       </Fieldset>
 
-      {/* ── Measurements (optional) ── */}
-      <Fieldset title="Measurements (optional)">
+      {/* ── GIA certification ── */}
+      <Fieldset title="GIA certification">
         <Grid>
-          <Field label="Length mm" error={fe.meas_length_mm}>
-            <Input name="meas_length_mm" type="number" step="0.01" defaultValue={dv.meas_length_mm?.toString() ?? ''} />
+          <Field label="Report number" error={fe.gia_report_number}>
+            <Input name="gia_report_number"
+              defaultValue={dv.gia_report_number ?? ''}
+              placeholder="e.g. 2141438276" />
           </Field>
-          <Field label="Width mm" error={fe.meas_width_mm}>
-            <Input name="meas_width_mm" type="number" step="0.01" defaultValue={dv.meas_width_mm?.toString() ?? ''} />
+          <Field label="Report date" error={fe.gia_report_date}>
+            <Input name="gia_report_date" type="date" defaultValue={dv.gia_report_date ?? ''} />
           </Field>
-          <Field label="Depth mm" error={fe.meas_depth_mm}>
-            <Input name="meas_depth_mm" type="number" step="0.01" defaultValue={dv.meas_depth_mm?.toString() ?? ''} />
+          <Field label="Report URL" error={fe.gia_report_url} colSpan2>
+            <Input name="gia_report_url" type="url"
+              defaultValue={dv.gia_report_url ?? ''}
+              placeholder="https://www.gia.edu/report-check/..." />
+          </Field>
+        </Grid>
+      </Fieldset>
+
+      {/* ── Measurements ── */}
+      <Fieldset title="Measurements (mm)">
+        <Grid>
+          <Field label="Length" error={fe.measurement_length}>
+            <Input name="measurement_length" type="number" step="0.01" min="0"
+              defaultValue={dv.measurement_length != null ? String(dv.measurement_length) : ''} />
+          </Field>
+          <Field label="Width" error={fe.measurement_width}>
+            <Input name="measurement_width" type="number" step="0.01" min="0"
+              defaultValue={dv.measurement_width != null ? String(dv.measurement_width) : ''} />
+          </Field>
+          <Field label="Depth" error={fe.measurement_depth}>
+            <Input name="measurement_depth" type="number" step="0.01" min="0"
+              defaultValue={dv.measurement_depth != null ? String(dv.measurement_depth) : ''} />
           </Field>
           <Field label="Table %" error={fe.table_pct}>
-            <Input name="table_pct" type="number" step="0.1" defaultValue={dv.table_pct?.toString() ?? ''} />
+            <Input name="table_pct" type="number" step="0.1" min="0" max="100"
+              defaultValue={dv.table_pct != null ? String(dv.table_pct) : ''} />
           </Field>
           <Field label="Depth %" error={fe.depth_pct}>
-            <Input name="depth_pct" type="number" step="0.1" defaultValue={dv.depth_pct?.toString() ?? ''} />
-          </Field>
-          <Field label="Girdle" error={fe.girdle}>
-            <Input name="girdle" defaultValue={dv.girdle ?? ''} />
-          </Field>
-          <Field label="Culet" error={fe.culet}>
-            <Input name="culet" defaultValue={dv.culet ?? ''} />
+            <Input name="depth_pct" type="number" step="0.1" min="0" max="100"
+              defaultValue={dv.depth_pct != null ? String(dv.depth_pct) : ''} />
           </Field>
         </Grid>
       </Fieldset>
 
-      {/* ── Certificate ── */}
-      <Fieldset title="Certificate">
-        <Grid>
-          <Field label="Lab" error={fe.cert_lab}>
-            <Select name="cert_lab" defaultValue={dv.cert_lab ?? ''}>
-              <option value="">— None —</option>
-              {CERTIFICATE_LABS.map((l) => <option key={l} value={l}>{l}</option>)}
-            </Select>
-          </Field>
-          <Field label="Number" error={fe.cert_number}>
-            <Input name="cert_number" defaultValue={dv.cert_number ?? ''} />
-          </Field>
-        </Grid>
+      {/* ── Ring setting ── */}
+      <Fieldset title="Ring setting (optional)">
+        <Field label="Ring setting ID" error={fe.ring_setting_id}
+          hint="UUID of an existing ring setting">
+          <Input name="ring_setting_id"
+            defaultValue={dv.ring_setting_id ?? ''}
+            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+        </Field>
       </Fieldset>
 
       {/* ── Pricing ── */}
       <Fieldset title="Pricing">
         <Grid>
-          <Field label="Retail price" error={fe.retail_price_amount}>
-            <div className="flex gap-2">
-              <Input name="retail_price_amount" type="number" step="1" min="1" defaultValue={dv.retail_price_amount?.toString() ?? ''} className="flex-1" />
-              <Select name="retail_price_currency" defaultValue={dv.retail_price_currency ?? 'AED'} className="w-24">
-                {['AED', 'USD', 'EUR', 'GBP'].map((c) => <option key={c} value={c}>{c}</option>)}
-              </Select>
-            </div>
-          </Field>
-          <Field label="Supplier cost" error={fe.supplier_cost_amount}>
-            <div className="flex gap-2">
-              <Input name="supplier_cost_amount" type="number" step="1" min="0" defaultValue={dv.supplier_cost_amount?.toString() ?? ''} className="flex-1" />
-              <Select name="supplier_cost_currency" defaultValue={dv.supplier_cost_currency ?? 'USD'} className="w-24">
-                {['USD', 'AED', 'EUR', 'GBP'].map((c) => <option key={c} value={c}>{c}</option>)}
-              </Select>
-            </div>
+          <Field label="Price (GBP)" required error={fe.price_gbp}>
+            <Input name="price_gbp" type="number" step="0.01" min="0"
+              defaultValue={dv.price_gbp != null ? String(dv.price_gbp) : ''}
+              placeholder="e.g. 4500.00" required />
           </Field>
         </Grid>
       </Fieldset>
 
-      {/* ── Notes ── */}
-      <Fieldset title="Notes">
-        <div className="space-y-4">
-          <Field label="Selection note" hint="Visible to sales advisers" error={fe.selection_note}>
-            <textarea name="selection_note" rows={2} defaultValue={dv.selection_note ?? ''} className={textareaCls(!!fe.selection_note)} />
-          </Field>
-          <Field label="Internal notes" hint="Privileged only" error={fe.internal_notes}>
-            <textarea name="internal_notes" rows={3} defaultValue={dv.internal_notes ?? ''} className={textareaCls(!!fe.internal_notes)} />
-          </Field>
-        </div>
-      </Fieldset>
-
-      {/* ── Visibility ── */}
-      <Fieldset title="Storefront visibility">
-        {fe.is_visible && <p className="mb-2 text-xs text-red-400">{fe.is_visible}</p>}
-        <label className="flex cursor-pointer items-center gap-3">
-          <input
-            name="is_visible"
-            type="checkbox"
-            defaultChecked={dv.is_visible ?? false}
-            className="h-4 w-4 rounded border-neutral-600 bg-neutral-800 accent-amber-500"
+      {/* ── Notes & visibility ── */}
+      <Fieldset title="Notes & visibility">
+        <Field label="Internal notes" error={fe.notes}>
+          <textarea
+            name="notes"
+            rows={3}
+            defaultValue={dv.notes ?? ''}
+            className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 placeholder-neutral-600 focus:border-amber-600 focus:outline-none resize-y"
           />
-          <span className="text-sm text-neutral-300">Visible on storefront</span>
+        </Field>
+
+        <label className="mt-4 flex cursor-pointer items-center gap-2">
+          <input
+            type="checkbox"
+            name="is_published"
+            defaultChecked={dv.is_published ?? false}
+            className="h-4 w-4 accent-amber-600"
+          />
+          <span className="text-sm text-neutral-300">Published (visible on storefront)</span>
         </label>
-        <p className="mt-1 text-xs text-neutral-600">Requires cert lab, cert number, and a positive retail price.</p>
       </Fieldset>
 
       {/* ── Submit ── */}
       <div className="flex items-center gap-4 border-t border-neutral-800 pt-6">
         <SubmitButton label={submitLabel} />
-        <a href={cancelHref} className="text-sm text-neutral-500 transition-colors hover:text-neutral-300">
+        <a
+          href={cancelHref}
+          className="text-sm text-neutral-500 transition-colors hover:text-neutral-300"
+        >
           Cancel
         </a>
       </div>
@@ -314,7 +254,7 @@ function SubmitButton({ label }: { label: string }) {
     <button
       type="submit"
       disabled={pending}
-      className="rounded bg-amber-700 px-5 py-2 text-sm font-medium tracking-wide text-white transition-colors hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-50"
+      className="rounded bg-amber-700 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
     >
       {pending ? 'Saving…' : label}
     </button>
@@ -324,71 +264,70 @@ function SubmitButton({ label }: { label: string }) {
 function Fieldset({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="mb-3 text-xs font-semibold tracking-widest text-neutral-400">{title.toUpperCase()}</p>
-      {children}
+      <h3 className="mb-4 text-xs font-semibold tracking-widest text-neutral-500">{title.toUpperCase()}</h3>
+      <div className="space-y-4">{children}</div>
     </div>
   )
 }
 
 function Grid({ children }: { children: React.ReactNode }) {
-  return <div className="grid gap-4 sm:grid-cols-2">{children}</div>
+  return <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{children}</div>
 }
 
 function Field({
-  label, hint, error, required, children,
+  label,
+  required,
+  error,
+  hint,
+  children,
+  colSpan2,
 }: {
-  label: string; hint?: string; error?: string; required?: boolean; children: React.ReactNode
+  label:     string
+  required?: boolean
+  error?:    string
+  hint?:     string
+  children:  React.ReactNode
+  colSpan2?: boolean
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-xs font-medium tracking-widest text-neutral-400">
-        {label.toUpperCase()}
-        {required && <span className="ml-1 text-amber-600">*</span>}
+    <div className={colSpan2 ? 'sm:col-span-2' : undefined}>
+      <label className="mb-1 block text-xs font-medium tracking-widest text-neutral-400">
+        {label.toUpperCase()}{required && <span className="ml-0.5 text-amber-600">*</span>}
       </label>
-      {hint && <p className="text-xs text-neutral-600">{hint}</p>}
+      {hint && <p className="mb-1 text-xs text-neutral-600">{hint}</p>}
       {children}
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
     </div>
   )
 }
 
-function Input({ name, type = 'text', defaultValue, placeholder, step, min, className = 'w-full' }: {
-  name: string; type?: string; defaultValue?: string; placeholder?: string
-  step?: string; min?: string; className?: string
-}) {
+function Input({
+  className,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      name={name}
-      type={type}
-      defaultValue={defaultValue}
-      placeholder={placeholder}
-      step={step}
-      min={min}
-      className={`${className} rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder-neutral-600 focus:border-amber-700 focus:outline-none focus:ring-1 focus:ring-amber-700/50`}
+      {...props}
+      className={`w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 placeholder-neutral-600 focus:border-amber-600 focus:outline-none ${className ?? ''}`}
     />
   )
 }
 
-function Select({ name, defaultValue, children, className = 'w-full' }: {
-  name: string; defaultValue?: string; children: React.ReactNode; className?: string
-}) {
+function Select({
+  children,
+  className,
+  ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement> & { children: React.ReactNode }) {
   return (
     <select
-      name={name}
-      defaultValue={defaultValue}
-      className={`${className} rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white focus:border-amber-700 focus:outline-none focus:ring-1 focus:ring-amber-700/50`}
+      {...props}
+      className={`w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 focus:border-amber-600 focus:outline-none ${className ?? ''}`}
     >
       {children}
     </select>
   )
 }
 
-function textareaCls(hasError: boolean) {
-  return `w-full rounded border ${
-    hasError ? 'border-red-700 bg-red-950/20' : 'border-neutral-700 bg-neutral-900'
-  } px-3 py-2 text-sm text-white placeholder-neutral-600 focus:border-amber-700 focus:outline-none focus:ring-1 focus:ring-amber-700/50 resize-y`
-}
-
-function fmt(s: string): string {
-  return s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-}
+// Suppress unused import warning — METAL_LABELS and RING_METALS exported for
+// future ring-setting form use from this module.
+export { METAL_LABELS, RING_METALS }
