@@ -8,6 +8,8 @@ export const NECKLACE_PRODUCTS: Record<string, JewelleryDetailProduct> = {
     materials: ['Platinum', '18k White Gold', '18k Yellow Gold'],
     images: ['/images/necklaces/necklace-1.png', '/images/necklaces/necklace-3.png', '/images/necklaces/necklace-5.png'],
     description: 'A single brilliant-cut diamond suspended on a slender platinum chain. The Lumière Solitaire is designed to sit at the throat — the perfect everyday diamond, invisible yet unmissable.',
+    diamondMode: 'total-carat',
+    pricePerCarat: 4800,
   },
   'riviere-classique': {
     name: 'Rivière Classique',
@@ -16,6 +18,8 @@ export const NECKLACE_PRODUCTS: Record<string, JewelleryDetailProduct> = {
     materials: ['Platinum', '18k White Gold'],
     images: ['/images/necklaces/necklace-2.png', '/images/necklaces/necklace-4.png', '/images/necklaces/necklace-6.png'],
     description: 'Nineteen graduated brilliant-cut diamonds, each individually set in platinum, flow in an unbroken river of light. The Rivière Classique is the most enduring of all diamond necklaces.',
+    diamondMode: 'total-carat',
+    pricePerCarat: 3600,
   },
   'soleste-pendant': {
     name: 'Soleste Pendant',
@@ -24,6 +28,8 @@ export const NECKLACE_PRODUCTS: Record<string, JewelleryDetailProduct> = {
     materials: ['Platinum', '18k White Gold', '18k Rose Gold'],
     images: ['/images/necklaces/necklace-3.png', '/images/necklaces/necklace-1.png', '/images/necklaces/necklace-5.png'],
     description: 'A brilliant-cut diamond surrounded by a halo of pavé-set stones that dramatically enlarges the appearance of the centre stone. Set in platinum on a fine trace chain.',
+    diamondMode: 'total-carat',
+    pricePerCarat: 4200,
   },
   'pear-drop': {
     name: 'Pear Drop',
@@ -32,6 +38,8 @@ export const NECKLACE_PRODUCTS: Record<string, JewelleryDetailProduct> = {
     materials: ['18k Yellow Gold', 'Platinum'],
     images: ['/images/necklaces/necklace-4.png', '/images/necklaces/necklace-2.png', '/images/necklaces/necklace-6.png'],
     description: 'A pear-shaped diamond hangs from a bail of pavé-set brilliants in this elegant drop pendant. The elongated silhouette draws the eye and complements the décolletage beautifully.',
+    diamondMode: 'total-carat',
+    pricePerCarat: 4400,
   },
   'trilogy-bar': {
     name: 'Trilogy Bar',
@@ -40,6 +48,8 @@ export const NECKLACE_PRODUCTS: Record<string, JewelleryDetailProduct> = {
     materials: ['Platinum', '18k White Gold', '18k Yellow Gold'],
     images: ['/images/necklaces/necklace-5.png', '/images/necklaces/necklace-3.png', '/images/necklaces/necklace-1.png'],
     description: 'Three brilliant-cut diamonds set in a clean horizontal bar, representing past, present and future. A modern and wearable take on the classic trilogy design.',
+    diamondMode: 'total-carat',
+    pricePerCarat: 3900,
   },
   'oval-solitaire-neck': {
     name: 'Oval Solitaire',
@@ -48,6 +58,8 @@ export const NECKLACE_PRODUCTS: Record<string, JewelleryDetailProduct> = {
     materials: ['Platinum', '18k White Gold'],
     images: ['/images/necklaces/necklace-6.png', '/images/necklaces/necklace-4.png', '/images/necklaces/necklace-2.png'],
     description: 'An elongated oval brilliant-cut diamond set in a minimal platinum bezel, suspended on a delicate chain. The oval silhouette creates a distinctive and modern elegance.',
+    diamondMode: 'total-carat',
+    pricePerCarat: 4600,
   },
 };
 

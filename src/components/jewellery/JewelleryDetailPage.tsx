@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { DiamondSelector } from '@/components/engagement/DiamondSelector';
+import { TotalCaratSelector } from './TotalCaratSelector';
 
 const G      = '#1a2b1a';
 const BORDER = '#e8e8e8';
@@ -23,8 +24,12 @@ export interface JewelleryDetailProduct {
   description: string;
   images: string[];
   materials: string[];
-  /** 'pair' = user picks 1 stone applied ×2 (studs/drops), 'single' = 1 stone, 'none' = fixed design (no picker) */
-  diamondMode?: 'pair' | 'single' | 'none';
+  /** 'total-carat' = simple carat total pill selector (pair-aware), 'pair' = full DiamondSelector ×2, 'single' = full DiamondSelector ×1, 'none' = fixed design */
+  diamondMode?: 'total-carat' | 'pair' | 'single' | 'none';
+  /** Price per carat added on top of basePrice — required when diamondMode is 'total-carat' */
+  pricePerCarat?: number;
+  /** When true and diamondMode is 'total-carat', the carat selector shows the pair label (e.g. earrings) */
+  caratIsPair?: boolean;
 }
 
 export interface JewelleryDetailConfig {
@@ -43,17 +48,19 @@ export function JewelleryDetailPage({ product, config }: Props) {
   const [metalOpen,       setMetalOpen]       = useState(false);
   const [diamondOpen,     setDiamondOpen]     = useState(false);
   const [selectedDiamond, setSelectedDiamond] = useState<{ id: string; carat: number; color: string; clarity: string; price: number } | null>(null);
+  const [selectedCarat,   setSelectedCarat]   = useState<number | null>(null);
 
   const diamondMode  = product.diamondMode ?? 'single';
+  const isTotalCarat = diamondMode === 'total-carat';
   const isPair       = diamondMode === 'pair';
   const showDiamond  = diamondMode !== 'none';
 
   // price: base setting + diamond(s)
-  const diamondTotal = selectedDiamond
-    ? selectedDiamond.price * (isPair ? 2 : 1)
-    : 0;
-  const totalPrice   = product.basePrice + diamondTotal;
-  const displayPrice = selectedDiamond
+  const caratExtra   = isTotalCarat && selectedCarat ? Math.round(selectedCarat * (product.pricePerCarat ?? 0)) : 0;
+  const diamondTotal = !isTotalCarat && selectedDiamond ? selectedDiamond.price * (isPair ? 2 : 1) : 0;
+  const totalPrice   = product.basePrice + caratExtra + diamondTotal;
+  const hasSelection = isTotalCarat ? selectedCarat !== null : selectedDiamond !== null;
+  const displayPrice = hasSelection
     ? `£${totalPrice.toLocaleString('en-GB')}`
     : `Starting from £${product.basePrice.toLocaleString('en-GB')}`;
 
@@ -205,33 +212,45 @@ export function JewelleryDetailPage({ product, config }: Props) {
             </div>
           )}
 
-          {/* Diamond row — hidden for fixed designs */}
+          {/* Diamond section — hidden for fixed designs */}
           {showDiamond && (
-            <button
-              type="button"
-              onClick={() => setDiamondOpen(true)}
-              className="flex items-center justify-between w-full py-4 text-left"
-              style={{ borderBottom: `1px solid ${BORDER}` }}
-            >
-              <span className="flex flex-col items-start gap-0.5">
-                <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
-                  {isPair ? 'Diamonds (Pair)' : 'Diamond'}
-                </span>
-                {isPair && (
-                  <span className="font-sans" style={{ fontSize: 10, color: '#ccc', letterSpacing: '0.04em' }}>
-                    1 stone selected × 2 matched
+            <div className="py-6" style={{ borderBottom: `1px solid ${BORDER}` }}>
+              {isTotalCarat ? (
+                /* ── Simple total carat pill selector ── */
+                <TotalCaratSelector
+                  isPair={product.caratIsPair === true}
+                  selectedCarat={selectedCarat}
+                  pricePerCarat={product.pricePerCarat ?? 1000}
+                  onChange={setSelectedCarat}
+                />
+              ) : (
+                /* ── Full DiamondSelector drawer button ── */
+                <button
+                  type="button"
+                  onClick={() => setDiamondOpen(true)}
+                  className="flex items-center justify-between w-full text-left"
+                >
+                  <span className="flex flex-col items-start gap-0.5">
+                    <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
+                      {isPair ? 'Diamonds (Pair)' : 'Diamond'}
+                    </span>
+                    {isPair && (
+                      <span className="font-sans" style={{ fontSize: 10, color: '#ccc', letterSpacing: '0.04em' }}>
+                        1 stone selected × 2 matched
+                      </span>
+                    )}
                   </span>
-                )}
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="font-sans" style={{ fontSize: 13, color: selectedDiamond ? G : '#aaa', fontWeight: 300 }}>
-                  {selectedDiamond
-                    ? `${selectedDiamond.carat.toFixed(2)} ct · ${selectedDiamond.clarity} ${selectedDiamond.color}`
-                    : 'Select a Diamond'}
-                </span>
-                <ChevronDown className="w-3.5 h-3.5" style={{ color: '#bbb' }} strokeWidth={1.5} />
-              </span>
-            </button>
+                  <span className="flex items-center gap-2">
+                    <span className="font-sans" style={{ fontSize: 13, color: selectedDiamond ? G : '#aaa', fontWeight: 300 }}>
+                      {selectedDiamond
+                        ? `${selectedDiamond.carat.toFixed(2)} ct · ${selectedDiamond.clarity} ${selectedDiamond.color}`
+                        : 'Select a Diamond'}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5" style={{ color: '#bbb' }} strokeWidth={1.5} />
+                  </span>
+                </button>
+              )}
+            </div>
           )}
 
           {/* Add to Bag CTA */}
