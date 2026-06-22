@@ -28,64 +28,22 @@ export const primaryNav: NavItem[] = [
   {
     label: 'Engagement Rings',
     href: '/engagement-rings',
-    children: [
-      { label: 'Create Your Ring', href: '/build-a-ring', note: 'Bespoke' },
-      { label: 'All Engagement Rings', href: '/engagement-rings' },
-      { label: 'Solitaire Rings', href: '/engagement-rings' },
-      { label: 'Halo Rings', href: '/engagement-rings' },
-      { label: 'Three-Stone Rings', href: '/engagement-rings' },
-      { label: 'Ring Settings', href: '/build-a-ring?start=setting' },
-    ],
   },
   {
-    label: 'Wedding Rings',
-    href: '/wedding-bands',
-    children: [
-      { label: "Ladies' Wedding Rings", href: '/wedding-bands' },
-      { label: "Gentlemen's Wedding Rings", href: '/wedding-bands' },
-      { label: 'Anniversary Rings', href: '/wedding-bands' },
-      { label: 'Eternity Rings', href: '/wedding-bands' },
-    ],
+    label: 'Earrings',
+    href: '/earrings',
   },
   {
-    label: 'Diamonds',
-    href: '/diamonds',
-    children: [
-      { label: 'Browse Diamonds', href: '/diamonds', note: 'GIA Certified' },
-      { label: 'Build Your Ring', href: '/build-a-ring' },
-      { label: 'Round Brilliant', href: '/diamonds?shape=round' },
-      { label: 'Oval Cut', href: '/diamonds?shape=oval' },
-      { label: 'Emerald Cut', href: '/diamonds?shape=emerald' },
-      { label: 'The Diamond Guide', href: '/diamond-guide' },
-    ],
+    label: 'Necklaces',
+    href: '/necklaces',
   },
   {
-    label: 'Jewellery',
-    href: '/jewelry',
-    children: [
-      { label: 'Earrings', href: '/earrings' },
-      { label: 'Necklaces & Pendants', href: '/necklaces' },
-      { label: 'Bracelets', href: '/bracelets' },
-      { label: 'Tennis Bracelets', href: '/bracelets' },
-      { label: 'High Jewellery', href: '/high-jewellery' },
-    ],
-  },
-  {
-    label: 'Collections',
-    href: '/collections',
-    children: [
-      { label: 'The Éclat Collection', href: '/collections' },
-      { label: 'Bridal Gifts', href: '/collections' },
-      { label: 'Diamond Studs', href: '/earrings' },
-      { label: 'All Collections', href: '/collections' },
-    ],
+    label: 'Bracelets',
+    href: '/bracelets',
   },
 ];
 
-export const utilityNav = [
-  { label: 'Diamond Guide', href: '/diamond-guide' },
-  { label: 'Book a Consultation', href: '/appointments' },
-];
+export const utilityNav: { label: string; href: string }[] = [];
 
 export const footerNav = [
   {
