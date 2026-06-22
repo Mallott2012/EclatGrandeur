@@ -8,6 +8,7 @@ export const EARRING_PRODUCTS: Record<string, JewelleryDetailProduct> = {
     materials: ['Platinum', '18k White Gold', '18k Yellow Gold'],
     images: ['/images/earrings/earring-1.png', '/images/earrings/earring-3.png', '/images/earrings/earring-5.png'],
     description: 'The Brilliance Studs set the standard for the perfect diamond stud. Two perfectly matched round brilliant-cut diamonds in a classic four-claw platinum setting — the earrings that never leave the ear.',
+    diamondMode: 'pair',
   },
   'cascade-drops': {
     name: 'Cascade Drops',
@@ -16,6 +17,7 @@ export const EARRING_PRODUCTS: Record<string, JewelleryDetailProduct> = {
     materials: ['Platinum', '18k White Gold'],
     images: ['/images/earrings/earring-2.png', '/images/earrings/earring-6.png', '/images/earrings/earring-4.png'],
     description: 'A graduating line of brilliant-cut diamonds descends from the ear in a fluid cascade. Each stone is individually claw-set for maximum light return and movement.',
+    diamondMode: 'pair',
   },
   'soleste-studs': {
     name: 'Soleste Studs',
@@ -24,6 +26,7 @@ export const EARRING_PRODUCTS: Record<string, JewelleryDetailProduct> = {
     materials: ['Platinum', '18k White Gold', '18k Rose Gold'],
     images: ['/images/earrings/earring-3.png', '/images/earrings/earring-1.png', '/images/earrings/earring-5.png'],
     description: 'A brilliant-cut diamond at the centre, surrounded by a halo of pavé-set stones that makes each earring appear dramatically larger. The Soleste Studs are designed to catch the light at every angle.',
+    diamondMode: 'pair',
   },
   'lumiere-chandeliers': {
     name: 'Lumière Chandeliers',
@@ -32,6 +35,7 @@ export const EARRING_PRODUCTS: Record<string, JewelleryDetailProduct> = {
     materials: ['18k Yellow Gold', 'Platinum'],
     images: ['/images/earrings/earring-4.png', '/images/earrings/earring-2.png', '/images/earrings/earring-6.png'],
     description: 'Four tiers of diamonds radiate outward and downward from the ear in a dramatic chandelier form. Crafted in yellow gold, the Lumière Chandeliers are made for evenings that demand presence.',
+    diamondMode: 'none',
   },
   'full-pave-hoops': {
     name: 'Full Pavé Hoops',
@@ -40,6 +44,7 @@ export const EARRING_PRODUCTS: Record<string, JewelleryDetailProduct> = {
     materials: ['Platinum', '18k White Gold', '18k Yellow Gold'],
     images: ['/images/earrings/earring-5.png', '/images/earrings/earring-3.png', '/images/earrings/earring-1.png'],
     description: 'A full circle of pavé-set brilliant-cut diamonds in platinum, creating a hoop that catches the light from every angle. The Full Pavé Hoops are the modern diamond hoop, elevated.',
+    diamondMode: 'none',
   },
   'pear-elegance-drops': {
     name: 'Pear Elegance Drops',
@@ -48,6 +53,7 @@ export const EARRING_PRODUCTS: Record<string, JewelleryDetailProduct> = {
     materials: ['Platinum', '18k White Gold'],
     images: ['/images/earrings/earring-6.png', '/images/earrings/earring-2.png', '/images/earrings/earring-4.png'],
     description: 'A pear-shaped diamond in a claw setting suspends from a diamond-set bail in platinum. The elongated drop draws the eye downward, beautifully framing the face.',
+    diamondMode: 'pair',
   },
 };
 

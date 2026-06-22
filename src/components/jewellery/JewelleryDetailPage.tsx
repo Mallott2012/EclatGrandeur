@@ -23,6 +23,8 @@ export interface JewelleryDetailProduct {
   description: string;
   images: string[];
   materials: string[];
+  /** 'pair' = user picks 1 stone applied ×2 (studs/drops), 'single' = 1 stone, 'none' = fixed design (no picker) */
+  diamondMode?: 'pair' | 'single' | 'none';
 }
 
 export interface JewelleryDetailConfig {
@@ -42,8 +44,20 @@ export function JewelleryDetailPage({ product, config }: Props) {
   const [diamondOpen,     setDiamondOpen]     = useState(false);
   const [selectedDiamond, setSelectedDiamond] = useState<{ id: string; carat: number; color: string; clarity: string; price: number } | null>(null);
 
-  const displayPrice = `Starting from £${product.basePrice.toLocaleString('en-GB')}`;
-  const metalMeta    = METALS.find(m => m.label === selectedMetal) ?? METALS[0];
+  const diamondMode  = product.diamondMode ?? 'single';
+  const isPair       = diamondMode === 'pair';
+  const showDiamond  = diamondMode !== 'none';
+
+  // price: base setting + diamond(s)
+  const diamondTotal = selectedDiamond
+    ? selectedDiamond.price * (isPair ? 2 : 1)
+    : 0;
+  const totalPrice   = product.basePrice + diamondTotal;
+  const displayPrice = selectedDiamond
+    ? `£${totalPrice.toLocaleString('en-GB')}`
+    : `Starting from £${product.basePrice.toLocaleString('en-GB')}`;
+
+  const metalMeta = METALS.find(m => m.label === selectedMetal) ?? METALS[0];
 
   return (
     <div className="min-h-screen bg-white" style={{ color: G }}>
@@ -191,25 +205,34 @@ export function JewelleryDetailPage({ product, config }: Props) {
             </div>
           )}
 
-          {/* Diamond row */}
-          <button
-            type="button"
-            onClick={() => setDiamondOpen(true)}
-            className="flex items-center justify-between w-full py-4 text-left"
-            style={{ borderBottom: `1px solid ${BORDER}` }}
-          >
-            <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
-              Diamond
-            </span>
-            <span className="flex items-center gap-2">
-              <span className="font-sans" style={{ fontSize: 13, color: selectedDiamond ? G : '#aaa', fontWeight: 300 }}>
-                {selectedDiamond
-                  ? `${selectedDiamond.carat.toFixed(2)} ct · ${selectedDiamond.clarity} ${selectedDiamond.color}`
-                  : 'Select a Diamond'}
+          {/* Diamond row — hidden for fixed designs */}
+          {showDiamond && (
+            <button
+              type="button"
+              onClick={() => setDiamondOpen(true)}
+              className="flex items-center justify-between w-full py-4 text-left"
+              style={{ borderBottom: `1px solid ${BORDER}` }}
+            >
+              <span className="flex flex-col items-start gap-0.5">
+                <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
+                  {isPair ? 'Diamonds (Pair)' : 'Diamond'}
+                </span>
+                {isPair && (
+                  <span className="font-sans" style={{ fontSize: 10, color: '#ccc', letterSpacing: '0.04em' }}>
+                    1 stone selected × 2 matched
+                  </span>
+                )}
               </span>
-              <ChevronDown className="w-3.5 h-3.5" style={{ color: '#bbb' }} strokeWidth={1.5} />
-            </span>
-          </button>
+              <span className="flex items-center gap-2">
+                <span className="font-sans" style={{ fontSize: 13, color: selectedDiamond ? G : '#aaa', fontWeight: 300 }}>
+                  {selectedDiamond
+                    ? `${selectedDiamond.carat.toFixed(2)} ct · ${selectedDiamond.clarity} ${selectedDiamond.color}`
+                    : 'Select a Diamond'}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5" style={{ color: '#bbb' }} strokeWidth={1.5} />
+              </span>
+            </button>
+          )}
 
           {/* Add to Bag CTA */}
           <button
@@ -274,6 +297,7 @@ export function JewelleryDetailPage({ product, config }: Props) {
               selectedId={selectedDiamond?.id ?? null}
               onClose={() => setDiamondOpen(false)}
               onSelect={d => { setSelectedDiamond(d); setDiamondOpen(false); }}
+              pairMode={isPair}
             />
           </div>
         </div>

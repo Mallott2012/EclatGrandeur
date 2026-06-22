@@ -75,9 +75,11 @@ interface Props {
   onClose:    () => void;
   onSelect:   (d: Diamond) => void;
   selectedId: string | null;
+  /** When true, the picker is selecting a matched pair — price shown ×2 */
+  pairMode?:  boolean;
 }
 
-export function DiamondSelector({ onClose, onSelect, selectedId }: Props) {
+export function DiamondSelector({ onClose, onSelect, selectedId, pairMode = false }: Props) {
   const [activeTab,      setActiveTab]      = useState<'select' | 'guide'>('select');
   const [caratRange,     setCaratRange]     = useState<[number, number]>([0.5, 3.0]);
   const [priceRange,     setPriceRange]     = useState<[number, number]>([5000, 25000]);
@@ -150,6 +152,20 @@ export function DiamondSelector({ onClose, onSelect, selectedId }: Props) {
           <X className="w-4 h-4" strokeWidth={1.5} style={{ color: '#aaa' }} />
         </button>
       </div>
+
+      {/* ── PAIR MODE NOTICE ────────────────────────────────────────────── */}
+      {pairMode && activeTab === 'select' && (
+        <div
+          className="flex items-center gap-3 px-7 py-3"
+          style={{ backgroundColor: '#f9f9f9', borderBottom: `1px solid ${BORDER}` }}
+        >
+          <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: G, flexShrink: 0, display: 'inline-block' }} />
+          <p className="font-sans" style={{ fontSize: 11, color: '#666', letterSpacing: '0.03em', lineHeight: 1.5 }}>
+            You are selecting a <strong style={{ fontWeight: 500, color: G }}>matched pair</strong> — one stone will be
+            duplicated for both earrings. Price shown is per stone; total reflects ×2.
+          </p>
+        </div>
+      )}
 
       {/* ── GUIDE TAB ───────────────────────────────────────────────────── */}
       {activeTab === 'guide' && (
@@ -355,15 +371,24 @@ export function DiamondSelector({ onClose, onSelect, selectedId }: Props) {
                 const d = filtered.find(x => x.id === pendingId) ?? DIAMONDS.find(x => x.id === pendingId);
                 if (d) onSelect(d);
               }}
-              className="flex-1 font-sans uppercase py-3.5"
+              className="flex-1 font-sans uppercase py-3.5 flex flex-col items-center justify-center gap-0.5"
               style={{
-                fontSize: 10, letterSpacing: '0.2em',
                 backgroundColor: pendingId ? G : '#ccc',
                 color: '#fff',
                 transition: 'background-color 0.15s',
               }}
             >
-              Select This Diamond
+              <span style={{ fontSize: 10, letterSpacing: '0.2em' }}>
+                {pairMode ? 'Select This Pair' : 'Select This Diamond'}
+              </span>
+              {pairMode && pendingId && (() => {
+                const d = filtered.find(x => x.id === pendingId) ?? DIAMONDS.find(x => x.id === pendingId);
+                return d ? (
+                  <span style={{ fontSize: 9, letterSpacing: '0.1em', opacity: 0.75 }}>
+                    £{d.price.toLocaleString('en-GB')} × 2 = £{(d.price * 2).toLocaleString('en-GB')}
+                  </span>
+                ) : null;
+              })()}
             </button>
           </div>
         </>
