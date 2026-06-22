@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { createAdminClient } from '@/lib/supabase/admin'
 import { ServiceException, mapRpcError } from '@/lib/errors'
 import type { StaffUser } from '@/lib/staff-shared'
 import {
@@ -27,6 +28,29 @@ import type {
   ExtendHoldInput,
   TransitionStatusInput,
 } from './schemas'
+
+// ── Audit helper ─────────────────────────────────────────────────────────────
+// Non-blocking: logs on failure, never throws. Consistent with certificates.ts.
+async function writeAudit(
+  actorId:  string,
+  action:   string,
+  entityId: string,
+  metadata?: Record<string, unknown>,
+): Promise<void> {
+  try {
+    const admin = createAdminClient()
+    const { error } = await admin.from('audit_logs').insert({
+      actor_user_id: actorId,
+      action,
+      entity_type:   'diamond',
+      entity_id:     entityId,
+      metadata:      metadata ?? {},
+    })
+    if (error) console.error(`[service] Audit write failed for ${action}:`, entityId, error)
+  } catch (err) {
+    console.error(`[service] Audit write threw for ${action}:`, entityId, err)
+  }
+}
 
 // ── Role guards ───────────────────────────────────────────────────────────────
 
@@ -91,8 +115,10 @@ export async function createDiamond(
   input: CreateDiamondInput,
 ): Promise<DiamondFull> {
   requirePrivileged(actor)
-  const record = await insertDiamond(input, actor.id)
-  return toDiamondFull(record)
+  const record  = await insertDiamond(input, actor.id)
+  const diamond = toDiamondFull(record)
+  await writeAudit(actor.id, 'diamond.create', diamond.id, { sku: diamond.sku })
+  return diamond
 }
 
 export async function patchDiamond(
@@ -124,7 +150,12 @@ export async function patchDiamond(
   }
 
   const updated = await updateDiamond(id, patch, actor.id)
-  return toDiamondFull(updated)
+  const full    = toDiamondFull(updated)
+  await writeAudit(actor.id, 'diamond.update', id)
+  if (patch.is_visible !== undefined && patch.is_visible !== existing.is_visible) {
+    await writeAudit(actor.id, 'diamond.visibility_changed', id, { is_visible: patch.is_visible })
+  }
+  return full
 }
 
 // ── Hold / status transitions ─────────────────────────────────────────────────

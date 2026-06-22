@@ -2,11 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: vi.fn() }))
 vi.mock('@/lib/diamonds/repository', () => ({
-  findDiamondById:    vi.fn(),
-  findMediaByDiamond: vi.fn(),
-  findMediaById:      vi.fn(),
-  insertMediaRecord:  vi.fn(),
-  deleteMediaRecord:  vi.fn(),
+  findDiamondById:       vi.fn(),
+  findMediaByDiamond:    vi.fn(),
+  findMediaById:         vi.fn(),
+  insertMediaRecord:     vi.fn(),
+  deleteMediaRecord:     vi.fn(),
+  setPrimaryMediaRecord: vi.fn(),
 }))
 
 import { uploadDiamondMedia, listDiamondMedia, deleteDiamondMedia } from '@/lib/diamonds/media'
@@ -70,16 +71,21 @@ const SIGNED_URL = 'https://storage.supabase.co/media.jpg?token=xyz'
 // ── Admin mock factory ────────────────────────────────────────────────────────
 
 function makeAdminMock() {
-  const mockUpload          = vi.fn().mockResolvedValue({ data: {}, error: null })
-  const mockRemove          = vi.fn().mockResolvedValue({ data: [], error: null })
-  const mockCreateSignedUrl = vi.fn().mockResolvedValue({ data: { signedUrl: SIGNED_URL }, error: null })
-  const storageBucket = { upload: mockUpload, remove: mockRemove, createSignedUrl: mockCreateSignedUrl }
+  const mockUpload           = vi.fn().mockResolvedValue({ data: {}, error: null })
+  const mockRemove           = vi.fn().mockResolvedValue({ data: [], error: null })
+  const mockCreateSignedUrl  = vi.fn().mockResolvedValue({ data: { signedUrl: SIGNED_URL }, error: null })
+  const mockCreateSignedUrls = vi.fn().mockImplementation((paths: string[]) =>
+    Promise.resolve({ data: paths.map((p) => ({ path: p, signedUrl: SIGNED_URL })), error: null }),
+  )
+  const storageBucket   = { upload: mockUpload, remove: mockRemove, createSignedUrl: mockCreateSignedUrl, createSignedUrls: mockCreateSignedUrls }
   const mockStorageFrom = vi.fn().mockReturnValue(storageBucket)
+  const mockAuditInsert = vi.fn().mockResolvedValue({ error: null })
+  const mockDbFrom      = vi.fn().mockReturnValue({ insert: mockAuditInsert })
 
-  const admin = { storage: { from: mockStorageFrom } }
+  const admin = { storage: { from: mockStorageFrom }, from: mockDbFrom }
   return {
     admin: admin as unknown as ReturnType<typeof createAdminClient>,
-    mockUpload, mockRemove, mockCreateSignedUrl, mockStorageFrom,
+    mockUpload, mockRemove, mockCreateSignedUrl, mockCreateSignedUrls, mockStorageFrom, mockDbFrom, mockAuditInsert,
   }
 }
 

@@ -218,3 +218,30 @@ export async function deleteMediaRecord(id: string): Promise<void> {
   const { error } = await admin.from('diamond_media').delete().eq('id', id)
   if (error) throw new ServiceException({ code: 'db_error', message: 'Failed to delete media record', statusHint: 500 })
 }
+
+// Clears the primary flag on all media for a diamond, then sets it on one record.
+// Caller must verify mediaId belongs to diamondId before calling.
+export async function setPrimaryMediaRecord(mediaId: string, diamondId: string): Promise<void> {
+  const admin = createAdminClient()
+
+  // Verify ownership before mutation.
+  const { data: record } = await admin
+    .from('diamond_media')
+    .select('id')
+    .eq('id', mediaId)
+    .eq('diamond_id', diamondId)
+    .maybeSingle()
+  if (!record) throw new ServiceException({ code: 'not_found', message: 'Media record not found', statusHint: 404 })
+
+  const { error: clearErr } = await admin
+    .from('diamond_media')
+    .update({ is_primary: false })
+    .eq('diamond_id', diamondId)
+  if (clearErr) throw new ServiceException({ code: 'db_error', message: 'Failed to update primary media', statusHint: 500 })
+
+  const { error: setErr } = await admin
+    .from('diamond_media')
+    .update({ is_primary: true })
+    .eq('id', mediaId)
+  if (setErr) throw new ServiceException({ code: 'db_error', message: 'Failed to update primary media', statusHint: 500 })
+}
