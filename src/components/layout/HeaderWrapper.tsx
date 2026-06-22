@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { Header } from './Header';
 
 // Pages that need a white/light header instead of the default ivory
-const WHITE_HEADER_PATHS = ['/', '/engagement-rings', '/build-a-ring'];
+const WHITE_HEADER_PATHS = ['/', '/engagement-rings', '/build-a-ring', '/necklaces', '/bracelets', '/earrings'];
 
 export function HeaderWrapper() {
   const pathname = usePathname();

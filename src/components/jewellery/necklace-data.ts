@@ -1,0 +1,54 @@
+import type { JewelleryDetailProduct } from './JewelleryDetailPage';
+
+export const NECKLACE_PRODUCTS: Record<string, JewelleryDetailProduct> = {
+  'lumiere-solitaire': {
+    name: 'Lumière Solitaire',
+    subtitle: 'Diamond Pendant',
+    basePrice: 2800,
+    materials: ['Platinum', '18k White Gold', '18k Yellow Gold'],
+    images: ['/images/necklaces/necklace-1.png', '/images/necklaces/necklace-3.png', '/images/necklaces/necklace-5.png'],
+    description: 'A single brilliant-cut diamond suspended on a slender platinum chain. The Lumière Solitaire is designed to sit at the throat — the perfect everyday diamond, invisible yet unmissable.',
+  },
+  'riviere-classique': {
+    name: 'Rivière Classique',
+    subtitle: 'Diamond Rivière Necklace',
+    basePrice: 9400,
+    materials: ['Platinum', '18k White Gold'],
+    images: ['/images/necklaces/necklace-2.png', '/images/necklaces/necklace-4.png', '/images/necklaces/necklace-6.png'],
+    description: 'Nineteen graduated brilliant-cut diamonds, each individually set in platinum, flow in an unbroken river of light. The Rivière Classique is the most enduring of all diamond necklaces.',
+  },
+  'soleste-pendant': {
+    name: 'Soleste Pendant',
+    subtitle: 'Halo Diamond Pendant',
+    basePrice: 3600,
+    materials: ['Platinum', '18k White Gold', '18k Rose Gold'],
+    images: ['/images/necklaces/necklace-3.png', '/images/necklaces/necklace-1.png', '/images/necklaces/necklace-5.png'],
+    description: 'A brilliant-cut diamond surrounded by a halo of pavé-set stones that dramatically enlarges the appearance of the centre stone. Set in platinum on a fine trace chain.',
+  },
+  'pear-drop': {
+    name: 'Pear Drop',
+    subtitle: 'Diamond Drop Pendant',
+    basePrice: 4100,
+    materials: ['18k Yellow Gold', 'Platinum'],
+    images: ['/images/necklaces/necklace-4.png', '/images/necklaces/necklace-2.png', '/images/necklaces/necklace-6.png'],
+    description: 'A pear-shaped diamond hangs from a bail of pavé-set brilliants in this elegant drop pendant. The elongated silhouette draws the eye and complements the décolletage beautifully.',
+  },
+  'trilogy-bar': {
+    name: 'Trilogy Bar',
+    subtitle: 'Three Diamond Bar Necklace',
+    basePrice: 3200,
+    materials: ['Platinum', '18k White Gold', '18k Yellow Gold'],
+    images: ['/images/necklaces/necklace-5.png', '/images/necklaces/necklace-3.png', '/images/necklaces/necklace-1.png'],
+    description: 'Three brilliant-cut diamonds set in a clean horizontal bar, representing past, present and future. A modern and wearable take on the classic trilogy design.',
+  },
+  'oval-solitaire-neck': {
+    name: 'Oval Solitaire',
+    subtitle: 'Oval Diamond Pendant',
+    basePrice: 3900,
+    materials: ['Platinum', '18k White Gold'],
+    images: ['/images/necklaces/necklace-6.png', '/images/necklaces/necklace-4.png', '/images/necklaces/necklace-2.png'],
+    description: 'An elongated oval brilliant-cut diamond set in a minimal platinum bezel, suspended on a delicate chain. The oval silhouette creates a distinctive and modern elegance.',
+  },
+};
+
+export const NECKLACE_FALLBACK = NECKLACE_PRODUCTS['lumiere-solitaire'];
