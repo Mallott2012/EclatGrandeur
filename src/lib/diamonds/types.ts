@@ -127,6 +127,7 @@ export interface DiamondFull {
   cert_lab:                 CertificateLab | null
   cert_number:              string | null
   // cert_pdf_path intentionally absent
+  supplier_code:            string | null   // from suppliers join; null when not joined
   retail_price_amount:      number | null
   retail_price_currency:    string
   supplier_cost_amount:     number | null
@@ -240,6 +241,11 @@ export interface ExtendResult {
   originalHeldAt:     string
 }
 
+// ── DiamondListRecord ─────────────────────────────────────────────────────────
+// DiamondRecord extended with the supplier code from a left join on suppliers.
+// Returned by findManyDiamonds (list queries); absent from single-record lookups.
+export type DiamondListRecord = DiamondRecord & { supplier_code: string | null }
+
 // ── DTO conversion helpers ────────────────────────────────────────────────────
 
 function toNum(value: string | null): number | null {
@@ -256,7 +262,9 @@ function isHoldExpired(record: DiamondRecord): boolean {
   )
 }
 
-export function toDiamondFull(record: DiamondRecord): DiamondFull {
+// Accepts both DiamondRecord (single-lookup, no join) and DiamondListRecord
+// (list queries with supplier join). supplier_code is null when not joined.
+export function toDiamondFull(record: DiamondRecord & { supplier_code?: string | null }): DiamondFull {
   return {
     id:                      record.id,
     sku:                     record.sku,
@@ -284,6 +292,7 @@ export function toDiamondFull(record: DiamondRecord): DiamondFull {
     culet:                   record.culet,
     cert_lab:                record.cert_lab,
     cert_number:             record.cert_number,
+    supplier_code:           record.supplier_code ?? null,
     retail_price_amount:     record.retail_price_amount,
     retail_price_currency:   record.retail_price_currency,
     supplier_cost_amount:    record.supplier_cost_amount,

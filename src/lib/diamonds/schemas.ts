@@ -130,20 +130,38 @@ export type CreateDiamondInput   = z.infer<typeof CreateDiamondSchema>
 export const UpdateDiamondSchema = addDiamondCrossFieldRules(z.object(DiamondBaseShape).partial())
 export type UpdateDiamondInput   = z.infer<typeof UpdateDiamondSchema>
 
+// ── Sort allowlist ─────────────────────────────────────────────────────────────
+// Server-side allowlist — query parameters cannot select arbitrary DB columns.
+export const DIAMOND_SORT_FIELDS = ['created_at', 'carat', 'retail_price_amount', 'status'] as const
+export type DiamondSortField = (typeof DIAMOND_SORT_FIELDS)[number]
+
 // ── Filter / pagination ───────────────────────────────────────────────────────
 export const DiamondFilterSchema = z.object({
-  status:      z.array(z.enum(DIAMOND_STATUSES)).optional(),
-  shape:       z.array(z.enum(DIAMOND_SHAPES)).optional(),
+  // Basic filters
+  status:          z.array(z.enum(DIAMOND_STATUSES)).optional(),
+  shape:           z.array(z.enum(DIAMOND_SHAPES)).optional(),
   colour_category: z.enum(COLOUR_CATEGORIES).optional(),
-  cert_lab:    z.enum(CERTIFICATE_LABS).optional(),
-  min_carat:   z.number().positive().optional(),
-  max_carat:   z.number().positive().optional(),
-  min_price:   z.number().int().positive().optional(),
-  max_price:   z.number().int().positive().optional(),
-  is_visible:  z.boolean().optional(),
-  supplier_id: z.string().uuid().optional(),
-  page:        z.number().int().min(1).default(1),
-  limit:       z.number().int().min(1).max(100).default(50),
+  cert_lab:        z.enum(CERTIFICATE_LABS).optional(),
+  min_carat:       z.number().positive().optional(),
+  max_carat:       z.number().positive().optional(),
+  min_price:       z.number().int().positive().optional(),
+  max_price:       z.number().int().positive().optional(),
+  // Privileged-only filters (scrubbed for sales_adviser in list-params.ts)
+  is_visible:      z.boolean().optional(),
+  supplier_id:     z.string().uuid().optional(),
+  stale_check_days: z.number().int().min(1).max(365).optional(),
+  // T5 extended filters
+  origin:              z.enum(DIAMOND_ORIGINS).optional(),
+  colour_grade:        z.enum(DIAMOND_COLOUR_GRADES).optional(),
+  fancy_colour_hue:    z.enum(FANCY_HUES).optional(),
+  fancy_colour_intensity: z.enum(FANCY_COLOUR_INTENSITIES).optional(),
+  expired_hold:        z.boolean().optional(),
+  // Sort (server-side allowlisted)
+  sort_by:  z.enum(DIAMOND_SORT_FIELDS).default('created_at'),
+  sort_dir: z.enum(['asc', 'desc'] as const).default('desc'),
+  // Pagination
+  page:     z.number().int().min(1).default(1),
+  limit:    z.number().int().min(1).max(100).default(50),
 })
 export type DiamondFilter = z.infer<typeof DiamondFilterSchema>
 

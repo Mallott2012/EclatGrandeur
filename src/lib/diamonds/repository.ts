@@ -2,7 +2,7 @@ import 'server-only'
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ServiceException } from '@/lib/errors'
-import type { DiamondRecord, DiamondMediaRecord, PaginatedResult } from './types'
+import type { DiamondRecord, DiamondListRecord, DiamondMediaRecord, PaginatedResult } from './types'
 import type { CreateDiamondInput, UpdateDiamondInput, DiamondFilter } from './schemas'
 
 // All functions create a fresh admin client per call (stateless, safe for Next.js
@@ -25,32 +25,56 @@ export async function findDiamondById(id: string): Promise<DiamondRecord | null>
 export async function findManyDiamonds(
   filter: DiamondFilter,
   statusOverride?: string[],
-): Promise<PaginatedResult<DiamondRecord>> {
+): Promise<PaginatedResult<DiamondListRecord>> {
   const admin = createAdminClient()
-  const { page, limit, ...filters } = filter
+  const { page, limit, sort_by, sort_dir, ...filters } = filter
   const from = (page - 1) * limit
   const to   = from + limit - 1
 
-  let query = admin.from('diamonds').select('*', { count: 'exact' })
+  // Left-join suppliers to get supplier_code for privileged list views.
+  let query = admin.from('diamonds').select('*, suppliers(code)', { count: 'exact' })
 
-  const statuses = statusOverride ?? filters.status
-  if (statuses && statuses.length > 0) query = query.in('status', statuses)
-  if (filters.shape       && filters.shape.length > 0) query = query.in('shape', filters.shape)
-  if (filters.colour_category) query = query.eq('colour_category', filters.colour_category)
-  if (filters.cert_lab)        query = query.eq('cert_lab', filters.cert_lab)
+  // expired_hold takes precedence over the status filter — it forces status='on_hold'
+  // with a hold_expires_at < now() condition.
+  if (filters.expired_hold) {
+    query = query.eq('status', 'on_hold').lt('hold_expires_at', new Date().toISOString())
+  } else {
+    const statuses = statusOverride ?? filters.status
+    if (statuses && statuses.length > 0) query = query.in('status', statuses)
+  }
+
+  if (filters.shape        && filters.shape.length > 0) query = query.in('shape', filters.shape)
+  if (filters.colour_category)  query = query.eq('colour_category', filters.colour_category)
+  if (filters.cert_lab)         query = query.eq('cert_lab', filters.cert_lab)
   if (filters.is_visible !== undefined) query = query.eq('is_visible', filters.is_visible)
-  if (filters.supplier_id)     query = query.eq('supplier_id', filters.supplier_id)
+  if (filters.supplier_id)      query = query.eq('supplier_id', filters.supplier_id)
   if (filters.min_carat != null) query = query.gte('carat', filters.min_carat.toString())
   if (filters.max_carat != null) query = query.lte('carat', filters.max_carat.toString())
   if (filters.min_price != null) query = query.gte('retail_price_amount', filters.min_price)
   if (filters.max_price != null) query = query.lte('retail_price_amount', filters.max_price)
+  // T5 extended filters
+  if (filters.origin)            query = query.eq('origin', filters.origin)
+  if (filters.colour_grade)      query = query.eq('colour_grade', filters.colour_grade)
+  if (filters.fancy_colour_hue)       query = query.eq('fancy_colour_hue', filters.fancy_colour_hue)
+  if (filters.fancy_colour_intensity) query = query.eq('fancy_colour_intensity', filters.fancy_colour_intensity)
+  if (filters.stale_check_days != null) {
+    const cutoff = new Date(Date.now() - filters.stale_check_days * 86_400_000).toISOString()
+    query = query.or(`last_availability_check.is.null,last_availability_check.lt.${cutoff}`)
+  }
 
   const { data, count, error } = await query
-    .order('created_at', { ascending: false })
+    .order(sort_by, { ascending: sort_dir === 'asc' })
     .range(from, to)
 
   if (error) throw new ServiceException({ code: 'db_error', message: 'Failed to list diamonds', statusHint: 500 })
-  return { items: (data ?? []) as DiamondRecord[], page, limit, total: count ?? 0 }
+
+  // Extract supplier_code from the nested join result and flatten into DiamondListRecord.
+  const items: DiamondListRecord[] = (data ?? []).map((row) => {
+    const { suppliers, ...rest } = row as unknown as DiamondRecord & { suppliers: { code: string } | null }
+    return { ...rest, supplier_code: suppliers?.code ?? null }
+  })
+
+  return { items, page, limit, total: count ?? 0 }
 }
 
 export async function insertDiamond(

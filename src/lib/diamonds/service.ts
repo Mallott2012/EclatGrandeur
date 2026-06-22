@@ -81,7 +81,7 @@ export async function listDiamonds(
   }
 
   const result = await findManyDiamonds(filter)
-  return { ...result, items: result.items.map(toDiamondFull) }
+  return { ...result, items: result.items.map((r) => toDiamondFull(r)) }
 }
 
 // ── Diamond write ─────────────────────────────────────────────────────────────
