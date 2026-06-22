@@ -1,6 +1,7 @@
 import 'server-only';
 import { redirect } from 'next/navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import type { StaffRole, StaffUser } from '@/lib/staff-shared';
 
 // Re-export everything so callers only need to import from '@/lib/staff'.
@@ -26,7 +27,12 @@ export async function getCurrentStaffUser(): Promise<StaffUser | null> {
 
   if (userError || !user) return null;
 
-  const { data: roleRows, error: rolesError } = await supabase
+  // Use the admin client to query staff_roles so this works regardless of
+  // whether the RLS session context is fully initialised (e.g. immediately
+  // after sign-in or during Server Component rendering where cookies are
+  // readable but auth.uid() may not be set in the RLS context yet).
+  const adminClient = createAdminClient();
+  const { data: roleRows, error: rolesError } = await adminClient
     .from('staff_roles')
     .select('role')
     .eq('user_id', user.id);
