@@ -86,6 +86,7 @@ export async function uploadCertificate(
     metadata:      { cert_lab: meta.cert_lab, cert_number: meta.cert_number },
   })
   if (auditError) {
+    console.error('[certificates] Audit write failed after certificate upload for diamond:', meta.diamond_id, auditError)
     // DB and storage are updated; old object orphan is cleaned up below anyway.
     // Old path cleanup still runs before rethrowing.
     cleanUpOldCert(admin, oldPath)
@@ -126,6 +127,7 @@ export async function getCertificateSignedUrl(
     metadata:      { cert_lab: diamond.cert_lab, cert_number: diamond.cert_number },
   })
   if (auditError) {
+    console.error('[certificates] Audit write failed on certificate view for diamond:', diamondId, auditError)
     throw new ServiceException({ code: 'audit_write_failed', message: 'Failed to record certificate access audit event', statusHint: 500 })
   }
 
