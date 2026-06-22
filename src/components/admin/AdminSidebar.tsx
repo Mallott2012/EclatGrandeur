@@ -22,9 +22,9 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/admin', live: true },
-  // Phase 1+ modules — routes do not exist yet.
-  // Each must add requireStaffRole() when implemented.
-  { label: 'Diamonds', href: '/admin/diamonds', live: false },
+  // Phase 1+ modules — each must add requireStaffRole() when implemented.
+  { label: 'Suppliers', href: '/admin/suppliers', live: true  },
+  { label: 'Diamonds',  href: '/admin/diamonds',  live: true  },
   { label: 'Ring Settings', href: '/admin/ring-settings', live: false },
   { label: 'Ready Rings', href: '/admin/ready-rings', live: false },
   { label: 'Enquiries', href: '/admin/enquiries', live: false },
