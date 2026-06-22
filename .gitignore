@@ -29,3 +29,6 @@ next-env.d.ts
 
 # testing
 /coverage
+
+# supabase cli
+supabase/.temp/
