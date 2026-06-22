@@ -2,45 +2,54 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { siteConfig, primaryNav, utilityNav } from '@/config/site';
 import { cn } from '@/lib/utils';
 
+// Deep forest green from the live eclatgrandeur.com/landing site
+const BG   = '#162218';
+const TEXT = '#f0ece0';
+
 export function Header() {
-  const pathname = usePathname();
   const [drawer, setDrawer] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
 
-  // Close drawer on navigation
-  if (typeof window !== 'undefined') {
-    // handled via key below
-  }
-
   return (
     <header className="fixed inset-x-0 top-0 z-[70]">
-      {/* Minimal top bar */}
-      <div className="flex h-16 items-center bg-[#2c3d2e] px-6">
-        {/* Hamburger — left */}
-        <button
-          type="button"
-          aria-label="Open menu"
-          onClick={() => setDrawer(true)}
-          className="flex items-center text-[#f5f0e8]/80 transition hover:text-[#f5f0e8]"
-        >
-          <Menu className="h-6 w-6" strokeWidth={1.5} />
-        </button>
-
-        {/* Logo — absolutely centred */}
-        <Link
-          href="/"
-          className="absolute left-1/2 -translate-x-1/2 font-display text-xl font-light tracking-wide text-[#f5f0e8] md:text-2xl"
-        >
-          {siteConfig.name}
+      <div
+        className="flex h-16 items-center justify-between px-6 md:px-10"
+        style={{ backgroundColor: BG }}
+      >
+        {/* Left — logo */}
+        <Link href="/" className="flex items-baseline gap-3">
+          <span
+            className="font-display text-sm font-light uppercase tracking-[0.25em] md:text-base"
+            style={{ color: TEXT }}
+          >
+            Éclat Grandeur
+          </span>
         </Link>
+
+        {/* Right — EST. 1975 + hamburger */}
+        <div className="flex items-center gap-6">
+          <span
+            className="hidden font-sans text-[10px] font-light uppercase tracking-[0.3em] md:block"
+            style={{ color: `${TEXT}99` }}
+          >
+            Est. 1975
+          </span>
+          <button
+            type="button"
+            aria-label="Open menu"
+            onClick={() => setDrawer(true)}
+            className="transition hover:opacity-70"
+            style={{ color: TEXT }}
+          >
+            <Menu className="h-5 w-5" strokeWidth={1.25} />
+          </button>
+        </div>
       </div>
 
-      {/* Mobile / full-screen drawer */}
       <MobileDrawer
         open={drawer}
         onClose={() => setDrawer(false)}
@@ -66,22 +75,31 @@ function MobileDrawer({
     <div className={cn('fixed inset-0 z-[90]', open ? 'pointer-events-auto' : 'pointer-events-none')}>
       {/* backdrop */}
       <div
-        className={cn('absolute inset-0 bg-black/40 transition-opacity duration-500', open ? 'opacity-100' : 'opacity-0')}
+        className={cn('absolute inset-0 bg-black/50 transition-opacity duration-500', open ? 'opacity-100' : 'opacity-0')}
         onClick={onClose}
       />
 
       {/* panel */}
       <div
         className={cn(
-          'absolute left-0 top-0 flex h-full w-full max-w-xs flex-col bg-[#2c3d2e] transition-transform duration-500 ease-in-out',
+          'absolute left-0 top-0 flex h-full w-full max-w-xs flex-col transition-transform duration-500 ease-in-out',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
+        style={{ backgroundColor: BG }}
       >
         {/* drawer header */}
-        <div className="flex items-center justify-between border-b border-[#f5f0e8]/10 px-6 py-5">
-          <span className="font-display text-xl font-light text-[#f5f0e8]">{siteConfig.name}</span>
-          <button aria-label="Close menu" onClick={onClose} className="text-[#f5f0e8]/70 hover:text-[#f5f0e8]">
-            <X className="h-6 w-6" strokeWidth={1.5} />
+        <div
+          className="flex items-center justify-between px-6 py-5"
+          style={{ borderBottom: `1px solid ${TEXT}18` }}
+        >
+          <span
+            className="font-display text-sm font-light uppercase tracking-[0.25em]"
+            style={{ color: TEXT }}
+          >
+            Éclat Grandeur
+          </span>
+          <button aria-label="Close menu" onClick={onClose} style={{ color: `${TEXT}80` }}>
+            <X className="h-5 w-5" strokeWidth={1.25} />
           </button>
         </div>
 
@@ -91,12 +109,13 @@ function MobileDrawer({
             {primaryNav.map((item) => {
               const isOpen = openAccordion === item.label;
               return (
-                <li key={item.label} className="border-b border-[#f5f0e8]/10">
+                <li key={item.label} style={{ borderBottom: `1px solid ${TEXT}12` }}>
                   <div className="flex items-center justify-between py-4">
                     <Link
                       href={item.href}
                       onClick={onClose}
-                      className="text-sm font-medium uppercase tracking-widest text-[#f5f0e8]/80 hover:text-[#f5f0e8]"
+                      className="text-xs font-light uppercase tracking-[0.2em] transition hover:opacity-70"
+                      style={{ color: `${TEXT}cc` }}
                     >
                       {item.label}
                     </Link>
@@ -104,7 +123,8 @@ function MobileDrawer({
                       <button
                         aria-label="Toggle submenu"
                         onClick={() => setOpenAccordion(isOpen ? null : item.label)}
-                        className="p-2 text-[#f5f0e8]/50"
+                        className="p-2"
+                        style={{ color: `${TEXT}50` }}
                       >
                         <ChevronDown className={cn('h-4 w-4 transition-transform', isOpen && 'rotate-180')} />
                       </button>
@@ -117,7 +137,8 @@ function MobileDrawer({
                           <Link
                             href={c.href}
                             onClick={onClose}
-                            className="text-sm text-[#f5f0e8]/50 hover:text-[#f5f0e8]/90"
+                            className="text-xs transition hover:opacity-80"
+                            style={{ color: `${TEXT}55` }}
                           >
                             {c.label}
                           </Link>
@@ -132,13 +153,14 @@ function MobileDrawer({
         </div>
 
         {/* utility links */}
-        <div className="border-t border-[#f5f0e8]/10 px-6 py-5">
+        <div className="px-6 py-5" style={{ borderTop: `1px solid ${TEXT}12` }}>
           {utilityNav.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               onClick={onClose}
-              className="block py-2 text-[11px] uppercase tracking-widest text-[#f5f0e8]/40 hover:text-[#f5f0e8]/70"
+              className="block py-2 text-[10px] uppercase tracking-[0.25em] transition hover:opacity-70"
+              style={{ color: `${TEXT}44` }}
             >
               {l.label}
             </Link>

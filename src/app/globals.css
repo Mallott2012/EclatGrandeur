@@ -17,7 +17,9 @@
   }
 
   body {
-    @apply bg-ivory text-ink font-sans antialiased;
+    background-color: #162218;
+    color: #f0ece0;
+    @apply font-sans antialiased;
     text-rendering: optimizeLegibility;
   }
 

@@ -69,7 +69,7 @@ function VideoPanel({ panel, index }: { panel: (typeof PANELS)[number]; index: n
 
 export function Hero() {
   return (
-    <section className="flex h-screen w-full items-center justify-center bg-[#f5f0e8] px-6">
+    <section className="flex h-screen w-full items-center justify-center bg-[#162218] px-6">
       <div className="flex w-full max-w-[1400px] gap-3">
         {PANELS.map((panel, i) => (
           <VideoPanel key={panel.num} panel={panel} index={i} />
