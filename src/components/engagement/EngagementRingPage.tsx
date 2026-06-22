@@ -24,11 +24,7 @@ const HERO_IMAGES = [
 const DIVIDER = (
   <div
     aria-hidden
-    style={{
-      height: 1,
-      backgroundColor: `${GREEN}18`,
-      margin: '56px 0',
-    }}
+    style={{ height: 1, backgroundColor: `${GREEN}10`, margin: '72px 0' }}
   />
 );
 
@@ -154,7 +150,7 @@ export function EngagementRingPage({ settings }: Props) {
         </div>
 
         {/* content sections */}
-        <div className="px-8 lg:px-12 py-14">
+        <div className="px-8 lg:px-14 py-16">
 
           {/* page intro — desktop only left panel handles it */}
           <div className="lg:hidden mb-10">

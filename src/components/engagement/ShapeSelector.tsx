@@ -1,109 +1,54 @@
 'use client';
 
-import { cn } from '@/lib/utils';
-
 const GREEN = '#1a2b1a';
-const IVORY = '#ffffff';
 const GOLD  = '#b8965a';
 
 export type DiamondShape =
-  | 'round'
-  | 'oval'
-  | 'emerald'
-  | 'pear'
-  | 'cushion'
-  | 'princess'
-  | 'marquise'
-  | 'radiant'
-  | 'heart'
-  | 'asscher';
+  | 'round' | 'oval' | 'emerald' | 'pear' | 'cushion'
+  | 'princess' | 'marquise' | 'radiant' | 'heart' | 'asscher';
 
-// SVG silhouettes for each shape — precise, minimal, luxury
-const SHAPE_SVGS: Record<DiamondShape, React.FC<{ active: boolean }>> = {
-  round: ({ active }) => (
-    <svg viewBox="0 0 60 60" className="w-full h-full">
-      <circle cx="30" cy="30" r="22" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="1.2" />
-      <line x1="30" y1="8" x2="30" y2="52" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.4" />
-      <line x1="8" y1="30" x2="52" y2="30" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.4" />
-      <line x1="14" y1="14" x2="46" y2="46" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.4" />
-      <line x1="46" y1="14" x2="14" y2="46" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.4" />
-    </svg>
-  ),
-  oval: ({ active }) => (
-    <svg viewBox="0 0 60 60" className="w-full h-full">
-      <ellipse cx="30" cy="30" rx="16" ry="23" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="1.2" />
-      <line x1="30" y1="7" x2="30" y2="53" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.4" />
-      <line x1="14" y1="30" x2="46" y2="30" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.4" />
-    </svg>
-  ),
-  emerald: ({ active }) => (
-    <svg viewBox="0 0 60 60" className="w-full h-full">
-      <polygon points="16,10 44,10 50,20 50,40 44,50 16,50 10,40 10,20" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="1.2" />
-      <rect x="16" y="15" width="28" height="30" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.35" />
-      <rect x="20" y="19" width="20" height="22" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.35" />
-    </svg>
-  ),
-  pear: ({ active }) => (
-    <svg viewBox="0 0 60 60" className="w-full h-full">
-      <path d="M30,8 C40,8 50,16 50,28 C50,40 40,52 30,52 C20,52 10,40 10,28 C10,16 20,8 30,8 Z" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="1.2" />
-      <line x1="30" y1="8" x2="30" y2="52" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.4" />
-    </svg>
-  ),
-  cushion: ({ active }) => (
-    <svg viewBox="0 0 60 60" className="w-full h-full">
-      <rect x="10" y="10" width="40" height="40" rx="8" ry="8" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="1.2" />
-      <rect x="16" y="16" width="28" height="28" rx="4" ry="4" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.35" />
-    </svg>
-  ),
-  princess: ({ active }) => (
-    <svg viewBox="0 0 60 60" className="w-full h-full">
-      <rect x="12" y="12" width="36" height="36" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="1.2" />
-      <line x1="12" y1="12" x2="48" y2="48" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.4" />
-      <line x1="48" y1="12" x2="12" y2="48" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.4" />
-      <line x1="30" y1="12" x2="30" y2="48" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.3" />
-      <line x1="12" y1="30" x2="48" y2="30" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.3" />
-    </svg>
-  ),
-  marquise: ({ active }) => (
-    <svg viewBox="0 0 60 60" className="w-full h-full">
-      <path d="M30,8 L50,30 L30,52 L10,30 Z" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="1.2" />
-      <line x1="30" y1="8" x2="30" y2="52" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.4" />
-      <line x1="10" y1="30" x2="50" y2="30" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.4" />
-    </svg>
-  ),
-  radiant: ({ active }) => (
-    <svg viewBox="0 0 60 60" className="w-full h-full">
-      <polygon points="18,10 42,10 50,18 50,42 42,50 18,50 10,42 10,18" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="1.2" />
-      <line x1="18" y1="10" x2="42" y2="50" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.3" />
-      <line x1="42" y1="10" x2="18" y2="50" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.3" />
-      <line x1="10" y1="30" x2="50" y2="30" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.3" />
-      <line x1="30" y1="10" x2="30" y2="50" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.3" />
-    </svg>
-  ),
-  heart: ({ active }) => (
-    <svg viewBox="0 0 60 60" className="w-full h-full">
-      <path d="M30,50 C30,50 8,36 8,22 C8,14 14,8 21,8 C25,8 29,11 30,13 C31,11 35,8 39,8 C46,8 52,14 52,22 C52,36 30,50 30,50 Z" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="1.2" />
-    </svg>
-  ),
-  asscher: ({ active }) => (
-    <svg viewBox="0 0 60 60" className="w-full h-full">
-      <polygon points="20,10 40,10 50,20 50,40 40,50 20,50 10,40 10,20" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="1.2" />
-      <polygon points="22,16 38,16 44,22 44,38 38,44 22,44 16,38 16,22" fill="none" stroke={active ? IVORY : GREEN} strokeWidth="0.4" opacity="0.35" />
-    </svg>
-  ),
-};
-
-const SHAPES: { id: DiamondShape; label: string }[] = [
-  { id: 'round',     label: 'Round'     },
-  { id: 'oval',      label: 'Oval'      },
-  { id: 'emerald',   label: 'Emerald'   },
-  { id: 'pear',      label: 'Pear'      },
-  { id: 'cushion',   label: 'Cushion'   },
-  { id: 'princess',  label: 'Princess'  },
-  { id: 'marquise',  label: 'Marquise'  },
-  { id: 'radiant',   label: 'Radiant'   },
-  { id: 'asscher',   label: 'Asscher'   },
-  { id: 'heart',     label: 'Heart'     },
+// Clean outline SVGs — no internal facet lines, just the silhouette
+const SHAPES: { id: DiamondShape; label: string; viewBox: string; path: string }[] = [
+  {
+    id: 'round', label: 'Round', viewBox: '0 0 64 64',
+    path: 'M32 6 L54 20 L54 44 L32 58 L10 44 L10 20 Z',
+  },
+  {
+    id: 'oval', label: 'Oval', viewBox: '0 0 52 72',
+    path: 'M26 4 C38 4 48 14 48 36 C48 58 38 68 26 68 C14 68 4 58 4 36 C4 14 14 4 26 4 Z',
+  },
+  {
+    id: 'emerald', label: 'Emerald', viewBox: '0 0 64 56',
+    path: 'M16 4 L48 4 L60 14 L60 42 L48 52 L16 52 L4 42 L4 14 Z',
+  },
+  {
+    id: 'pear', label: 'Pear', viewBox: '0 0 52 72',
+    path: 'M26 6 C38 6 48 17 48 30 C48 50 36 66 26 66 C16 66 4 50 4 30 C4 17 14 6 26 6 Z',
+  },
+  {
+    id: 'cushion', label: 'Cushion', viewBox: '0 0 64 64',
+    path: 'M14 4 L50 4 Q60 4 60 14 L60 50 Q60 60 50 60 L14 60 Q4 60 4 50 L4 14 Q4 4 14 4 Z',
+  },
+  {
+    id: 'princess', label: 'Princess', viewBox: '0 0 60 60',
+    path: 'M4 4 L56 4 L56 56 L4 56 Z',
+  },
+  {
+    id: 'marquise', label: 'Marquise', viewBox: '0 0 40 72',
+    path: 'M20 4 C30 18 36 28 36 36 C36 52 30 62 20 68 C10 62 4 52 4 36 C4 28 10 18 20 4 Z',
+  },
+  {
+    id: 'radiant', label: 'Radiant', viewBox: '0 0 58 64',
+    path: 'M14 4 L44 4 L54 16 L54 48 L44 60 L14 60 L4 48 L4 16 Z',
+  },
+  {
+    id: 'asscher', label: 'Asscher', viewBox: '0 0 64 64',
+    path: 'M20 4 L44 4 L60 20 L60 44 L44 60 L20 60 L4 44 L4 20 Z',
+  },
+  {
+    id: 'heart', label: 'Heart', viewBox: '0 0 64 64',
+    path: 'M32 58 C32 58 4 38 4 20 C4 10 12 4 20 4 C26 4 30 8 32 12 C34 8 38 4 44 4 C52 4 60 10 60 20 C60 38 32 58 32 58 Z',
+  },
 ];
 
 interface Props {
@@ -114,57 +59,62 @@ interface Props {
 export function ShapeSelector({ selected, onChange }: Props) {
   return (
     <section>
-      <div className="mb-8">
-        <p
-          className="font-sans uppercase tracking-[0.3em] mb-3"
-          style={{ fontSize: 10, color: `${GREEN}88` }}
-        >
-          Step 02
-        </p>
-        <div style={{ width: 32, height: 1, backgroundColor: GOLD, marginBottom: 14 }} />
-        <h2
-          className="font-display"
-          style={{ fontSize: 'clamp(28px, 3vw, 40px)', fontWeight: 300, color: GREEN, lineHeight: 1.1 }}
-        >
-          Choose your stone shape
-        </h2>
-        <p
-          className="mt-3 font-sans leading-relaxed"
-          style={{ fontSize: 14, color: `${GREEN}99`, maxWidth: 360 }}
-        >
-          Each cut reveals a different character. Our GIA-certified stones are individually selected for brilliance.
-        </p>
-      </div>
+      <p
+        className="font-sans uppercase tracking-[0.35em] mb-10"
+        style={{ fontSize: 9, color: `${GREEN}55` }}
+      >
+        Stone Shape
+      </p>
 
-      <div className="grid grid-cols-5 gap-3">
-        {SHAPES.map(({ id, label }) => {
+      {/* Single row — scrollable on mobile */}
+      <div className="flex gap-6 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+        {SHAPES.map(({ id, label, viewBox, path }) => {
           const active = selected === id;
-          const ShapeSVG = SHAPE_SVGS[id];
           return (
             <button
               key={id}
               type="button"
               onClick={() => onChange(id)}
-              className={cn(
-                'group flex flex-col items-center gap-2 py-4 px-2 border transition-all duration-200',
-                active
-                  ? 'border-[#1a2b1a]'
-                  : 'border-[#1a2b1a22] hover:border-[#1a2b1a55]',
-              )}
-              style={{
-                borderRadius: 2,
-                backgroundColor: active ? GREEN : 'transparent',
-              }}
+              className="flex-shrink-0 flex flex-col items-center gap-4 focus:outline-none group"
+              style={{ width: 68 }}
             >
-              <div className="w-10 h-10">
-                <ShapeSVG active={active} />
+              {/* SVG silhouette */}
+              <div className="w-12 h-14 flex items-center justify-center">
+                <svg viewBox={viewBox} className="max-w-full max-h-full" style={{ overflow: 'visible' }}>
+                  <path
+                    d={path}
+                    fill="none"
+                    stroke={active ? GREEN : `${GREEN}44`}
+                    strokeWidth={active ? 1.8 : 1.2}
+                    style={{ transition: 'stroke 0.2s, stroke-width 0.2s' }}
+                  />
+                </svg>
               </div>
+
+              {/* label */}
               <span
-                className="font-sans uppercase text-center"
-                style={{ fontSize: 8, letterSpacing: '0.2em', color: active ? IVORY : `${GREEN}bb` }}
+                className="font-sans uppercase text-center block"
+                style={{
+                  fontSize: 8.5,
+                  letterSpacing: '0.2em',
+                  color: active ? GREEN : `${GREEN}66`,
+                  transition: 'color 0.2s',
+                }}
               >
                 {label}
               </span>
+
+              {/* active dot */}
+              <div
+                style={{
+                  width: 3,
+                  height: 3,
+                  borderRadius: '50%',
+                  backgroundColor: active ? GOLD : 'transparent',
+                  transition: 'background 0.2s',
+                  marginTop: -8,
+                }}
+              />
             </button>
           );
         })}

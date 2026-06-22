@@ -1,33 +1,25 @@
 'use client';
 
 import Image from 'next/image';
-import { cn } from '@/lib/utils';
 import type { RingSettingRecord } from '@/lib/ring-settings/types';
 
 const GREEN = '#1a2b1a';
-const IVORY = '#ffffff';
 const GOLD  = '#b8965a';
 
-// Fallback setting styles shown when no DB data is available
 const FALLBACK_SETTINGS = [
-  { id: 'solitaire',    name: 'Solitaire',    image: '/images/engagement/hero-solitaire.png',   description: 'A single stone, timeless in its clarity.' },
-  { id: 'halo',         name: 'Halo',         image: '/images/engagement/hero-halo.png',          description: 'A constellation of diamonds surrounds the centre.' },
-  { id: 'three-stone',  name: 'Three Stone',  image: '/images/engagement/hero-three-stone.png',  description: 'Past, present and future in one ring.' },
-  { id: 'pave',         name: 'Pavé',         image: '/images/engagement/hero-pave.png',          description: 'Diamonds set closely together, uninterrupted.' },
+  { id: 'solitaire',   name: 'Solitaire',   image: '/images/engagement/hero-solitaire.png',  description: 'A single stone, timeless in its clarity.' },
+  { id: 'halo',        name: 'Halo',        image: '/images/engagement/hero-halo.png',         description: 'A constellation of diamonds surrounds the centre.' },
+  { id: 'three-stone', name: 'Three Stone', image: '/images/engagement/hero-three-stone.png', description: 'Past, present and future in one ring.' },
+  { id: 'pave',        name: 'Pavé',        image: '/images/engagement/hero-pave.png',         description: 'Diamonds set closely, uninterrupted.' },
 ];
 
-type SettingOption = {
-  id: string;
-  name: string;
-  image: string;
-  description: string;
-};
+type SettingOption = { id: string; name: string; image: string; description: string };
 
 function toOptions(records: RingSettingRecord[]): SettingOption[] {
   return records.map((r) => ({
     id: r.id,
     name: r.name,
-    image: '/images/engagement/hero-solitaire.png', // replaced by real media later
+    image: '/images/engagement/hero-solitaire.png',
     description: r.description ?? '',
   }));
 }
@@ -39,36 +31,20 @@ interface Props {
 }
 
 export function SettingSelector({ settings, selected, onChange }: Props) {
-  const options: SettingOption[] = settings.length > 0 ? toOptions(settings) : FALLBACK_SETTINGS;
+  const options = settings.length > 0 ? toOptions(settings) : FALLBACK_SETTINGS;
 
   return (
     <section>
-      {/* Section header */}
-      <div className="mb-8">
-        <p
-          className="font-sans uppercase tracking-[0.3em] mb-3"
-          style={{ fontSize: 10, color: `${GREEN}88` }}
-        >
-          Step 01
-        </p>
-        {/* thin gold rule */}
-        <div style={{ width: 32, height: 1, backgroundColor: GOLD, marginBottom: 14 }} />
-        <h2
-          className="font-display"
-          style={{ fontSize: 'clamp(28px, 3vw, 40px)', fontWeight: 300, color: GREEN, lineHeight: 1.1, letterSpacing: '0.01em' }}
-        >
-          Choose your setting
-        </h2>
-        <p
-          className="mt-3 font-sans leading-relaxed"
-          style={{ fontSize: 14, color: `${GREEN}99`, maxWidth: 360 }}
-        >
-          The setting defines the character of the ring. Each style is handcrafted in our London atelier.
-        </p>
-      </div>
+      {/* Section label */}
+      <p
+        className="font-sans uppercase tracking-[0.35em] mb-10"
+        style={{ fontSize: 9, color: `${GREEN}55` }}
+      >
+        Setting Style
+      </p>
 
-      {/* Setting cards */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Setting tiles — horizontal, no borders, image-led */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-px" style={{ backgroundColor: '#e8e2d4' }}>
         {options.map((opt) => {
           const active = selected === opt.id;
           return (
@@ -76,47 +52,53 @@ export function SettingSelector({ settings, selected, onChange }: Props) {
               key={opt.id}
               type="button"
               onClick={() => onChange(opt.id, opt.image)}
-              className={cn(
-                'group relative overflow-hidden text-left transition-all duration-300',
-                'border',
-                active
-                  ? 'border-[#1a2b1a]'
-                  : 'border-[#1a2b1a22] hover:border-[#1a2b1a55]',
-              )}
-              style={{ borderRadius: 2 }}
+              className="group relative flex flex-col bg-white text-left focus:outline-none"
+              style={{ transition: 'background 0.2s' }}
             >
               {/* image */}
-              <div className="relative aspect-[4/3] overflow-hidden">
+              <div
+                className="relative overflow-hidden w-full"
+                style={{ aspectRatio: '3/4', backgroundColor: '#f7f5f2' }}
+              >
                 <Image
                   src={opt.image}
                   alt={opt.name}
                   fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  className="object-cover transition-transform duration-700 group-hover:scale-103"
                   sizes="(max-width:768px) 50vw, 22vw"
                 />
-                {/* dark overlay on inactive */}
+                {/* active indicator — thin top border */}
                 <div
-                  className="absolute inset-0 transition-opacity duration-300"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.12)', opacity: active ? 0 : 1 }}
+                  className="absolute inset-x-0 top-0 transition-all duration-300"
+                  style={{ height: 2, backgroundColor: active ? GREEN : 'transparent' }}
                 />
               </div>
 
-              {/* label row */}
-              <div
-                className="flex items-center justify-between px-4 py-3"
-                style={{ backgroundColor: active ? GREEN : IVORY, transition: 'background-color 0.3s' }}
-              >
-                <span
+              {/* name + active underline */}
+              <div className="px-4 py-5">
+                <p
                   className="font-display italic"
-                  style={{ fontSize: 17, fontWeight: 300, color: active ? IVORY : GREEN, letterSpacing: '0.02em' }}
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 300,
+                    color: GREEN,
+                    letterSpacing: '0.01em',
+                    lineHeight: 1.2,
+                  }}
                 >
                   {opt.name}
-                </span>
-                {active && (
-                  <span style={{ fontSize: 9, color: `${IVORY}99`, letterSpacing: '0.2em', fontFamily: 'var(--font-sans)' }}>
-                    SELECTED
-                  </span>
-                )}
+                </p>
+                <p
+                  className="font-sans mt-2 leading-relaxed"
+                  style={{ fontSize: 12, color: `${GREEN}77`, lineHeight: 1.6 }}
+                >
+                  {opt.description}
+                </p>
+                {/* underline when active */}
+                <div
+                  className="mt-4 transition-all duration-300"
+                  style={{ height: 1, backgroundColor: active ? GOLD : 'transparent', width: active ? 24 : 0 }}
+                />
               </div>
             </button>
           );
