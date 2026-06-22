@@ -8,16 +8,16 @@ import { Pause, Play, VolumeX, Volume2 } from 'lucide-react';
 
 const MODEL_PANEL = {
   num: '01',
-  label: 'The Collection',
-  sublabel: 'Worn Together',
+  label: 'The Éclat Collection',
+  sublabel: 'A woman in full',
   image: '/images/hero/model.png',
 };
 
 const PRODUCT_PANELS = [
-  { num: '02', label: 'Engagement Rings', image: '/images/hero/ring.png' },
-  { num: '03', label: 'Necklaces',        image: '/images/hero/necklace.png' },
-  { num: '04', label: 'Bracelets',        image: '/images/hero/bracelet.png' },
-  { num: '05', label: 'Earrings',         image: '/images/hero/earrings.png' },
+  { num: '02', label: 'The Promise',    sublabel: 'Engagement', image: '/images/hero/ring.png' },
+  { num: '03', label: 'Lumière',        sublabel: 'Necklaces',  image: '/images/hero/necklace.png' },
+  { num: '04', label: 'Éternité',       sublabel: 'Bracelets',  image: '/images/hero/bracelet.png' },
+  { num: '05', label: 'Aura',           sublabel: 'Earrings',   image: '/images/hero/earrings.png' },
 ];
 
 /* ─── Shared controls ─────────────────────────────────────────────────── */
@@ -101,16 +101,18 @@ function ModelPanel() {
       </div>
 
       {/* label — bottom left, large editorial type */}
-      <div className="absolute bottom-8 left-6 right-6">
+      <div className="absolute bottom-10 left-8 right-8">
         <p
-          className="font-sans text-white/50 uppercase"
-          style={{ fontSize: '9px', fontWeight: 400, letterSpacing: '0.35em', marginBottom: '6px' }}
+          className="font-sans uppercase text-white/45 mb-2"
+          style={{ fontSize: '9px', fontWeight: 300, letterSpacing: '0.4em' }}
         >
           {MODEL_PANEL.sublabel}
         </p>
+        {/* thin gold hairline */}
+        <div style={{ width: 32, height: '1px', backgroundColor: 'rgba(212,168,71,0.6)', marginBottom: '14px' }} />
         <h2
           className="font-display italic text-white"
-          style={{ fontSize: 'clamp(28px, 3.5vw, 48px)', fontWeight: 300, lineHeight: 1.1, letterSpacing: '0.02em' }}
+          style={{ fontSize: 'clamp(32px, 3.8vw, 56px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '0.02em' }}
         >
           {MODEL_PANEL.label}
         </h2>
@@ -150,10 +152,16 @@ function ProductPanel({ panel, priority }: { panel: (typeof PRODUCT_PANELS)[numb
       </div>
 
       {/* label — bottom */}
-      <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+      <div className="absolute bottom-5 left-5 right-5">
+        <p
+          className="font-sans uppercase text-white/50 mb-1"
+          style={{ fontSize: '8px', fontWeight: 300, letterSpacing: '0.32em' }}
+        >
+          {panel.sublabel}
+        </p>
         <span
-          className="font-display italic text-white/90"
-          style={{ fontSize: 'clamp(11px, 1.1vw, 15px)', fontWeight: 300, letterSpacing: '0.04em' }}
+          className="font-display italic text-white"
+          style={{ fontSize: 'clamp(14px, 1.4vw, 20px)', fontWeight: 300, letterSpacing: '0.03em', lineHeight: 1.1 }}
         >
           {panel.label}
         </span>
