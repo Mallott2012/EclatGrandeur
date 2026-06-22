@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, ChevronDown } from 'lucide-react';
+import { DiamondSelector } from '@/components/engagement/DiamondSelector';
 
 const G      = '#1a2b1a';
 const BORDER = '#e8e8e8';
@@ -35,9 +36,11 @@ interface Props {
 }
 
 export function JewelleryDetailPage({ product, config }: Props) {
-  const [selectedMetal, setSelectedMetal] = useState(product.materials[0]);
-  const [activeImage,   setActiveImage]   = useState(0);
-  const [metalOpen,     setMetalOpen]     = useState(false);
+  const [selectedMetal,   setSelectedMetal]   = useState(product.materials[0]);
+  const [activeImage,     setActiveImage]     = useState(0);
+  const [metalOpen,       setMetalOpen]       = useState(false);
+  const [diamondOpen,     setDiamondOpen]     = useState(false);
+  const [selectedDiamond, setSelectedDiamond] = useState<{ id: string; carat: number; color: string; clarity: string; price: number } | null>(null);
 
   const displayPrice = `Starting from £${product.basePrice.toLocaleString('en-GB')}`;
   const metalMeta    = METALS.find(m => m.label === selectedMetal) ?? METALS[0];
@@ -188,6 +191,26 @@ export function JewelleryDetailPage({ product, config }: Props) {
             </div>
           )}
 
+          {/* Diamond row */}
+          <button
+            type="button"
+            onClick={() => setDiamondOpen(true)}
+            className="flex items-center justify-between w-full py-4 text-left"
+            style={{ borderBottom: `1px solid ${BORDER}` }}
+          >
+            <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
+              Diamond
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="font-sans" style={{ fontSize: 13, color: selectedDiamond ? G : '#aaa', fontWeight: 300 }}>
+                {selectedDiamond
+                  ? `${selectedDiamond.carat.toFixed(2)} ct · ${selectedDiamond.clarity} ${selectedDiamond.color}`
+                  : 'Select a Diamond'}
+              </span>
+              <ChevronDown className="w-3.5 h-3.5" style={{ color: '#bbb' }} strokeWidth={1.5} />
+            </span>
+          </button>
+
           {/* Add to Bag CTA */}
           <button
             type="button"
@@ -235,6 +258,26 @@ export function JewelleryDetailPage({ product, config }: Props) {
           </div>
         </div>
       </div>
+
+      {/* ── DIAMOND SELECTOR DRAWER ────────────────────────────────────── */}
+      {diamondOpen && (
+        <div
+          className="fixed inset-0 z-[80]"
+          onClick={e => { if (e.target === e.currentTarget) setDiamondOpen(false); }}
+        >
+          <div className="absolute inset-0 bg-black/5" />
+          <div
+            className="absolute right-0 top-0 bottom-0 flex flex-col bg-white"
+            style={{ width: 'min(520px, 96vw)', boxShadow: '-4px 0 40px rgba(0,0,0,0.10)' }}
+          >
+            <DiamondSelector
+              selectedId={selectedDiamond?.id ?? null}
+              onClose={() => setDiamondOpen(false)}
+              onSelect={d => { setSelectedDiamond(d); setDiamondOpen(false); }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
