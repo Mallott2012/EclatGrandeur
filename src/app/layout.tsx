@@ -3,10 +3,6 @@ import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
 import { siteConfig } from '@/config/site';
 import { Header } from '@/components/layout/Header';
-import { HeaderSpacer } from '@/components/layout/HeaderSpacer';
-import { Footer } from '@/components/layout/Footer';
-import { LiveChat } from '@/components/layout/LiveChat';
-import { CartDrawer } from '@/components/cart/CartDrawer';
 
 const display = Cormorant_Garamond({
   subsets: ['latin'],
@@ -54,11 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${display.variable} ${sans.variable} bg-ivory`}>
       <body className="flex min-h-screen flex-col">
         <Header />
-        <HeaderSpacer />
         <main className="flex-1">{children}</main>
-        <Footer />
-        <CartDrawer />
-        <LiveChat />
       </body>
     </html>
   );
