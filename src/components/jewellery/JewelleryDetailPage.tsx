@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { DiamondSelector } from '@/components/engagement/DiamondSelector';
-import { TotalCaratSelector } from './TotalCaratSelector';
+
 
 const G      = '#1a2b1a';
 const BORDER = '#e8e8e8';
@@ -212,45 +212,30 @@ export function JewelleryDetailPage({ product, config }: Props) {
             </div>
           )}
 
-          {/* Diamond section — hidden for fixed designs */}
+          {/* Diamond / carat row — hidden for fixed designs */}
           {showDiamond && (
-            <div className="py-6" style={{ borderBottom: `1px solid ${BORDER}` }}>
-              {isTotalCarat ? (
-                /* ── Simple total carat pill selector ── */
-                <TotalCaratSelector
-                  isPair={product.caratIsPair === true}
-                  selectedCarat={selectedCarat}
-                  pricePerCarat={product.pricePerCarat ?? 1000}
-                  onChange={setSelectedCarat}
-                />
-              ) : (
-                /* ── Full DiamondSelector drawer button ── */
-                <button
-                  type="button"
-                  onClick={() => setDiamondOpen(true)}
-                  className="flex items-center justify-between w-full text-left"
-                >
-                  <span className="flex flex-col items-start gap-0.5">
-                    <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
-                      {isPair ? 'Diamonds (Pair)' : 'Diamond'}
-                    </span>
-                    {isPair && (
-                      <span className="font-sans" style={{ fontSize: 10, color: '#ccc', letterSpacing: '0.04em' }}>
-                        1 stone selected × 2 matched
-                      </span>
-                    )}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <span className="font-sans" style={{ fontSize: 13, color: selectedDiamond ? G : '#aaa', fontWeight: 300 }}>
-                      {selectedDiamond
-                        ? `${selectedDiamond.carat.toFixed(2)} ct · ${selectedDiamond.clarity} ${selectedDiamond.color}`
-                        : 'Select a Diamond'}
-                    </span>
-                    <ChevronDown className="w-3.5 h-3.5" style={{ color: '#bbb' }} strokeWidth={1.5} />
-                  </span>
-                </button>
-              )}
-            </div>
+            <button
+              type="button"
+              onClick={() => setDiamondOpen(true)}
+              className="flex items-center justify-between w-full py-4 text-left"
+              style={{ borderBottom: `1px solid ${BORDER}` }}
+            >
+              <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
+                {isTotalCarat
+                  ? (product.caratIsPair ? 'Total Carat Weight (Pair)' : 'Total Carat Weight')
+                  : (isPair ? 'Diamonds (Pair)' : 'Diamond')}
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="font-sans" style={{ fontSize: 13, color: hasSelection ? G : '#aaa', fontWeight: 300 }}>
+                  {isTotalCarat
+                    ? (selectedCarat ? `${selectedCarat}ct total` : 'Select Carat Weight')
+                    : (selectedDiamond
+                        ? `${selectedDiamond.carat.toFixed(2)}ct · ${selectedDiamond.clarity} ${selectedDiamond.color}`
+                        : 'Select a Diamond')}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5" style={{ color: '#bbb' }} strokeWidth={1.5} />
+              </span>
+            </button>
           )}
 
           {/* Add to Bag CTA */}
@@ -313,10 +298,19 @@ export function JewelleryDetailPage({ product, config }: Props) {
             style={{ width: 'min(520px, 96vw)', boxShadow: '-4px 0 40px rgba(0,0,0,0.10)' }}
           >
             <DiamondSelector
-              selectedId={selectedDiamond?.id ?? null}
+              selectedId={isTotalCarat ? (selectedCarat ? `tier_${selectedCarat}` : null) : (selectedDiamond?.id ?? null)}
               onClose={() => setDiamondOpen(false)}
-              onSelect={d => { setSelectedDiamond(d); setDiamondOpen(false); }}
-              pairMode={isPair}
+              onSelect={d => {
+                if (isTotalCarat) {
+                  setSelectedCarat(d.carat);
+                } else {
+                  setSelectedDiamond(d);
+                }
+                setDiamondOpen(false);
+              }}
+              pairMode={isPair || (isTotalCarat && product.caratIsPair === true)}
+              totalCaratMode={isTotalCarat}
+              pricePerCarat={product.pricePerCarat ?? 1000}
             />
           </div>
         </div>
