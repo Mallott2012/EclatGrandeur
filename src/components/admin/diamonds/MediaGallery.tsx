@@ -1,13 +1,15 @@
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
-import type { DiamondMediaResponse } from '@/lib/diamonds/types'
+import { useFormState as useActionState } from 'react-dom'
+import { useFormStatus } from 'react-dom'
+import type { DiamondMediaRecord } from '@/lib/diamonds/types'
 import type { DiamondSimpleResult } from '@/app/admin/(console)/diamonds/types'
 import { DIAMOND_SIMPLE_INITIAL } from '@/app/admin/(console)/diamonds/types'
 
-type MediaItemWithActions = DiamondMediaResponse & {
+type MediaItemWithActions = DiamondMediaRecord & {
   deleteAction:     (state: DiamondSimpleResult, formData: FormData) => Promise<DiamondSimpleResult>
   setPrimaryAction: (state: DiamondSimpleResult, formData: FormData) => Promise<DiamondSimpleResult>
+  signed_url?:      string
 }
 
 interface Props {
@@ -48,22 +50,22 @@ export function MediaGallery({ items, isPrivileged, uploadAction, nextDisplayOrd
 // ── MediaCard ─────────────────────────────────────────────────────────────────
 
 function MediaCard({ item, isPrivileged }: { item: MediaItemWithActions; isPrivileged: boolean }) {
-  const [deleteState, deleteAction]   = useFormState(item.deleteAction, DIAMOND_SIMPLE_INITIAL)
-  const [primaryState, primaryAction] = useFormState(item.setPrimaryAction, DIAMOND_SIMPLE_INITIAL)
+  const [deleteState, deleteAction]   = useActionState(item.deleteAction, DIAMOND_SIMPLE_INITIAL)
+  const [primaryState, primaryAction] = useActionState(item.setPrimaryAction, DIAMOND_SIMPLE_INITIAL)
 
   return (
     <div className="group relative overflow-hidden rounded border border-neutral-800 bg-neutral-900">
       {item.media_type === 'image' ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={item.signed_url}
+          src={item.signed_url ?? item.storage_path}
           alt={item.alt_text ?? ''}
           className="aspect-square w-full object-cover"
           loading="lazy"
         />
       ) : (
         <div className="flex aspect-square items-center justify-center bg-neutral-800 text-xs text-neutral-500">
-          360° video
+          {item.media_type === 'video_360' ? '360° video' : item.media_type}
         </div>
       )}
 
@@ -133,7 +135,7 @@ function MediaUploadForm({
   action:           (state: DiamondSimpleResult, formData: FormData) => Promise<DiamondSimpleResult>
   nextDisplayOrder: number
 }) {
-  const [state, formAction] = useFormState(action, DIAMOND_SIMPLE_INITIAL)
+  const [state, formAction] = useActionState(action, DIAMOND_SIMPLE_INITIAL)
 
   return (
     <form action={formAction} className="space-y-3" encType="multipart/form-data">

@@ -1,360 +1,218 @@
-// Diamond inventory DTOs and DTO conversion functions.
-// DiamondRecord mirrors public.diamonds exactly (including cert_pdf_path) and is
-// used only within server-only repository and service modules.
-// DiamondFull and DiamondSalesView are the two public-facing shapes:
-//   - DiamondFull: for super_admin and diamond_buyer — all fields except cert_pdf_path
-//   - DiamondSalesView: for sales_adviser — no supplier identity, no costs, no cert path,
-//     no internal_notes; hold_reason nulled when the hold belongs to another user
+// Diamond and ring setting types — mirrors the new schema exactly.
 
-import type { StaffUser } from '@/lib/staff-shared'
+// ── Enum types ────────────────────────────────────────────────────────────────
 
-// ── Enum types (mirror public.* PostgreSQL enums) ─────────────────────────────
-
-export type DiamondOrigin         = 'natural' | 'lab_grown'
-export type DiamondColourCategory = 'standard' | 'fancy'
-export type DiamondColourGrade    = 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M'
-export type FancyColourIntensity  =
-  | 'Faint' | 'Very Light' | 'Light'
-  | 'Fancy Light' | 'Fancy' | 'Fancy Intense'
-  | 'Fancy Vivid' | 'Fancy Deep' | 'Fancy Dark'
-export type DiamondShape =
-  | 'round' | 'oval' | 'princess' | 'emerald' | 'cushion'
+export type DiamondCut =
+  | 'round' | 'princess' | 'cushion' | 'oval' | 'emerald'
   | 'pear'  | 'marquise' | 'radiant' | 'asscher' | 'heart'
-  | 'trilliant' | 'baguette' | 'old_european' | 'old_mine'
-export type DiamondClarity      = 'FL' | 'IF' | 'VVS1' | 'VVS2' | 'VS1' | 'VS2' | 'SI1' | 'SI2'
-export type DiamondCut          = 'Ideal' | 'Excellent' | 'Very Good' | 'Good' | 'Fair'
-export type DiamondFinish       = 'Excellent' | 'Very Good' | 'Good' | 'Fair'
-export type DiamondFluorescence = 'None' | 'Faint' | 'Medium' | 'Strong' | 'Very Strong'
-export type CertificateLab      = 'GIA' | 'IGI' | 'HRD' | 'AGS' | 'GCAL'
-export type DiamondStatus       = 'available' | 'on_hold' | 'reserved' | 'sold' | 'removed'
-export type DiamondMediaType    = 'image' | 'video_360'
 
-// Seeded values from fancy_colour_hues. Adding a new hue requires an INSERT
-// migration AND adding the value here.
-export const FANCY_HUES = [
-  'yellow', 'pink', 'blue', 'green', 'brown',
-  'grey', 'black', 'orange', 'red', 'violet',
-] as const
-export type FancyColourHue = (typeof FANCY_HUES)[number]
+export type DiamondColour = 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J'
 
-// ── Raw database row ──────────────────────────────────────────────────────────
-// Supabase returns numeric columns (carat, meas_*, table_pct, depth_pct) as strings.
-// cert_pdf_path is present here for internal use by certificates.ts only and must
-// never appear in DiamondFull or DiamondSalesView.
+export type DiamondClarity = 'FL' | 'IF' | 'VVS1' | 'VVS2' | 'VS1' | 'VS2' | 'SI1' | 'SI2'
+
+export type DiamondGrade = 'excellent' | 'very_good' | 'good' | 'fair' | 'poor'
+
+export type DiamondFluorescence = 'none' | 'faint' | 'medium' | 'strong' | 'very_strong'
+
+export type DiamondStatus = 'available' | 'sold'
+
+export type MediaType = 'image' | 'video_360' | 'video' | 'certificate_pdf'
+
+export type RingMetal =
+  | 'platinum' | 'white_gold_18k' | 'yellow_gold_18k' | 'rose_gold_18k'
+  | 'white_gold_9k' | 'yellow_gold_9k'
+
+// ── Display helpers ───────────────────────────────────────────────────────────
+
+export const CUT_LABELS: Record<DiamondCut, string> = {
+  round:    'Round Brilliant',
+  princess: 'Princess',
+  cushion:  'Cushion',
+  oval:     'Oval',
+  emerald:  'Emerald',
+  pear:     'Pear',
+  marquise: 'Marquise',
+  radiant:  'Radiant',
+  asscher:  'Asscher',
+  heart:    'Heart',
+}
+
+export const CLARITY_ORDER: DiamondClarity[] = ['FL', 'IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2']
+export const COLOUR_ORDER: DiamondColour[]   = ['D', 'E', 'F', 'G', 'H', 'I', 'J']
+
+export const GRADE_LABELS: Record<DiamondGrade, string> = {
+  excellent: 'Excellent',
+  very_good: 'Very Good',
+  good:      'Good',
+  fair:      'Fair',
+  poor:      'Poor',
+}
+
+export const FLUORESCENCE_LABELS: Record<DiamondFluorescence, string> = {
+  none:        'None',
+  faint:       'Faint',
+  medium:      'Medium',
+  strong:      'Strong',
+  very_strong: 'Very Strong',
+}
+
+export const METAL_LABELS: Record<RingMetal, string> = {
+  platinum:        'Platinum',
+  white_gold_18k:  '18ct White Gold',
+  yellow_gold_18k: '18ct Yellow Gold',
+  rose_gold_18k:   '18ct Rose Gold',
+  white_gold_9k:   '9ct White Gold',
+  yellow_gold_9k:  '9ct Yellow Gold',
+}
+
+// ── Raw database rows (numerics come as strings from Supabase) ────────────────
+
 export interface DiamondRecord {
-  id:                       string
-  sku:                      string
-  supplier_id:              string | null
-  supplier_sku:             string | null
-  origin:                   DiamondOrigin
-  colour_category:          DiamondColourCategory
-  colour_grade:             DiamondColourGrade | null
-  fancy_colour_hue:         FancyColourHue | null
-  fancy_colour_intensity:   FancyColourIntensity | null
-  fancy_colour_overtone:    string | null
-  shape:                    DiamondShape
-  carat:                    string            // numeric(8,3) → string from Supabase
-  clarity:                  DiamondClarity
-  cut:                      DiamondCut | null
-  polish:                   DiamondFinish
-  symmetry:                 DiamondFinish
-  fluorescence:             DiamondFluorescence
-  meas_length_mm:           string | null
-  meas_width_mm:            string | null
-  meas_depth_mm:            string | null
-  table_pct:                string | null
-  depth_pct:                string | null
-  girdle:                   string | null
-  culet:                    string | null
-  cert_lab:                 CertificateLab | null
-  cert_number:              string | null
-  cert_pdf_path:            string | null     // INTERNAL ONLY — never expose
-  retail_price_amount:      number | null
-  retail_price_currency:    string
-  supplier_cost_amount:     number | null
-  supplier_cost_currency:   string
-  status:                   DiamondStatus
-  is_visible:               boolean
-  held_by_user_id:          string | null
-  held_at:                  string | null
-  hold_expires_at:          string | null
-  hold_reason:              string | null
-  selection_note:           string | null
-  internal_notes:           string | null
-  last_availability_check:  string | null
-  created_at:               string
-  updated_at:               string
-  created_by:               string | null
-  updated_by:               string | null
+  id:                   string
+  sku:                  string
+  ring_setting_id:      string | null
+  cut:                  DiamondCut
+  carat:                string
+  colour:               DiamondColour
+  clarity:              DiamondClarity
+  cut_grade:            DiamondGrade | null
+  polish:               DiamondGrade | null
+  symmetry:             DiamondGrade | null
+  fluorescence:         DiamondFluorescence
+  gia_report_number:    string | null
+  gia_report_date:      string | null
+  gia_report_url:       string | null
+  measurement_length:   string | null
+  measurement_width:    string | null
+  measurement_depth:    string | null
+  depth_pct:            string | null
+  table_pct:            string | null
+  price_gbp:            string
+  status:               DiamondStatus
+  is_published:         boolean
+  notes:                string | null
+  created_by:           string | null
+  updated_by:           string | null
+  created_at:           string
+  updated_at:           string
 }
 
-// ── Paginated result ──────────────────────────────────────────────────────────
-export interface PaginatedResult<T> {
-  items: T[]
-  page:  number
-  limit: number
-  total: number
-}
-
-// ── DiamondFull ───────────────────────────────────────────────────────────────
-// For super_admin and diamond_buyer. Numeric columns converted from string to number.
-// cert_pdf_path is absent — use getCertificateSignedUrl() from certificates.ts.
-export interface DiamondFull {
-  id:                       string
-  sku:                      string
-  supplier_id:              string | null
-  supplier_sku:             string | null
-  origin:                   DiamondOrigin
-  colour_category:          DiamondColourCategory
-  colour_grade:             DiamondColourGrade | null
-  fancy_colour_hue:         FancyColourHue | null
-  fancy_colour_intensity:   FancyColourIntensity | null
-  fancy_colour_overtone:    string | null
-  shape:                    DiamondShape
-  carat:                    number
-  clarity:                  DiamondClarity
-  cut:                      DiamondCut | null
-  polish:                   DiamondFinish
-  symmetry:                 DiamondFinish
-  fluorescence:             DiamondFluorescence
-  meas_length_mm:           number | null
-  meas_width_mm:            number | null
-  meas_depth_mm:            number | null
-  table_pct:                number | null
-  depth_pct:                number | null
-  girdle:                   string | null
-  culet:                    string | null
-  cert_lab:                 CertificateLab | null
-  cert_number:              string | null
-  // cert_pdf_path intentionally absent
-  supplier_code:            string | null   // from suppliers join; null when not joined
-  retail_price_amount:      number | null
-  retail_price_currency:    string
-  supplier_cost_amount:     number | null
-  supplier_cost_currency:   string
-  status:                   DiamondStatus
-  is_visible:               boolean
-  held_by_user_id:          string | null
-  held_at:                  string | null
-  hold_expires_at:          string | null
-  hold_reason:              string | null
-  selection_note:           string | null
-  internal_notes:           string | null
-  last_availability_check:  string | null
-  created_at:               string
-  updated_at:               string
-  created_by:               string | null
-  updated_by:               string | null
-  holdIsExpired:            boolean           // derived
-}
-
-// ── DiamondSalesView ──────────────────────────────────────────────────────────
-// For sales_adviser. Omits: supplier_id, supplier_sku, supplier costs, cert_pdf_path,
-// internal_notes, held_by_user_id.
-// hold_reason is null when isMyHold is false (another adviser's hold).
-export interface DiamondSalesView {
-  id:                       string
-  sku:                      string
-  origin:                   DiamondOrigin
-  colour_category:          DiamondColourCategory
-  colour_grade:             DiamondColourGrade | null
-  fancy_colour_hue:         FancyColourHue | null
-  fancy_colour_intensity:   FancyColourIntensity | null
-  fancy_colour_overtone:    string | null
-  shape:                    DiamondShape
-  carat:                    number
-  clarity:                  DiamondClarity
-  cut:                      DiamondCut | null
-  polish:                   DiamondFinish
-  symmetry:                 DiamondFinish
-  fluorescence:             DiamondFluorescence
-  meas_length_mm:           number | null
-  meas_width_mm:            number | null
-  meas_depth_mm:            number | null
-  table_pct:                number | null
-  depth_pct:                number | null
-  girdle:                   string | null
-  culet:                    string | null
-  cert_lab:                 CertificateLab | null
-  cert_number:              string | null
-  retail_price_amount:      number | null
-  retail_price_currency:    string
-  status:                   DiamondStatus
-  is_visible:               boolean
-  isMyHold:                 boolean
-  held_at:                  string | null
-  hold_expires_at:          string | null
-  hold_reason:              string | null   // null when !isMyHold
-  selection_note:           string | null
-  last_availability_check:  string | null
-  created_at:               string
-  updated_at:               string
-  created_by:               string | null
-  updated_by:               string | null
-  holdIsExpired:            boolean
-}
-
-// ── Media types ───────────────────────────────────────────────────────────────
-// DiamondMediaRecord mirrors public.diamond_media. storage_path is INTERNAL ONLY.
 export interface DiamondMediaRecord {
   id:            string
   diamond_id:    string
-  media_type:    DiamondMediaType
-  storage_path:  string           // INTERNAL ONLY — excluded from DiamondMediaResponse
+  media_type:    MediaType
+  storage_path:  string
   display_order: number
   alt_text:      string | null
   is_primary:    boolean
   created_at:    string
 }
 
-// Returned to callers — storage_path replaced by a time-limited signed URL.
-export interface DiamondMediaResponse {
-  id:            string
-  diamond_id:    string
-  media_type:    DiamondMediaType
-  signed_url:    string
-  display_order: number
-  alt_text:      string | null
-  is_primary:    boolean
-  created_at:    string
-}
-
-// ── Certificate result ────────────────────────────────────────────────────────
-export interface CertSignedUrlResult {
-  signed_url:    string
-  expires_at:    string    // ISO 8601 datetime
-  auditWarning?: boolean   // true when the audit event could not be written (upload only)
-}
-
-// ── RPC result types ──────────────────────────────────────────────────────────
-export interface TransitionResult {
+export interface RingSettingRecord {
   id:             string
-  oldStatus:      DiamondStatus
-  newStatus:      DiamondStatus
-  wasExpiredHold: boolean
+  name:           string
+  slug:           string
+  collection:     string | null
+  description:    string | null
+  metals:         RingMetal[]
+  base_price_gbp: string | null
+  is_published:   boolean
+  sort_order:     number
+  created_by:     string | null
+  updated_by:     string | null
+  created_at:     string
+  updated_at:     string
 }
 
-export interface ExtendResult {
-  id:                 string
-  previousExpiresAt:  string
-  newExpiresAt:       string
-  originalHeldAt:     string
+export interface RingSettingMediaRecord {
+  id:               string
+  ring_setting_id:  string
+  media_type:       MediaType
+  storage_path:     string
+  display_order:    number
+  alt_text:         string | null
+  is_primary:       boolean
+  created_at:       string
 }
 
-// ── DiamondListRecord ─────────────────────────────────────────────────────────
-// DiamondRecord extended with the supplier code from a left join on suppliers.
-// Returned by findManyDiamonds (list queries); absent from single-record lookups.
-export type DiamondListRecord = DiamondRecord & { supplier_code: string | null }
+// ── App-level types (parsed numerics) ─────────────────────────────────────────
 
-// ── DTO conversion helpers ────────────────────────────────────────────────────
+export interface Diamond {
+  id:                   string
+  sku:                  string
+  ring_setting_id:      string | null
+  cut:                  DiamondCut
+  carat:                number
+  colour:               DiamondColour
+  clarity:              DiamondClarity
+  cut_grade:            DiamondGrade | null
+  polish:               DiamondGrade | null
+  symmetry:             DiamondGrade | null
+  fluorescence:         DiamondFluorescence
+  gia_report_number:    string | null
+  gia_report_date:      string | null
+  gia_report_url:       string | null
+  measurement_length:   number | null
+  measurement_width:    number | null
+  measurement_depth:    number | null
+  depth_pct:            number | null
+  table_pct:            number | null
+  price_gbp:            number
+  status:               DiamondStatus
+  is_published:         boolean
+  notes:                string | null
+  created_at:           string
+  updated_at:           string
+  media:                DiamondMediaRecord[]
+}
 
-function toNum(value: string | null): number | null {
-  if (value === null) return null
-  const n = parseFloat(value)
+export interface RingSetting {
+  id:             string
+  name:           string
+  slug:           string
+  collection:     string | null
+  description:    string | null
+  metals:         RingMetal[]
+  base_price_gbp: number | null
+  is_published:   boolean
+  sort_order:     number
+  created_at:     string
+  updated_at:     string
+  media:          RingSettingMediaRecord[]
+  diamonds?:      Diamond[]
+}
+
+// ── Conversion helpers ────────────────────────────────────────────────────────
+
+function toNum(v: string | null): number | null {
+  if (v === null) return null
+  const n = parseFloat(v)
   return isNaN(n) ? null : n
 }
 
-function isHoldExpired(record: DiamondRecord): boolean {
-  return (
-    record.status === 'on_hold' &&
-    record.hold_expires_at !== null &&
-    new Date(record.hold_expires_at) <= new Date()
-  )
-}
-
-// Accepts both DiamondRecord (single-lookup, no join) and DiamondListRecord
-// (list queries with supplier join). supplier_code is null when not joined.
-export function toDiamondFull(record: DiamondRecord & { supplier_code?: string | null }): DiamondFull {
+export function parseDiamond(r: DiamondRecord, media: DiamondMediaRecord[] = []): Diamond {
   return {
-    id:                      record.id,
-    sku:                     record.sku,
-    supplier_id:             record.supplier_id,
-    supplier_sku:            record.supplier_sku,
-    origin:                  record.origin,
-    colour_category:         record.colour_category,
-    colour_grade:            record.colour_grade,
-    fancy_colour_hue:        record.fancy_colour_hue,
-    fancy_colour_intensity:  record.fancy_colour_intensity,
-    fancy_colour_overtone:   record.fancy_colour_overtone,
-    shape:                   record.shape,
-    carat:                   parseFloat(record.carat),
-    clarity:                 record.clarity,
-    cut:                     record.cut,
-    polish:                  record.polish,
-    symmetry:                record.symmetry,
-    fluorescence:            record.fluorescence,
-    meas_length_mm:          toNum(record.meas_length_mm),
-    meas_width_mm:           toNum(record.meas_width_mm),
-    meas_depth_mm:           toNum(record.meas_depth_mm),
-    table_pct:               toNum(record.table_pct),
-    depth_pct:               toNum(record.depth_pct),
-    girdle:                  record.girdle,
-    culet:                   record.culet,
-    cert_lab:                record.cert_lab,
-    cert_number:             record.cert_number,
-    supplier_code:           record.supplier_code ?? null,
-    retail_price_amount:     record.retail_price_amount,
-    retail_price_currency:   record.retail_price_currency,
-    supplier_cost_amount:    record.supplier_cost_amount,
-    supplier_cost_currency:  record.supplier_cost_currency,
-    status:                  record.status,
-    is_visible:              record.is_visible,
-    held_by_user_id:         record.held_by_user_id,
-    held_at:                 record.held_at,
-    hold_expires_at:         record.hold_expires_at,
-    hold_reason:             record.hold_reason,
-    selection_note:          record.selection_note,
-    internal_notes:          record.internal_notes,
-    last_availability_check: record.last_availability_check,
-    created_at:              record.created_at,
-    updated_at:              record.updated_at,
-    created_by:              record.created_by,
-    updated_by:              record.updated_by,
-    holdIsExpired:           isHoldExpired(record),
+    ...r,
+    carat:              parseFloat(r.carat),
+    price_gbp:          parseFloat(r.price_gbp),
+    measurement_length: toNum(r.measurement_length),
+    measurement_width:  toNum(r.measurement_width),
+    measurement_depth:  toNum(r.measurement_depth),
+    depth_pct:          toNum(r.depth_pct),
+    table_pct:          toNum(r.table_pct),
+    media,
   }
 }
 
-export function toDiamondSalesView(record: DiamondRecord, actor: StaffUser): DiamondSalesView {
-  const myHold = record.held_by_user_id === actor.id
+export function parseRingSetting(
+  r: RingSettingRecord,
+  media: RingSettingMediaRecord[] = [],
+  diamonds: Diamond[] = [],
+): RingSetting {
   return {
-    id:                      record.id,
-    sku:                     record.sku,
-    origin:                  record.origin,
-    colour_category:         record.colour_category,
-    colour_grade:            record.colour_grade,
-    fancy_colour_hue:        record.fancy_colour_hue,
-    fancy_colour_intensity:  record.fancy_colour_intensity,
-    fancy_colour_overtone:   record.fancy_colour_overtone,
-    shape:                   record.shape,
-    carat:                   parseFloat(record.carat),
-    clarity:                 record.clarity,
-    cut:                     record.cut,
-    polish:                  record.polish,
-    symmetry:                record.symmetry,
-    fluorescence:            record.fluorescence,
-    meas_length_mm:          toNum(record.meas_length_mm),
-    meas_width_mm:           toNum(record.meas_width_mm),
-    meas_depth_mm:           toNum(record.meas_depth_mm),
-    table_pct:               toNum(record.table_pct),
-    depth_pct:               toNum(record.depth_pct),
-    girdle:                  record.girdle,
-    culet:                   record.culet,
-    cert_lab:                record.cert_lab,
-    cert_number:             record.cert_number,
-    retail_price_amount:     record.retail_price_amount,
-    retail_price_currency:   record.retail_price_currency,
-    status:                  record.status,
-    is_visible:              record.is_visible,
-    isMyHold:                myHold,
-    held_at:                 record.held_at,
-    hold_expires_at:         record.hold_expires_at,
-    hold_reason:             myHold ? record.hold_reason : null,
-    selection_note:          record.selection_note,
-    last_availability_check: record.last_availability_check,
-    created_at:              record.created_at,
-    updated_at:              record.updated_at,
-    created_by:              record.created_by,
-    updated_by:              record.updated_by,
-    holdIsExpired:           isHoldExpired(record),
+    ...r,
+    base_price_gbp: toNum(r.base_price_gbp),
+    media,
+    diamonds,
   }
 }

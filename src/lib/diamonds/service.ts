@@ -1,252 +1,223 @@
 import 'server-only'
 
 import { createAdminClient } from '@/lib/supabase/admin'
-import { ServiceException, mapRpcError } from '@/lib/errors'
 import type { StaffUser } from '@/lib/staff-shared'
 import {
-  toDiamondFull,
-  toDiamondSalesView,
-  type DiamondFull,
-  type DiamondSalesView,
-  type PaginatedResult,
-  type TransitionResult,
-  type ExtendResult,
+  parseDiamond,
+  parseRingSetting,
+  type Diamond,
+  type RingSetting,
+  type DiamondRecord,
+  type DiamondMediaRecord,
+  type RingSettingRecord,
+  type RingSettingMediaRecord,
 } from './types'
-import {
-  findDiamondById,
-  findManyDiamonds,
-  insertDiamond,
-  updateDiamond,
-  rpcTransitionStatus,
-  rpcExtendHold,
-} from './repository'
 import type {
   CreateDiamondInput,
   UpdateDiamondInput,
-  DiamondFilter,
-  PlaceHoldInput,
-  ExtendHoldInput,
-  TransitionStatusInput,
+  CreateRingSettingInput,
+  UpdateRingSettingInput,
 } from './schemas'
 
-// ── Audit helper ─────────────────────────────────────────────────────────────
-// Non-blocking: logs on failure, never throws. Consistent with certificates.ts.
+// ── Audit helper ──────────────────────────────────────────────────────────────
+
 async function writeAudit(
   actorId:  string,
   action:   string,
+  entityType: string,
   entityId: string,
   metadata?: Record<string, unknown>,
 ): Promise<void> {
   try {
     const admin = createAdminClient()
-    const { error } = await admin.from('audit_logs').insert({
+    await admin.from('audit_logs').insert({
       actor_user_id: actorId,
       action,
-      entity_type:   'diamond',
+      entity_type:   entityType,
       entity_id:     entityId,
       metadata:      metadata ?? {},
     })
-    if (error) console.error(`[service] Audit write failed for ${action}:`, entityId, error)
-  } catch (err) {
-    console.error(`[service] Audit write threw for ${action}:`, entityId, err)
+  } catch {
+    // Non-blocking — never throw on audit failure
   }
 }
 
-// ── Role guards ───────────────────────────────────────────────────────────────
+// ── Diamonds ──────────────────────────────────────────────────────────────────
 
-function hasRole(user: StaffUser, ...roles: string[]): boolean {
-  return roles.some((r) => user.roles.includes(r as never))
+export async function listDiamonds(): Promise<Diamond[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('diamonds')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw new Error('Failed to list diamonds')
+  const records = (data ?? []) as DiamondRecord[]
+  return records.map((r) => parseDiamond(r))
 }
 
-function requirePrivileged(actor: StaffUser): void {
-  if (!hasRole(actor, 'super_admin', 'diamond_buyer')) {
-    throw new ServiceException({ code: 'insufficient_role', message: "You don't have permission for this action", statusHint: 403 })
-  }
+export async function getDiamond(id: string): Promise<Diamond | null> {
+  const admin = createAdminClient()
+  const { data: row, error } = await admin
+    .from('diamonds')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error('Failed to fetch diamond')
+  if (!row) return null
+  const media = await listDiamondMedia(id)
+  return parseDiamond(row as DiamondRecord, media)
 }
-
-function requireAnyStaff(actor: StaffUser): void {
-  if (actor.roles.length === 0) {
-    throw new ServiceException({ code: 'not_staff', message: "You don't have permission to perform this action", statusHint: 403 })
-  }
-}
-
-// sales_adviser without super_admin or diamond_buyer gets restricted view.
-function isPrivileged(actor: StaffUser): boolean {
-  return hasRole(actor, 'super_admin', 'diamond_buyer')
-}
-
-// ── Diamond read ──────────────────────────────────────────────────────────────
-
-export async function getDiamond(
-  actor: StaffUser,
-  id:    string,
-): Promise<DiamondFull | DiamondSalesView> {
-  requireAnyStaff(actor)
-  const record = await findDiamondById(id)
-  if (!record) throw new ServiceException({ code: 'not_found', message: 'Diamond not found', statusHint: 404 })
-  return isPrivileged(actor) ? toDiamondFull(record) : toDiamondSalesView(record, actor)
-}
-
-// Sales advisers see only available/on_hold/reserved (never sold or removed).
-// Privileged roles see all statuses. Status filter in the incoming filter is
-// ignored for sales advisers and replaced with the role-appropriate set.
-export async function listDiamonds(
-  actor:  StaffUser,
-  filter: DiamondFilter,
-): Promise<PaginatedResult<DiamondFull> | PaginatedResult<DiamondSalesView>> {
-  requireAnyStaff(actor)
-
-  if (!isPrivileged(actor)) {
-    const restricted = await findManyDiamonds(filter, ['available', 'on_hold', 'reserved'])
-    return {
-      ...restricted,
-      items: restricted.items.map((r) => toDiamondSalesView(r, actor)),
-    }
-  }
-
-  const result = await findManyDiamonds(filter)
-  return { ...result, items: result.items.map((r) => toDiamondFull(r)) }
-}
-
-// ── Diamond write ─────────────────────────────────────────────────────────────
 
 export async function createDiamond(
   actor: StaffUser,
   input: CreateDiamondInput,
-): Promise<DiamondFull> {
-  requirePrivileged(actor)
-  const record  = await insertDiamond(input, actor.id)
-  const diamond = toDiamondFull(record)
-  await writeAudit(actor.id, 'diamond.create', diamond.id, { sku: diamond.sku })
+): Promise<Diamond> {
+  const admin = createAdminClient()
+  // Insert with empty sku — trigger will auto-assign EGD-YYYY-NNNNNN
+  const { data, error } = await admin
+    .from('diamonds')
+    .insert({ ...input, sku: '', created_by: actor.id, updated_by: actor.id })
+    .select()
+    .single()
+  if (error || !data) throw new Error(error?.message ?? 'Failed to create diamond')
+  const diamond = parseDiamond(data as DiamondRecord)
+  await writeAudit(actor.id, 'diamond.create', 'diamond', diamond.id, { sku: diamond.sku })
   return diamond
 }
 
-export async function patchDiamond(
+export async function updateDiamond(
   actor: StaffUser,
   id:    string,
   patch: UpdateDiamondInput,
-): Promise<DiamondFull> {
-  requirePrivileged(actor)
-
-  const existing = await findDiamondById(id)
-  if (!existing) throw new ServiceException({ code: 'not_found', message: 'Diamond not found', statusHint: 404 })
-  if (existing.status === 'sold' || existing.status === 'removed') {
-    throw new ServiceException({ code: 'terminal_status', message: `Cannot edit a diamond with status '${existing.status}'`, statusHint: 409 })
-  }
-
-  // Validate merged colour model — patch fields override existing fields.
-  const merged = { ...existing, ...patch }
-  if (merged.colour_category === 'standard' && merged.colour_grade == null) {
-    throw new ServiceException({ code: 'validation_error', message: 'colour_grade is required for standard colour category', statusHint: 400 })
-  }
-  if (merged.colour_category === 'fancy' && merged.fancy_colour_hue == null) {
-    throw new ServiceException({ code: 'validation_error', message: 'fancy_colour_hue is required for fancy colour category', statusHint: 400 })
-  }
-  if (merged.colour_category === 'fancy' && merged.fancy_colour_intensity == null) {
-    throw new ServiceException({ code: 'validation_error', message: 'fancy_colour_intensity is required for fancy colour category', statusHint: 400 })
-  }
-  if (merged.is_visible && (!merged.cert_lab || !merged.cert_number)) {
-    throw new ServiceException({ code: 'validation_error', message: 'cert_lab and cert_number are required when is_visible is true', statusHint: 400 })
-  }
-
-  const updated = await updateDiamond(id, patch, actor.id)
-  const full    = toDiamondFull(updated)
-  await writeAudit(actor.id, 'diamond.update', id)
-  if (patch.is_visible !== undefined && patch.is_visible !== existing.is_visible) {
-    await writeAudit(actor.id, 'diamond.visibility_changed', id, { is_visible: patch.is_visible })
-  }
-  return full
+): Promise<Diamond> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('diamonds')
+    .update({ ...patch, updated_by: actor.id })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error || !data) throw new Error(error?.message ?? 'Failed to update diamond')
+  await writeAudit(actor.id, 'diamond.update', 'diamond', id)
+  return parseDiamond(data as DiamondRecord)
 }
 
-// ── Hold / status transitions ─────────────────────────────────────────────────
-// These delegate to the SECURITY DEFINER RPCs which enforce all hold constraints.
-// RPC errors are mapped to ServiceErrors via mapRpcError.
+export async function deleteDiamond(actor: StaffUser, id: string): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin.from('diamonds').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+  await writeAudit(actor.id, 'diamond.delete', 'diamond', id)
+}
 
-export async function placeHold(
+// ── Diamond media ─────────────────────────────────────────────────────────────
+
+export async function listDiamondMedia(diamondId: string): Promise<DiamondMediaRecord[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('diamond_media')
+    .select('*')
+    .eq('diamond_id', diamondId)
+    .order('display_order', { ascending: true })
+  if (error) throw new Error('Failed to fetch diamond media')
+  return (data ?? []) as DiamondMediaRecord[]
+}
+
+export async function addDiamondMedia(
   actor: StaffUser,
-  input: PlaceHoldInput,
-): Promise<TransitionResult> {
-  requireAnyStaff(actor)
-  try {
-    const row = await rpcTransitionStatus(
-      actor.id,
-      input.diamond_id,
-      'on_hold',
-      input.hold_expires_at,
-      input.hold_reason,
-    )
-    return {
-      id:             input.diamond_id,
-      oldStatus:      row.old_status as never,
-      newStatus:      'on_hold',
-      wasExpiredHold: row.was_expired_hold,
-    }
-  } catch (err) {
-    throw new ServiceException(mapRpcError(err))
-  }
+  record: Omit<DiamondMediaRecord, 'id' | 'created_at'>,
+): Promise<DiamondMediaRecord> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('diamond_media')
+    .insert(record)
+    .select()
+    .single()
+  if (error || !data) throw new Error(error?.message ?? 'Failed to add media')
+  await writeAudit(actor.id, 'diamond.media.add', 'diamond', record.diamond_id)
+  return data as DiamondMediaRecord
 }
 
-export async function releaseHold(
-  actor:     StaffUser,
-  diamondId: string,
-): Promise<TransitionResult> {
-  requireAnyStaff(actor)
-  try {
-    const row = await rpcTransitionStatus(actor.id, diamondId, 'available')
-    return {
-      id:             diamondId,
-      oldStatus:      row.old_status as never,
-      newStatus:      'available',
-      wasExpiredHold: row.was_expired_hold,
-    }
-  } catch (err) {
-    throw new ServiceException(mapRpcError(err))
-  }
+export async function deleteDiamondMedia(actor: StaffUser, mediaId: string, diamondId: string): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin.from('diamond_media').delete().eq('id', mediaId).eq('diamond_id', diamondId)
+  if (error) throw new Error(error.message)
+  await writeAudit(actor.id, 'diamond.media.delete', 'diamond', diamondId)
 }
 
-export async function transitionStatus(
+// ── Ring settings ─────────────────────────────────────────────────────────────
+
+export async function listRingSettings(): Promise<RingSetting[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('ring_settings')
+    .select('*')
+    .order('sort_order', { ascending: true })
+  if (error) throw new Error('Failed to list ring settings')
+  return ((data ?? []) as RingSettingRecord[]).map((r) => parseRingSetting(r))
+}
+
+export async function getRingSetting(id: string): Promise<RingSetting | null> {
+  const admin = createAdminClient()
+  const { data: row, error } = await admin
+    .from('ring_settings')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error('Failed to fetch ring setting')
+  if (!row) return null
+
+  const { data: mediaRows } = await admin
+    .from('ring_setting_media')
+    .select('*')
+    .eq('ring_setting_id', id)
+    .order('display_order', { ascending: true })
+
+  const { data: diamondRows } = await admin
+    .from('diamonds')
+    .select('*')
+    .eq('ring_setting_id', id)
+    .order('carat', { ascending: true })
+
+  const media    = (mediaRows    ?? []) as RingSettingMediaRecord[]
+  const diamonds = ((diamondRows ?? []) as DiamondRecord[]).map((d) => parseDiamond(d))
+  return parseRingSetting(row as RingSettingRecord, media, diamonds)
+}
+
+export async function createRingSetting(
   actor: StaffUser,
-  input: TransitionStatusInput,
-): Promise<TransitionResult> {
-  requirePrivileged(actor)
-  try {
-    const row = await rpcTransitionStatus(
-      actor.id,
-      input.diamond_id,
-      input.new_status,
-      input.hold_expires_at,
-      input.hold_reason,
-    )
-    return {
-      id:             input.diamond_id,
-      oldStatus:      row.old_status as never,
-      newStatus:      input.new_status as never,
-      wasExpiredHold: row.was_expired_hold,
-    }
-  } catch (err) {
-    throw new ServiceException(mapRpcError(err))
-  }
+  input: CreateRingSettingInput,
+): Promise<RingSetting> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('ring_settings')
+    .insert({ ...input, created_by: actor.id, updated_by: actor.id })
+    .select()
+    .single()
+  if (error || !data) throw new Error(error?.message ?? 'Failed to create ring setting')
+  await writeAudit(actor.id, 'ring_setting.create', 'ring_setting', data.id)
+  return parseRingSetting(data as RingSettingRecord)
 }
 
-export async function extendHold(
+export async function updateRingSetting(
   actor: StaffUser,
-  input: ExtendHoldInput,
-): Promise<ExtendResult> {
-  requireAnyStaff(actor)
-  try {
-    const row = await rpcExtendHold(
-      actor.id,
-      input.diamond_id,
-      input.new_expires_at,
-      input.hold_reason,
-    )
-    return {
-      id:                input.diamond_id,
-      previousExpiresAt: row.previous_expires_at,
-      newExpiresAt:      input.new_expires_at,
-      originalHeldAt:    row.original_held_at,
-    }
-  } catch (err) {
-    throw new ServiceException(mapRpcError(err))
-  }
+  id:    string,
+  patch: UpdateRingSettingInput,
+): Promise<RingSetting> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('ring_settings')
+    .update({ ...patch, updated_by: actor.id })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error || !data) throw new Error(error?.message ?? 'Failed to update ring setting')
+  await writeAudit(actor.id, 'ring_setting.update', 'ring_setting', id)
+  return parseRingSetting(data as RingSettingRecord)
+}
+
+export async function deleteRingSetting(actor: StaffUser, id: string): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin.from('ring_settings').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+  await writeAudit(actor.id, 'ring_setting.delete', 'ring_setting', id)
 }

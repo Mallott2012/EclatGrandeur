@@ -21,16 +21,13 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', href: '/admin', live: true },
-  // Phase 1+ modules — each must add requireStaffRole() when implemented.
-  { label: 'Suppliers', href: '/admin/suppliers', live: true  },
-  { label: 'Diamonds',  href: '/admin/diamonds',  live: true  },
-  { label: 'Ring Settings', href: '/admin/ring-settings', live: false },
-  { label: 'Ready Rings', href: '/admin/ready-rings', live: false },
-  { label: 'Enquiries', href: '/admin/enquiries', live: false },
-  { label: 'Reservations', href: '/admin/reservations', live: false },
-  { label: 'Content', href: '/admin/content', live: false },
-  { label: 'Team', href: '/admin/team', live: false },
+  { label: 'Dashboard',     href: '/admin',               live: true  },
+  { label: 'Ring Settings', href: '/admin/ring-settings', live: true  },
+  { label: 'Diamonds',      href: '/admin/diamonds',      live: true  },
+  { label: 'Enquiries',     href: '/admin/enquiries',     live: false },
+  { label: 'Orders',        href: '/admin/orders',        live: false },
+  { label: 'Content',       href: '/admin/content',       live: false },
+  { label: 'Team',          href: '/admin/team',          live: false },
 ];
 
 interface Props {
