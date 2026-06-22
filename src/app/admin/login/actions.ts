@@ -37,9 +37,6 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
   }
 
   // Verify the user actually holds a staff role before granting access.
-  // Use the admin client here because the session cookie set by signInWithPassword
-  // may not be readable in the same Server Action request cycle, causing the
-  // cookie-based RLS client to return zero rows even when the role exists.
   const adminClient = createAdminClient();
   const { data: roleRows, error: rolesError } = await adminClient
     .from('staff_roles')
@@ -54,7 +51,6 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
   const roles = (roleRows ?? []).map((r) => r.role as string);
 
   if (roles.length === 0) {
-    // Sign them back out — authenticated but not staff.
     await supabase.auth.signOut();
     return { error: 'Your account does not have staff access. Contact a super admin.' };
   }
