@@ -4,8 +4,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Pause, Play, VolumeX, Volume2 } from 'lucide-react';
 
-const BG   = '#1c1c17';
-const TEXT = '#e8e0cc';
+const BG   = '#e8e2d4';   // dark ivory / warm parchment
+const TEXT = '#1a2b1a';   // deep forest green for text on light bg
 
 const PANELS = [
   { num: '01', label: 'Engagement Rings', image: '/images/hero/ring.png' },
