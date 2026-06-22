@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Montserrat, Lato } from 'next/font/google';
+import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
 import { siteConfig } from '@/config/site';
 import { Header } from '@/components/layout/Header';
@@ -8,16 +8,17 @@ import { Footer } from '@/components/layout/Footer';
 import { LiveChat } from '@/components/layout/LiveChat';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 
-const display = Montserrat({
+const display = Cormorant_Garamond({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
   variable: '--font-display',
   display: 'swap',
 });
 
-const sans = Lato({
+const sans = Inter({
   subsets: ['latin'],
-  weight: ['300', '400', '700'],
+  weight: ['300', '400', '500', '600'],
   variable: '--font-sans',
   display: 'swap',
 });
@@ -50,7 +51,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable}`}>
+    <html lang="en" className={`${display.variable} ${sans.variable} bg-ivory`}>
       <body className="flex min-h-screen flex-col">
         <Header />
         <HeaderSpacer />

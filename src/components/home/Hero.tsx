@@ -1,75 +1,151 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/Button';
-import { Diamond } from '@/components/art/Diamond';
-import { SparkleField } from '@/components/art/Sparkle';
+import { useRef, useState, useCallback } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Pause, Play, VolumeX, Volume2 } from 'lucide-react';
 
-const ease = [0.22, 1, 0.36, 1] as const;
+const PANELS = [
+  {
+    num: '01',
+    label: 'Engagement Rings',
+    href: '/engagement-rings',
+    image: '/images/hero/ring.png',
+  },
+  {
+    num: '02',
+    label: 'Necklaces',
+    href: '/necklaces',
+    image: '/images/hero/necklace.png',
+  },
+  {
+    num: '03',
+    label: 'Diamonds',
+    href: '/diamonds',
+    image: '/images/hero/diamond.png',
+  },
+  {
+    num: '04',
+    label: 'Bracelets',
+    href: '/bracelets',
+    image: '/images/hero/bracelet.png',
+  },
+  {
+    num: '05',
+    label: 'Earrings',
+    href: '/earrings',
+    image: '/images/hero/earrings.png',
+  },
+];
+
+function VideoPanel({
+  panel,
+  index,
+}: {
+  panel: (typeof PANELS)[number];
+  index: number;
+}) {
+  const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(true);
+
+  return (
+    <div
+      className="group relative flex-1 min-w-0 overflow-hidden rounded-2xl"
+      style={{ aspectRatio: '9/16' }}
+    >
+      {/* Image fills the card — acts as video placeholder */}
+      <Image
+        src={panel.image}
+        alt={panel.label}
+        fill
+        sizes="(max-width: 768px) 80vw, 20vw"
+        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+        priority={index < 2}
+      />
+
+      {/* Subtle dark gradient at top and bottom */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+
+      {/* Number + mute — top row */}
+      <div className="absolute inset-x-0 top-0 flex items-center justify-between px-3 pt-3">
+        <span className="font-sans text-[11px] font-medium text-white/90 tracking-widest">
+          {panel.num}
+        </span>
+        <button
+          type="button"
+          aria-label={muted ? 'Unmute' : 'Mute'}
+          onClick={() => setMuted((m) => !m)}
+          className="rounded-full bg-black/25 p-1.5 text-white/80 backdrop-blur-sm transition hover:bg-black/40"
+        >
+          {muted ? (
+            <VolumeX className="h-3.5 w-3.5" strokeWidth={1.75} />
+          ) : (
+            <Volume2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+          )}
+        </button>
+      </div>
+
+      {/* Pause / play — bottom-left */}
+      <div className="absolute bottom-3 left-3 flex items-end justify-between w-[calc(100%-1.5rem)]">
+        <button
+          type="button"
+          aria-label={paused ? 'Play' : 'Pause'}
+          onClick={() => setPaused((p) => !p)}
+          className="rounded-full bg-black/25 p-1.5 text-white/80 backdrop-blur-sm transition hover:bg-black/40"
+        >
+          {paused ? (
+            <Play className="h-3.5 w-3.5 fill-white/80" strokeWidth={0} />
+          ) : (
+            <Pause className="h-3.5 w-3.5 fill-white/80" strokeWidth={0} />
+          )}
+        </button>
+
+        {/* Label on hover */}
+        <span className="translate-y-1 font-sans text-[10px] font-medium uppercase tracking-widest text-white/0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:text-white/80">
+          {panel.label}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export function Hero() {
   return (
-    <section className="relative w-full overflow-hidden bg-gradient-to-b from-glacier-soft/60 via-ivory to-ivory">
-      <div className="container-luxe grid grid-cols-1 items-center gap-10 pt-28 pb-12 md:pt-36 md:pb-16 lg:grid-cols-2">
-        {/* copy */}
-        <div className="relative z-10 text-center lg:text-left">
-          <motion.span
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease }}
-            className="eyebrow"
-          >
-            The Original Online Jeweler
-          </motion.span>
+    <section className="w-full bg-ivory py-16 md:py-20">
+      <div className="container-luxe flex flex-col items-center">
 
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease, delay: 0.1 }}
-            className="mt-4 font-display text-4xl font-semibold leading-[1.08] text-noir md:text-6xl"
-          >
-            Find the one.
-            <br />
-            <span className="text-champagne-deep">Build your own ring.</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease, delay: 0.2 }}
-            className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-ink/60 lg:mx-0"
-          >
-            Choose a setting, search thousands of certified diamonds by the 4Cs, and complete a
-            one-of-a-kind ring — with free shipping, free returns and a lifetime warranty.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease, delay: 0.3 }}
-            className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start"
-          >
-            <Button href="/build-a-ring" variant="primary" size="lg">
-              Build Your Own Ring
-            </Button>
-            <Button href="/diamonds" variant="outline" size="lg">
-              Search Diamonds
-            </Button>
-          </motion.div>
+        {/* Editorial headline */}
+        <div className="mb-10 flex flex-col items-center text-center">
+          <span className="mb-3 font-sans text-[10px] font-semibold uppercase tracking-[0.3em] text-ink/50">
+            The Collection
+          </span>
+          <div className="mb-4 h-px w-8 bg-champagne/60" />
+          <h1 className="font-display text-5xl font-light italic leading-[1.1] text-ink md:text-6xl lg:text-7xl">
+            Crafted for<br className="hidden sm:block" /> a lifetime.
+          </h1>
+          <p className="mt-5 max-w-md font-sans text-sm leading-relaxed text-ink/55">
+            Timeless jewellery, individually certified and<br className="hidden sm:block" />
+            handset by our master craftsmen in London.
+          </p>
         </div>
 
-        {/* visual */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.1, ease }}
-          className="relative flex items-center justify-center"
-        >
-          <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-full bg-gradient-to-b from-white to-glacier-soft/50 shadow-luxe">
-            <SparkleField color="text-champagne/50" />
-            <Diamond shape="round" size={300} id="hero-stone" className="animate-float" />
-          </div>
-        </motion.div>
+        {/* 5 video panels */}
+        <div className="flex w-full gap-2.5 md:gap-3">
+          {PANELS.map((panel, i) => (
+            <VideoPanel key={panel.num} panel={panel} index={i} />
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div className="mt-10">
+          <Link
+            href="/collections"
+            className="inline-flex items-center gap-3 rounded-full border border-ink/25 bg-ivory-deep px-8 py-3.5 font-sans text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/70 transition-all duration-300 hover:border-champagne hover:bg-champagne hover:text-ivory"
+          >
+            Explore the Collection
+            <span className="text-base leading-none">→</span>
+          </Link>
+        </div>
       </div>
     </section>
   );

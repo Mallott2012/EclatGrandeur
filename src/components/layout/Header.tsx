@@ -54,7 +54,7 @@ export function Header() {
       <AnnouncementBar />
 
       <div
-        className="bg-white text-ink shadow-[0_1px_0_rgba(19,40,60,0.08)]"
+        className="bg-noir text-ivory shadow-[0_1px_0_rgba(0,0,0,0.2)]"
         onMouseLeave={scheduleClose}
       >
         {/* Top row */}
@@ -69,12 +69,12 @@ export function Header() {
             >
               <Menu className="h-6 w-6" strokeWidth={1.5} />
             </button>
-            <Link href="/" className="flex flex-col leading-none">
-              <span className="font-display text-2xl font-bold tracking-tight text-noir md:text-[26px]">
+            <Link href="/" className="flex items-baseline gap-3 leading-none">
+              <span className="font-display text-2xl font-light tracking-tight text-ivory md:text-[26px]">
                 {siteConfig.name}
               </span>
-              <span className="hidden text-[8px] uppercase tracking-wide2 text-ink/45 md:block">
-                {siteConfig.tagline}
+              <span className="hidden text-[9px] uppercase tracking-wide2 text-ivory/50 md:block">
+                Est. 1974
               </span>
             </Link>
           </div>
@@ -82,14 +82,14 @@ export function Header() {
           {/* center: search */}
           <form
             onSubmit={onSearch}
-            className="ml-auto hidden max-w-md flex-1 items-center gap-2 rounded-full border border-ink/15 bg-ivory-warm px-4 py-2 focus-within:border-champagne md:flex"
+            className="ml-auto hidden max-w-md flex-1 items-center gap-2 rounded-full border border-ivory/20 bg-noir-soft px-4 py-2 focus-within:border-champagne md:flex"
           >
-            <Search className="h-4 w-4 text-ink/40" strokeWidth={1.75} />
+            <Search className="h-4 w-4 text-ivory/40" strokeWidth={1.75} />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search diamonds, rings, jewelry…"
-              className="w-full bg-transparent text-sm text-ink placeholder:text-ink/40 focus:outline-none"
+              placeholder="Search rings, diamonds, jewellery…"
+              className="w-full bg-transparent text-sm text-ivory placeholder:text-ivory/40 focus:outline-none"
             />
           </form>
 
@@ -97,7 +97,7 @@ export function Header() {
           <div className="ml-auto flex items-center gap-5 md:ml-0">
             <button
               aria-label="Search"
-              className="hover:text-champagne-deep md:hidden"
+              className="text-ivory/80 hover:text-ivory md:hidden"
               onClick={() => router.push('/diamonds')}
             >
               <Search className="h-5 w-5" strokeWidth={1.5} />
@@ -105,7 +105,7 @@ export function Header() {
             <Link
               href="/appointments"
               aria-label="Account"
-              className="hidden hover:text-champagne-deep md:inline-flex"
+              className="hidden text-ivory/80 hover:text-ivory md:inline-flex"
             >
               <User className="h-5 w-5" strokeWidth={1.5} />
             </Link>
@@ -114,15 +114,15 @@ export function Header() {
         </div>
 
         {/* Nav row (desktop) */}
-        <nav className="hidden border-t border-ink/10 lg:block">
+        <nav className="hidden border-t border-ivory/10 lg:block">
           <ul className="container-luxe flex items-center justify-center gap-9 py-3">
             {primaryNav.map((item) => (
               <li key={item.label} onMouseEnter={() => openMenu(item.label)}>
                 <Link
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-1 text-[13px] font-semibold uppercase tracking-luxe transition-colors hover:text-champagne-deep',
-                    active === item.label ? 'text-champagne-deep' : 'text-noir'
+                    'flex items-center gap-1 text-[11px] font-medium uppercase tracking-luxe transition-colors hover:text-champagne-leaf',
+                    active === item.label ? 'text-champagne-leaf' : 'text-ivory/80'
                   )}
                 >
                   {item.label}
@@ -163,7 +163,7 @@ function MegaMenu({
   return (
     <div
       className={cn(
-        'absolute inset-x-0 top-full hidden overflow-hidden border-t border-ink/10 bg-white text-ink shadow-luxe transition-all duration-300 ease-luxe lg:block',
+        'absolute inset-x-0 top-full hidden overflow-hidden border-t border-ivory/10 bg-noir-soft text-ivory shadow-luxe transition-all duration-300 ease-luxe lg:block',
         item ? 'pointer-events-auto max-h-[440px] opacity-100' : 'pointer-events-none max-h-0 opacity-0'
       )}
       onMouseEnter={onEnter}
@@ -177,11 +177,11 @@ function MegaMenu({
               {item.children?.map((c) => (
                 <li key={`${c.href}-${c.label}`}>
                   <Link href={c.href} className="group flex items-baseline justify-between">
-                    <span className="text-base font-medium text-ink transition-colors group-hover:text-champagne-deep">
+                    <span className="text-base font-medium text-ivory/80 transition-colors group-hover:text-champagne-leaf">
                       {c.label}
                     </span>
                     {c.note && (
-                      <span className="ml-3 text-[10px] font-semibold uppercase tracking-luxe text-champagne-deep">
+                      <span className="ml-3 text-[10px] font-semibold uppercase tracking-luxe text-champagne-leaf">
                         {c.note}
                       </span>
                     )}
@@ -236,12 +236,12 @@ function MobileDrawer({
       />
       <div
         className={cn(
-          'absolute left-0 top-0 flex h-full w-full max-w-sm flex-col bg-white transition-transform duration-500 ease-luxe',
+          'absolute left-0 top-0 flex h-full w-full max-w-sm flex-col bg-noir transition-transform duration-500 ease-luxe',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="flex items-center justify-between border-b border-ink/10 px-6 py-5">
-          <span className="font-display text-2xl font-bold text-noir">{siteConfig.name}</span>
+        <div className="flex items-center justify-between border-b border-ivory/10 px-6 py-5">
+          <span className="font-display text-2xl font-light text-ivory">{siteConfig.name}</span>
           <button aria-label="Close menu" onClick={onClose}>
             <X className="h-6 w-6" strokeWidth={1.5} />
           </button>
@@ -252,9 +252,9 @@ function MobileDrawer({
             {primaryNav.map((item) => {
               const isOpen = openAccordion === item.label;
               return (
-                <li key={item.label} className="border-b border-ink/10">
+                  <li key={item.label} className="border-b border-ivory/10">
                   <div className="flex items-center justify-between py-4">
-                    <Link href={item.href} onClick={onClose} className="text-base font-semibold text-noir">
+                    <Link href={item.href} onClick={onClose} className="text-base font-medium text-ivory">
                       {item.label}
                     </Link>
                     {item.children && (
@@ -271,7 +271,7 @@ function MobileDrawer({
                     <ul className={cn('overflow-hidden transition-all duration-300', isOpen ? 'max-h-96 pb-4' : 'max-h-0')}>
                       {item.children.map((c) => (
                         <li key={`${c.href}-${c.label}`} className="py-2">
-                          <Link href={c.href} onClick={onClose} className="text-sm text-ink/70 hover:text-champagne-deep">
+                          <Link href={c.href} onClick={onClose} className="text-sm text-ivory/60 hover:text-champagne-leaf">
                             {c.label}
                           </Link>
                         </li>
@@ -284,13 +284,13 @@ function MobileDrawer({
           </ul>
         </div>
 
-        <div className="border-t border-ink/10 px-6 py-6">
+        <div className="border-t border-ivory/10 px-6 py-6">
           {utilityNav.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               onClick={onClose}
-              className="block py-2 text-[12px] font-semibold uppercase tracking-luxe text-ink/60 hover:text-champagne-deep"
+              className="block py-2 text-[12px] font-medium uppercase tracking-luxe text-ivory/50 hover:text-champagne-leaf"
             >
               {l.label}
             </Link>
