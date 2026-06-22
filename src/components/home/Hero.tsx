@@ -166,7 +166,7 @@ function ProductPanel({ panel, priority }: { panel: (typeof PRODUCT_PANELS)[numb
 
 export function Hero() {
   return (
-    <div className="flex" style={{ height: 'calc(100vh - 72px)' }}>
+    <div className="flex h-full"style={{ minHeight: 0 }}>
 
       {/* Left — model hero (45%) */}
       <ModelPanel />

@@ -52,9 +52,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`} style={{ backgroundColor: '#e8e2d4' }}>
-      <body>
+      <body className="flex h-dvh flex-col overflow-hidden">
         <Header />
-        <main>{children}</main>
+        <main className="min-h-0 flex-1">{children}</main>
       </body>
     </html>
   );
