@@ -63,8 +63,8 @@ export function EngagementRingPage({ settings: _settings }: Props) {
   return (
     <div className="min-h-screen bg-white" style={{ color: G }}>
 
-      {/* ── PAGE TITLE ───────────────────────────────────────────────────── */}
-      <div className="text-center pt-14 pb-1">
+      {/* ── PAGE TITLE — pt must clear the fixed header (~72px) ─────────── */}
+      <div className="text-center pt-28 pb-1">
         <h1
           className="font-display"
           style={{ fontSize: 'clamp(26px, 4vw, 44px)', fontWeight: 300, letterSpacing: '0.06em', color: G }}
@@ -74,7 +74,7 @@ export function EngagementRingPage({ settings: _settings }: Props) {
       </div>
 
       {/* ── SHAPE SELECTOR ───────────────────────────────────────────────── */}
-      <div className="overflow-x-auto" style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, scrollbarWidth: 'none' }}>
+      <div className="overflow-x-auto px-6 lg:px-14" style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, scrollbarWidth: 'none' }}>
         <ShapeSelector
           selected={activeShape}
           onChange={s => setActiveShape(prev => prev === s ? null : s)}

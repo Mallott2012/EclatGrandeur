@@ -64,8 +64,8 @@ export function RingDetailPage({ slug }: Props) {
     <>
       <div className="min-h-screen bg-white" style={{ color: G }}>
 
-        {/* ── BREADCRUMB ─────────────────────────────────────────────────── */}
-        <nav className="flex items-center gap-2 px-8 lg:px-14 py-5" style={{ borderBottom: `1px solid ${BORDER}` }} aria-label="Breadcrumb">
+        {/* ── BREADCRUMB — pt clears fixed header ────────────────────────── */}
+        <nav className="flex items-center gap-2 px-8 lg:px-14 pt-24 pb-5" style={{ borderBottom: `1px solid ${BORDER}` }} aria-label="Breadcrumb">
           <Link href="/" className="font-sans" style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Home</Link>
           <ChevronRight className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#ddd' }} strokeWidth={1.5} />
           <Link href="/engagement-rings" className="font-sans" style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Engagement Rings</Link>
@@ -76,8 +76,8 @@ export function RingDetailPage({ slug }: Props) {
         {/* ── SPLIT LAYOUT ───────────────────────────────────────────────── */}
         <div className="flex flex-col lg:flex-row">
 
-          {/* LEFT — image panel, sticky on desktop */}
-          <div className="lg:w-[58%] lg:sticky lg:top-0 lg:h-screen flex flex-col bg-white">
+          {/* LEFT — image panel, sticky on desktop, pure white */}
+          <div className="lg:w-[58%] lg:sticky lg:top-0 lg:h-screen flex flex-col" style={{ backgroundColor: '#ffffff' }}>
 
             {/* Main image */}
             <div className="flex-1 flex items-center justify-center p-10 lg:p-16">
@@ -285,13 +285,13 @@ export function RingDetailPage({ slug }: Props) {
         </div>
       </div>
 
-      {/* ── DIAMOND SELECTOR DRAWER ────────────────────────────────────────── */}
+      {/* ── DIAMOND SELECTOR DRAWER — z above header (z-[70]) ────────────── */}
       {diamondOpen && (
         <div
-          className="fixed inset-0 z-40"
+          className="fixed inset-0 z-[80]"
           onClick={(e) => { if (e.target === e.currentTarget) setDiamondOpen(false); }}
         >
-          <div className="absolute inset-0 bg-black/15" />
+          <div className="absolute inset-0 bg-black/5" />
           <div
             className="absolute right-0 top-0 bottom-0 flex flex-col bg-white"
             style={{ width: 'min(520px, 96vw)', boxShadow: '-4px 0 40px rgba(0,0,0,0.10)' }}
