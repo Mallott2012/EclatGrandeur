@@ -6,8 +6,8 @@ import { Menu, X, ChevronDown } from 'lucide-react';
 import { primaryNav, utilityNav } from '@/config/site';
 import { cn } from '@/lib/utils';
 
-const BG   = '#1a2b1a';   // deep forest green — matches live site header
-const TEXT = '#f0ece0';   // warm ivory white
+const BG   = '#e8e2d4';   // dark ivory white
+const TEXT = '#1a2b1a';   // deep forest green
 
 export function Header() {
   const [drawer, setDrawer] = useState(false);
