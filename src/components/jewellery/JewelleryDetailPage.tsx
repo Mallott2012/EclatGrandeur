@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import { ChevronRight, ChevronDown } from 'lucide-react'; // ChevronDown used in metal dropdown
 import { DiamondSelector } from '@/components/engagement/DiamondSelector';
 
 
@@ -212,40 +212,64 @@ export function JewelleryDetailPage({ product, config }: Props) {
             </div>
           )}
 
-          {/* Diamond / carat row — hidden for fixed designs */}
+          {/* Diamond / carat row — static display, hidden for fixed designs */}
           {showDiamond && (
-            <button
-              type="button"
-              onClick={() => setDiamondOpen(true)}
-              className="flex items-center justify-between w-full py-4 text-left"
-              style={{ borderBottom: `1px solid ${BORDER}` }}
-            >
+            <div className="flex items-center justify-between py-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
               <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
                 {isTotalCarat
                   ? (product.caratIsPair ? 'Total Carat Weight (Pair)' : 'Total Carat Weight')
                   : (isPair ? 'Diamonds (Pair)' : 'Diamond')}
               </span>
-              <span className="flex items-center gap-2">
-                <span className="font-sans" style={{ fontSize: 13, color: hasSelection ? G : '#aaa', fontWeight: 300 }}>
+              {hasSelection ? (
+                <button
+                  type="button"
+                  onClick={() => setDiamondOpen(true)}
+                  className="font-sans"
+                  style={{ fontSize: 13, color: G, fontWeight: 300, textDecoration: 'underline', textUnderlineOffset: 3 }}
+                >
                   {isTotalCarat
-                    ? (selectedCarat ? `${selectedCarat}ct total` : 'Select Carat Weight')
-                    : (selectedDiamond
-                        ? `${selectedDiamond.carat.toFixed(2)}ct · ${selectedDiamond.clarity} ${selectedDiamond.color}`
-                        : 'Select a Diamond')}
+                    ? `${selectedCarat}ct total`
+                    : `${selectedDiamond!.carat.toFixed(2)} ct · ${selectedDiamond!.color} · ${selectedDiamond!.clarity}`}
+                </button>
+              ) : (
+                <span className="font-sans" style={{ fontSize: 13, color: '#bbb', fontWeight: 300 }}>
+                  Not yet selected
                 </span>
-                <ChevronDown className="w-3.5 h-3.5" style={{ color: '#bbb' }} strokeWidth={1.5} />
-              </span>
+              )}
+            </div>
+          )}
+
+          {/* Primary CTA — "SELECT A DIAMOND" / "SELECT CARAT WEIGHT" opens drawer */}
+          {showDiamond && (
+            <button
+              type="button"
+              onClick={() => setDiamondOpen(true)}
+              className="w-full font-sans uppercase mt-8 py-4"
+              style={{ fontSize: 11, letterSpacing: '0.28em', backgroundColor: G, color: '#fff' }}
+            >
+              {hasSelection
+                ? (isTotalCarat ? 'Change Carat Weight' : 'Change Diamond')
+                : (isTotalCarat ? 'Select Carat Weight' : 'Select a Diamond')}
             </button>
           )}
 
-          {/* Add to Bag CTA */}
-          <button
-            type="button"
-            className="w-full font-sans uppercase mt-8 py-4"
-            style={{ fontSize: 11, letterSpacing: '0.28em', backgroundColor: G, color: '#fff' }}
-          >
-            Add to Bag
-          </button>
+          {/* Add to Bag — only appears once selection is made */}
+          {(!showDiamond || hasSelection) && (
+            <button
+              type="button"
+              className="w-full font-sans uppercase mt-3 py-4"
+              style={{
+                fontSize: 11, letterSpacing: '0.28em',
+                backgroundColor: showDiamond ? '#fff' : G,
+                color: showDiamond ? G : '#fff',
+                border: showDiamond ? `1px solid ${G}` : 'none',
+              }}
+            >
+              {showDiamond
+                ? `Add to Bag — £${totalPrice.toLocaleString('en-GB')}`
+                : 'Add to Bag'}
+            </button>
+          )}
 
           {/* Expert link */}
           <p className="font-sans text-center mt-5" style={{ fontSize: 12, color: '#aaa', letterSpacing: '0.02em' }}>
