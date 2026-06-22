@@ -73,8 +73,23 @@ export function Header({ theme = 'ivory' }: HeaderProps) {
           </span>
         </Link>
 
-        {/* Right spacer — mirrors hamburger width */}
-        <div className="ml-auto w-6" aria-hidden="true" />
+        {/* Right — utility links */}
+        <div className="ml-auto flex items-center gap-6">
+          <Link
+            href="/about"
+            className="font-sans uppercase transition-opacity hover:opacity-50"
+            style={{ fontSize: 9, letterSpacing: '0.25em', color: TEXT, fontWeight: 300 }}
+          >
+            About Us
+          </Link>
+          <Link
+            href="/account"
+            className="font-sans uppercase transition-opacity hover:opacity-50"
+            style={{ fontSize: 9, letterSpacing: '0.25em', color: TEXT, fontWeight: 300 }}
+          >
+            My Account
+          </Link>
+        </div>
       </div>
 
       {/* hairline — only on ivory theme */}
