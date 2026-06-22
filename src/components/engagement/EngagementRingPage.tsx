@@ -62,28 +62,29 @@ export function EngagementRingPage({ settings }: Props) {
   return (
     <div style={{ backgroundColor: '#fff', color: GREEN, minHeight: '100vh' }}>
 
-      {/* ── PAGE HEADER — breadcrumb + title ─────────────────────────────── */}
-      <div className="px-6 lg:px-10 pt-8 pb-2">
-        <nav className="flex items-center gap-2 mb-5" aria-label="Breadcrumb">
-          <Link href="/" className="font-sans" style={{ fontSize: 11, color: '#999', letterSpacing: '0.08em' }}>Home</Link>
-          <ChevronRight className="w-3 h-3" style={{ color: '#ccc' }} strokeWidth={1.5} />
-          <span className="font-sans" style={{ fontSize: 11, color: GREEN, letterSpacing: '0.08em' }}>Engagement Rings</span>
+      {/* ── PAGE HEADER ──────────────────────────────────────────────────── */}
+      <div className="px-6 lg:px-16 pt-10 pb-6">
+        <nav className="flex items-center gap-2 mb-6" aria-label="Breadcrumb">
+          <Link href="/" className="font-sans" style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Home</Link>
+          <ChevronRight className="w-2.5 h-2.5" style={{ color: '#ddd' }} strokeWidth={1.5} />
+          <span className="font-sans" style={{ fontSize: 11, color: '#888', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Engagement Rings</span>
         </nav>
         <h1
           className="font-display"
-          style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1.1 }}
+          style={{ fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 300, letterSpacing: '0.06em', lineHeight: 1.05, color: '#111' }}
         >
           Engagement Rings
         </h1>
-        <p className="font-sans mt-3 max-w-lg" style={{ fontSize: 13, color: '#777', lineHeight: 1.7, fontWeight: 300 }}>
-          Each ring is individually handcrafted in our London atelier. Choose your setting, select your diamond, and create something made to last forever.
+        <p className="font-sans mt-4 max-w-md" style={{ fontSize: 13, color: '#aaa', lineHeight: 1.8, fontWeight: 300, letterSpacing: '0.02em' }}>
+          Each ring is individually handcrafted in our London atelier.
+          Choose your setting, select your diamond, and create something made to last forever.
         </p>
       </div>
 
       {/* ── TOOLBAR — Sort / Count / Filters ─────────────────────────────── */}
       <div
-        className="sticky top-0 z-20 flex items-center justify-between px-6 lg:px-10 bg-white"
-        style={{ height: 52, borderTop: '1px solid #eee', borderBottom: '1px solid #eee' }}
+        className="sticky top-0 z-20 flex items-center justify-between px-6 lg:px-16 bg-white"
+        style={{ height: 48, borderTop: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0' }}
       >
         {/* Sort */}
         <div className="relative">
@@ -151,8 +152,8 @@ export function EngagementRingPage({ settings }: Props) {
 
       {/* ── SHAPE ROW ─────────────────────────────────────────────────────── */}
       <div
-        className="px-6 lg:px-10 overflow-x-auto"
-        style={{ borderBottom: '1px solid #eee', scrollbarWidth: 'none' }}
+        className="px-6 lg:px-16 overflow-x-auto"
+        style={{ borderBottom: '1px solid #f0f0f0', scrollbarWidth: 'none' }}
       >
         <ShapeSelector
           selected={activeShape}
@@ -197,7 +198,7 @@ export function EngagementRingPage({ settings }: Props) {
       )}
 
       {/* ── RING GRID ─────────────────────────────────────────────────────── */}
-      <div className="px-6 lg:px-10 py-10">
+      <div className="px-6 lg:px-16 py-12">
         {rings.length === 0 ? (
           <div className="py-24 text-center">
             <p className="font-sans" style={{ fontSize: 14, color: '#aaa' }}>No rings match your selection.</p>
@@ -206,29 +207,27 @@ export function EngagementRingPage({ settings }: Props) {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-16">
             {rings.map(ring => (
               <Link key={ring.id} href={`/engagement-rings/${ring.slug}`} className="group block text-center">
 
-                {/* Square image — pure white, no border, object-contain */}
-                <div className="relative w-full" style={{ aspectRatio: '1/1', backgroundColor: '#fff' }}>
+                {/* Image — pure white bg, object-contain, subtle hover zoom */}
+                <div className="relative w-full overflow-hidden" style={{ aspectRatio: '1/1', backgroundColor: '#ffffff' }}>
                   <Image
                     src={ring.image}
                     alt={ring.name}
                     fill
-                    className="object-contain p-6 transition-transform duration-700 group-hover:scale-[1.03]"
+                    className="object-contain transition-transform duration-700 group-hover:scale-[1.04]"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
+                  {/* Materials badge — Tiffany style: bottom centre, white pill */}
                   {ring.materials > 1 && (
                     <div
                       className="absolute bottom-3 left-1/2 -translate-x-1/2 font-sans"
                       style={{
-                        fontSize: 10, letterSpacing: '0.12em',
-                        backgroundColor: 'rgba(255,255,255,0.9)',
-                        border: '1px solid #e0e0e0',
-                        padding: '3px 10px',
-                        whiteSpace: 'nowrap',
-                        color: '#555',
+                        fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase',
+                        backgroundColor: '#fff', border: '1px solid #e8e8e8',
+                        padding: '4px 12px', whiteSpace: 'nowrap', color: '#888',
                       }}
                     >
                       {ring.materials} Materials
@@ -236,15 +235,15 @@ export function EngagementRingPage({ settings }: Props) {
                   )}
                 </div>
 
-                {/* 3-line text block — exactly Tiffany */}
-                <div className="mt-5 px-2">
-                  <p className="font-sans" style={{ fontSize: 13, fontWeight: 400, color: GREEN, lineHeight: 1.5, letterSpacing: '0.01em' }}>
+                {/* 3-line text — centred, thin, airy */}
+                <div className="mt-4">
+                  <p className="font-sans" style={{ fontSize: 13, fontWeight: 300, color: '#111', lineHeight: 1.5, letterSpacing: '0.01em' }}>
                     {ring.name}
                   </p>
-                  <p className="font-sans mt-0.5" style={{ fontSize: 12, color: '#888', fontWeight: 300, lineHeight: 1.5 }}>
+                  <p className="font-sans mt-0.5" style={{ fontSize: 12, color: '#999', fontWeight: 300, lineHeight: 1.5 }}>
                     {ring.subtitle}
                   </p>
-                  <p className="font-sans mt-0.5" style={{ fontSize: 12, color: '#888', fontWeight: 300 }}>
+                  <p className="font-sans mt-0.5" style={{ fontSize: 12, color: '#999', fontWeight: 300 }}>
                     {ring.price}
                   </p>
                 </div>

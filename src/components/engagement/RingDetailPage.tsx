@@ -168,7 +168,7 @@ export function RingDetailPage({ slug }: Props) {
         {/* ── LEFT — large ring image ────────────────────────────────────── */}
         <div
           className="lg:sticky lg:top-0 lg:self-start flex-1"
-          style={{ backgroundColor: '#fafafa', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 32px' }}
+          style={{ backgroundColor: '#ffffff', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 32px' }}
         >
           <div className="relative w-full max-w-sm" style={{ aspectRatio: '1/1' }}>
             <Image

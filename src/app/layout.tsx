@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
 import { siteConfig } from '@/config/site';
-import { Header } from '@/components/layout/Header';
+import { HeaderWrapper } from '@/components/layout/HeaderWrapper';
 
 const display = Cormorant_Garamond({
   subsets: ['latin'],
@@ -53,7 +53,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`} style={{ backgroundColor: '#ffffff' }}>
       <body className="flex min-h-dvh flex-col">
-        <Header />
+        <HeaderWrapper />
         <main className="flex-1 flex flex-col">{children}</main>
       </body>
     </html>

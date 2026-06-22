@@ -100,7 +100,7 @@ export function DiamondSelector({ onClose, onSelect, selectedId }: Props) {
   const [priceRange,   setPriceRange]   = useState<[number, number]>([5000, 25000]);
   const [activeColors, setActiveColors] = useState<string[]>([]);
   const [activeClarities, setActiveClarities] = useState<string[]>([]);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(true);
   const [sortKey,      setSortKey]      = useState<SortKey>('carat');
   const [sortDir,      setSortDir]      = useState<SortDir>('asc');
 
@@ -204,14 +204,14 @@ export function DiamondSelector({ onClose, onSelect, selectedId }: Props) {
               />
             </div>
 
-            {/* Advanced toggle */}
+            {/* Toggle colour/clarity */}
             <button
               type="button"
               onClick={() => setShowAdvanced(v => !v)}
               className="flex items-center gap-1.5 font-sans self-start"
-              style={{ fontSize: 11, color: '#777', letterSpacing: '0.1em' }}
+              style={{ fontSize: 10, color: '#bbb', letterSpacing: '0.15em', textTransform: 'uppercase' }}
             >
-              Advanced Filters
+              {showAdvanced ? 'Hide filters' : 'Colour & Clarity'}
               {showAdvanced ? <ChevronUp className="w-3 h-3" strokeWidth={1.5} /> : <ChevronDown className="w-3 h-3" strokeWidth={1.5} />}
             </button>
 

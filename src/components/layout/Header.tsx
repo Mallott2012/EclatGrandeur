@@ -6,15 +6,22 @@ import { X, ChevronDown } from 'lucide-react';
 import { primaryNav, utilityNav } from '@/config/site';
 import { cn } from '@/lib/utils';
 
-const BG   = '#ede7d9';   // deep ivory
-const TEXT = '#1a2b1a';   // forest green
+const THEMES = {
+  ivory: { bg: '#ede7d9', text: '#1a2b1a' },
+  white: { bg: '#ffffff', text: '#1a2b1a' },
+};
 
-export function Header() {
+interface HeaderProps { theme?: 'ivory' | 'white'; }
+
+export function Header({ theme = 'ivory' }: HeaderProps) {
   const [drawer, setDrawer] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
 
+  const BG   = THEMES[theme].bg;
+  const TEXT = THEMES[theme].text;
+
   return (
-    <header className="fixed inset-x-0 top-0 z-[70]" style={{ backgroundColor: BG }}>
+    <header className="fixed inset-x-0 top-0 z-[70]" style={{ backgroundColor: BG, borderBottom: theme === 'white' ? '1px solid #f0f0f0' : 'none' }}>
       <div className="relative flex h-20 items-center px-8 md:px-16">
 
         {/* Hamburger — left */}
@@ -70,14 +77,16 @@ export function Header() {
         <div className="ml-auto w-6" aria-hidden="true" />
       </div>
 
-      {/* hairline */}
-      <div style={{ height: '1px', backgroundColor: `${TEXT}12` }} />
+      {/* hairline — only on ivory theme */}
+      {theme === 'ivory' && <div style={{ height: '1px', backgroundColor: `${TEXT}12` }} />}
 
       <MobileDrawer
         open={drawer}
         onClose={() => setDrawer(false)}
         openAccordion={openAccordion}
         setOpenAccordion={setOpenAccordion}
+        bg={BG}
+        text={TEXT}
       />
     </header>
   );
@@ -88,11 +97,15 @@ function MobileDrawer({
   onClose,
   openAccordion,
   setOpenAccordion,
+  bg: BG,
+  text: TEXT,
 }: {
   open: boolean;
   onClose: () => void;
   openAccordion: string | null;
   setOpenAccordion: (v: string | null) => void;
+  bg: string;
+  text: string;
 }) {
   return (
     <div className={cn('fixed inset-0 z-[90]', open ? 'pointer-events-auto' : 'pointer-events-none')}>

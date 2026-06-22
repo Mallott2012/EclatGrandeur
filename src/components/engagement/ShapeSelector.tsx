@@ -26,7 +26,7 @@ interface Props {
 
 export function ShapeSelector({ selected, onChange }: Props) {
   return (
-    <div className="flex items-end gap-6 lg:gap-8" style={{ minWidth: 'max-content' }}>
+    <div className="flex items-end gap-8 lg:gap-10 py-5" style={{ minWidth: 'max-content' }}>
       {SHAPES.map(({ id, label, viewBox, path }) => {
         const active = selected === id;
         return (
