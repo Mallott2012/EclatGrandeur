@@ -168,6 +168,12 @@ export interface Diamond {
   price: Money;
   report: string;
   authority: 'GIA' | 'IGI';
+  /** Extended grading detail surfaced on the diamond detail panel. */
+  table?: number;
+  depth?: number;
+  polish?: 'Excellent' | 'Very Good' | 'Good';
+  symmetry?: 'Excellent' | 'Very Good' | 'Good';
+  fluorescence?: 'None' | 'Faint' | 'Medium' | 'Strong';
 }
 
 export interface Setting {

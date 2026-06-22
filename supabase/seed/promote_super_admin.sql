@@ -1,37 +1,48 @@
--- =============================================================================
--- Éclat Grandeur — Phase 0 seed: promote the first user to super_admin
--- =============================================================================
--- HOW TO USE
---   1. In the Supabase dashboard: Authentication -> Users -> "Add user".
---      Create the user with an email + password and tick "Auto Confirm User".
---      (The handle_new_user trigger from 0001 creates their profile row.)
---   2. Edit the email below to match that user.
---   3. Run this script in the Supabase SQL Editor.
+-- ─────────────────────────────────────────────────────────────────────────────
+-- promote_super_admin.sql
 --
--- Idempotent: re-running it will not create duplicate role rows.
--- =============================================================================
+-- Run this ONCE after creating the first Auth user in the Supabase dashboard.
+--
+-- Usage:
+--   1. Create a user in: Supabase Dashboard → Authentication → Users → Add User
+--      (enable "Auto Confirm User")
+--   2. Replace the placeholder email below with that user's email address.
+--   3. Run this file against your project:
+--        supabase db execute --file supabase/seed/promote_super_admin.sql
+--      Or paste it into the Supabase SQL Editor.
+--
+-- This script is safe to run multiple times — it uses ON CONFLICT DO NOTHING.
+-- ─────────────────────────────────────────────────────────────────────────────
 
 do $$
 declare
-  target_email text := 'CHANGE_ME@example.com';  -- <-- EDIT THIS
-  target_id    uuid;
+  v_user_id uuid;
 begin
-  select id into target_id from auth.users where email = target_email;
+  -- ── Step 1: resolve the user ID from email ──────────────────────────────────
+  select id
+  into v_user_id
+  from auth.users
+  where email = 'REPLACE_WITH_ADMIN_EMAIL@example.com'  -- ← replace this
+  limit 1;
 
-  if target_id is null then
-    raise exception 'No auth user found with email %. Create them in Auth -> Users first.', target_email;
+  if v_user_id is null then
+    raise exception
+      'No user found with that email. '
+      'Create the user in the Supabase dashboard first, then re-run this script.';
   end if;
 
-  -- Ensure the profile exists (in case the trigger was added after the user).
+  -- ── Step 2: ensure a profile row exists ────────────────────────────────────
+  -- The handle_new_user trigger normally creates this automatically.
+  -- This is a safety net in case the trigger ran before the migration existed.
   insert into public.profiles (id, email)
-  values (target_id, target_email)
+  values (v_user_id, 'REPLACE_WITH_ADMIN_EMAIL@example.com')  -- ← replace this
   on conflict (id) do nothing;
 
-  -- Grant super_admin.
+  -- ── Step 3: grant super_admin role ─────────────────────────────────────────
   insert into public.staff_roles (user_id, role)
-  values (target_id, 'super_admin')
+  values (v_user_id, 'super_admin')
   on conflict (user_id, role) do nothing;
 
-  raise notice 'Promoted % (%) to super_admin', target_email, target_id;
-end
+  raise notice 'super_admin role granted to user %', v_user_id;
+end;
 $$;

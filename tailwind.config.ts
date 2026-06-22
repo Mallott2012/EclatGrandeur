@@ -1,65 +1,67 @@
 import type { Config } from 'tailwindcss';
 
 /**
- * Éclat Grandeur — design tokens.
+ * Blue Nile — design tokens.
  *
- * A hybrid luxury language: the cinematic noir of De Beers, the refined serif
- * romance of Tiffany, the clean trustworthy commerce of Blue Nile, and the
- * tech-forward diamond focus of James Allen.
+ * A clean, trustworthy diamond-commerce language: white grounds, a signature
+ * cyan/navy "Nile" blue, crisp sans-serif type and confident product imagery.
+ * The semantic token NAMES are kept stable so the whole component library
+ * re-skins at once; only the VALUES move from the old warm-luxury palette to
+ * Blue Nile's blue/white/navy system.
  *
  * Palette
- *  · noir      — cinematic near-black grounds (drama)
- *  · ivory     — warm pearl grounds (clean commerce)
- *  · champagne — gold accent (couture luxury)
- *  · glacier   — cool diamond blue (the "stone" / trust accent)
- *  · ink       — warm near-black text on light
+ *  · noir      → deep navy grounds (footers, dark bands)
+ *  · ivory     → white / cool off-white grounds (clean commerce)
+ *  · champagne → the signature "Nile" blue accent (links, CTAs, prices)
+ *  · glacier   → soft diamond blue (tints, chips, halos)
+ *  · ink       → navy-charcoal text on white
  */
 const config: Config = {
   content: ['./src/**/*.{ts,tsx,mdx}'],
   theme: {
     extend: {
       colors: {
+        // dark navy grounds
         noir: {
-          DEFAULT: '#100f0d',
-          soft: '#1b1815',
-          deep: '#0a0908',
+          DEFAULT: '#0a2540',
+          soft: '#143656',
+          deep: '#06182b',
         },
+        // white / cool off-white grounds
         ivory: {
-          DEFAULT: '#f6f3ec',
-          warm: '#faf7f1',
-          deep: '#ece4d6',
+          DEFAULT: '#ffffff',
+          warm: '#f5f9fc',
+          deep: '#e7eef5',
         },
+        // the signature Nile blue accent (was "champagne" gold)
         champagne: {
-          DEFAULT: '#c3a35c',
-          soft: '#dcc189',
-          leaf: '#ecdcab',
-          deep: '#9b7e3d',
+          DEFAULT: '#1a86c2',
+          soft: '#4aa6d8',
+          leaf: '#8fcdec',
+          deep: '#0f6aa6',
         },
+        // soft diamond blue
         glacier: {
-          DEFAULT: '#9bb7c4',
-          soft: '#cbdde4',
-          deep: '#2c4a58',
+          DEFAULT: '#7fb4d6',
+          soft: '#d7e8f3',
+          deep: '#1d4e6e',
         },
+        // navy-charcoal text
         ink: {
-          DEFAULT: '#211d18',
-          soft: '#4a443b',
-          muted: '#7a7264',
+          DEFAULT: '#13283c',
+          soft: '#3c5066',
+          muted: '#6b7d8f',
         },
-        // Phase 0 admin surface tokens (restrained, foundation-only).
-        admin: {
-          forest: '#041C15',
-          ivory: '#F7F2E9',
-          panel: '#FCF9F4',
-          gold: '#B28B4D',
-        },
+        // commerce signal red (sale / price drops)
+        sale: '#c8102e',
       },
       fontFamily: {
-        display: ['var(--font-display)', 'Cormorant Garamond', 'serif'],
+        display: ['var(--font-display)', 'Montserrat', 'ui-sans-serif', 'sans-serif'],
         sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       letterSpacing: {
-        luxe: '0.2em',
-        wide2: '0.32em',
+        luxe: '0.16em',
+        wide2: '0.26em',
       },
       maxWidth: {
         container: '84rem',
@@ -68,9 +70,9 @@ const config: Config = {
         luxe: 'cubic-bezier(0.22, 1, 0.36, 1)',
       },
       boxShadow: {
-        luxe: '0 30px 80px -40px rgba(16, 15, 13, 0.55)',
-        card: '0 20px 50px -30px rgba(16, 15, 13, 0.4)',
-        gold: '0 10px 40px -12px rgba(195, 163, 92, 0.45)',
+        luxe: '0 24px 60px -34px rgba(10, 37, 64, 0.45)',
+        card: '0 10px 30px -18px rgba(10, 37, 64, 0.35)',
+        gold: '0 10px 30px -12px rgba(26, 134, 194, 0.4)',
       },
       keyframes: {
         'fade-up': {

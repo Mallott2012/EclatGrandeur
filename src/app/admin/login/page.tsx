@@ -1,41 +1,43 @@
 import type { Metadata } from 'next';
-import { LoginForm } from './login-form';
+import { AdminLoginForm } from '@/components/admin/AdminLoginForm';
 
 export const metadata: Metadata = {
-  title: 'Staff Sign In — Éclat Grandeur',
+  title: 'Staff Login',
   robots: { index: false, follow: false },
 };
 
+interface Props {
+  searchParams: Promise<{ error?: string }>;
+}
+
 const ERROR_MESSAGES: Record<string, string> = {
-  forbidden: 'Your account does not have access to that area.',
+  no_staff_role: 'Your account does not have staff access. Contact a super admin.',
+  insufficient_role: 'You do not have permission to access that page.',
 };
 
-export default function AdminLoginPage({
-  searchParams,
-}: {
-  searchParams: { error?: string };
-}) {
-  const initialError = searchParams.error
-    ? ERROR_MESSAGES[searchParams.error] ?? undefined
-    : undefined;
+export default async function AdminLoginPage({ searchParams }: Props) {
+  const { error } = await searchParams;
+  const errorMessage = error ? (ERROR_MESSAGES[error] ?? 'Access denied.') : undefined;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-admin-ivory px-6">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <p className="font-sans text-[10px] uppercase tracking-[0.32em] text-admin-gold">
-            Éclat Grandeur
-          </p>
-          <h1 className="mt-3 font-display text-3xl text-admin-forest">Staff Portal</h1>
-          <p className="mt-2 font-sans text-sm text-admin-forest/60">
-            Sign in with your staff credentials.
-          </p>
+    <div className="flex min-h-screen items-center justify-center bg-neutral-950 px-4">
+      <div className="w-full max-w-sm">
+        {/* Wordmark */}
+        <div className="mb-10 text-center">
+          <span className="font-display text-2xl font-light tracking-[0.25em] text-white">
+            ÉCLAT GRANDEUR
+          </span>
+          <p className="mt-1 text-xs tracking-widest text-neutral-500">STAFF ACCESS</p>
         </div>
 
-        <div className="border border-admin-forest/10 bg-admin-panel p-8 shadow-sm">
-          <LoginForm initialError={initialError} />
-        </div>
+        {errorMessage && (
+          <div className="mb-6 rounded border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-300">
+            {errorMessage}
+          </div>
+        )}
+
+        <AdminLoginForm />
       </div>
-    </main>
+    </div>
   );
 }

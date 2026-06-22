@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Cormorant_Garamond, Jost } from 'next/font/google';
+import { Montserrat, Lato } from 'next/font/google';
 import './globals.css';
 import { siteConfig } from '@/config/site';
 import { Header } from '@/components/layout/Header';
@@ -8,16 +8,16 @@ import { Footer } from '@/components/layout/Footer';
 import { LiveChat } from '@/components/layout/LiveChat';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 
-const display = Cormorant_Garamond({
+const display = Montserrat({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
+  weight: ['300', '400', '500', '600', '700'],
   variable: '--font-display',
   display: 'swap',
 });
 
-const sans = Jost({
+const sans = Lato({
   subsets: ['latin'],
-  weight: ['300', '400', '500'],
+  weight: ['300', '400', '700'],
   variable: '--font-sans',
   display: 'swap',
 });
@@ -31,19 +31,19 @@ export const metadata: Metadata = {
   description: siteConfig.description,
   keywords: [
     'diamond engagement rings',
-    'fine jewellery',
-    'bespoke diamonds',
+    'build your own ring',
+    'loose diamonds',
+    'diamond search',
+    'wedding rings',
     'diamond earrings',
-    'diamond necklaces',
-    'tennis bracelets',
-    'London jeweller',
+    'fine jewelry',
   ],
   openGraph: {
     title: `${siteConfig.name} — ${siteConfig.tagline}`,
     description: siteConfig.description,
     type: 'website',
     siteName: siteConfig.name,
-    locale: 'en_GB',
+    locale: 'en_US',
   },
   twitter: { card: 'summary_large_image' },
 };

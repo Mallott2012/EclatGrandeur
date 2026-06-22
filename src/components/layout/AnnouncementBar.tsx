@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 
 const messages = [
-  'Complimentary insured delivery worldwide',
-  'Every diamond GIA-certified & ethically sourced',
-  'Book a private appointment in our Mayfair atelier',
-  'Design your own engagement ring in three steps',
+  'Free shipping & free 30-day returns on every order',
+  'Every loose diamond independently certified',
+  'Build your own engagement ring in three steps',
+  'Lifetime warranty · Book a virtual appointment',
 ];
 
 export function AnnouncementBar() {

@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Menu, X, Search, CalendarDays, ChevronDown } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Menu, X, Search, User, ChevronDown } from 'lucide-react';
 import { siteConfig, primaryNav, utilityNav, type NavItem } from '@/config/site';
 import { getProductBySlug } from '@/lib/data';
 import { cn } from '@/lib/utils';
@@ -13,35 +13,25 @@ import { AnnouncementBar } from './AnnouncementBar';
 
 /** Representative piece shown in each pillar's mega-menu. */
 const MENU_FEATURE: Record<string, { slug: string; line: string }> = {
-  Engagement: { slug: 'aurora-solitaire-ring', line: 'The Aurora Solitaire' },
-  Earrings: { slug: 'cascade-drop-earrings', line: 'Cascade Drops' },
-  Necklaces: { slug: 'sovereign-riviere-necklace', line: 'The Sovereign Rivière' },
-  Bracelets: { slug: 'eternelle-tennis-bracelet', line: 'Éternelle Tennis' },
-  Bespoke: { slug: 'empress-emerald-ring', line: 'A ring like no other' },
+  'Engagement Rings': { slug: 'aurora-solitaire-ring', line: 'The Aurora Solitaire' },
+  Diamonds: { slug: 'aurora-solitaire-ring', line: 'Build your own ring' },
+  Jewelry: { slug: 'cascade-drop-earrings', line: 'Cascade Drops' },
+  Gifts: { slug: 'sovereign-riviere-necklace', line: 'The Sovereign Rivière' },
 };
 
 export function Header() {
   const pathname = usePathname();
-  const [scrolled, setScrolled] = useState(false);
+  const router = useRouter();
   const [active, setActive] = useState<string | null>(null);
   const [drawer, setDrawer] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   useEffect(() => {
     setDrawer(false);
     setActive(null);
   }, [pathname]);
-
-  const overlay = pathname === '/' && !scrolled && !active;
-  const light = overlay;
 
   const openMenu = (label: string) => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -52,6 +42,11 @@ export function Header() {
     closeTimer.current = setTimeout(() => setActive(null), 120);
   };
 
+  const onSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push('/diamonds');
+  };
+
   const activeItem = primaryNav.find((n) => n.label === active);
 
   return (
@@ -59,67 +54,79 @@ export function Header() {
       <AnnouncementBar />
 
       <div
-        className={cn(
-          'transition-colors duration-500 ease-luxe',
-          light ? 'bg-transparent' : 'bg-ivory/95 backdrop-blur-md shadow-[0_1px_0_rgba(33,29,24,0.06)]'
-        )}
+        className="bg-white text-ink shadow-[0_1px_0_rgba(19,40,60,0.08)]"
         onMouseLeave={scheduleClose}
       >
         {/* Top row */}
-        <div className={cn('container-luxe flex items-center justify-between py-4 md:py-5', light ? 'text-ivory' : 'text-ink')}>
-          {/* left */}
-          <div className="flex flex-1 items-center gap-6">
+        <div className="container-luxe flex items-center gap-6 py-4">
+          {/* left: mobile menu + logo */}
+          <div className="flex items-center gap-4">
             <button
               type="button"
               aria-label="Open menu"
               className="lg:hidden"
               onClick={() => setDrawer(true)}
             >
-              <Menu className="h-6 w-6" strokeWidth={1.25} />
+              <Menu className="h-6 w-6" strokeWidth={1.5} />
             </button>
-            <div className="hidden items-center gap-6 lg:flex">
-              {utilityNav.slice(0, 2).map((l) => (
-                <Link key={l.href} href={l.href} className="link-underline text-[11px] uppercase tracking-luxe opacity-80 hover:opacity-100">
-                  {l.label}
-                </Link>
-              ))}
-            </div>
+            <Link href="/" className="flex flex-col leading-none">
+              <span className="font-display text-2xl font-bold tracking-tight text-noir md:text-[26px]">
+                {siteConfig.name}
+              </span>
+              <span className="hidden text-[8px] uppercase tracking-wide2 text-ink/45 md:block">
+                {siteConfig.tagline}
+              </span>
+            </Link>
           </div>
 
-          {/* logo */}
-          <Link href="/" className="flex flex-col items-center leading-none">
-            <span className="font-display text-2xl font-medium tracking-wide md:text-[28px]">{siteConfig.name}</span>
-            <span className={cn('mt-0.5 text-[8px] uppercase tracking-wide2', light ? 'text-ivory/60' : 'text-ink/45')}>
-              Maison de Diamants · Est. {siteConfig.founded}
-            </span>
-          </Link>
+          {/* center: search */}
+          <form
+            onSubmit={onSearch}
+            className="ml-auto hidden max-w-md flex-1 items-center gap-2 rounded-full border border-ink/15 bg-ivory-warm px-4 py-2 focus-within:border-champagne md:flex"
+          >
+            <Search className="h-4 w-4 text-ink/40" strokeWidth={1.75} />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search diamonds, rings, jewelry…"
+              className="w-full bg-transparent text-sm text-ink placeholder:text-ink/40 focus:outline-none"
+            />
+          </form>
 
-          {/* right */}
-          <div className="flex flex-1 items-center justify-end gap-5">
-            <Link href="/appointments" aria-label="Book an appointment" className="hidden md:inline-flex hover:text-champagne-deep">
-              <CalendarDays className="h-5 w-5" strokeWidth={1.25} />
-            </Link>
-            <button aria-label="Search" className="hidden md:inline-flex hover:text-champagne-deep">
-              <Search className="h-5 w-5" strokeWidth={1.25} />
+          {/* right: account + cart */}
+          <div className="ml-auto flex items-center gap-5 md:ml-0">
+            <button
+              aria-label="Search"
+              className="hover:text-champagne-deep md:hidden"
+              onClick={() => router.push('/diamonds')}
+            >
+              <Search className="h-5 w-5" strokeWidth={1.5} />
             </button>
-            <CartButton light={light} />
+            <Link
+              href="/appointments"
+              aria-label="Account"
+              className="hidden hover:text-champagne-deep md:inline-flex"
+            >
+              <User className="h-5 w-5" strokeWidth={1.5} />
+            </Link>
+            <CartButton light={false} />
           </div>
         </div>
 
         {/* Nav row (desktop) */}
-        <nav className={cn('hidden border-t lg:block', light ? 'border-ivory/15' : 'border-ink/10')}>
-          <ul className={cn('container-luxe flex items-center justify-center gap-10 py-3.5', light ? 'text-ivory' : 'text-ink')}>
+        <nav className="hidden border-t border-ink/10 lg:block">
+          <ul className="container-luxe flex items-center justify-center gap-9 py-3">
             {primaryNav.map((item) => (
               <li key={item.label} onMouseEnter={() => openMenu(item.label)}>
                 <Link
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-1 text-[12px] uppercase tracking-luxe transition-colors hover:text-champagne-deep',
-                    active === item.label && 'text-champagne-deep'
+                    'flex items-center gap-1 text-[13px] font-semibold uppercase tracking-luxe transition-colors hover:text-champagne-deep',
+                    active === item.label ? 'text-champagne-deep' : 'text-noir'
                   )}
                 >
                   {item.label}
-                  {item.children && <ChevronDown className="h-3 w-3 opacity-60" strokeWidth={1.5} />}
+                  {item.children && <ChevronDown className="h-3 w-3 opacity-60" strokeWidth={2} />}
                 </Link>
               </li>
             ))}
@@ -156,8 +163,8 @@ function MegaMenu({
   return (
     <div
       className={cn(
-        'absolute inset-x-0 top-full hidden overflow-hidden border-t border-ink/10 bg-ivory text-ink shadow-luxe transition-all duration-300 ease-luxe lg:block',
-        item ? 'pointer-events-auto max-h-[420px] opacity-100' : 'pointer-events-none max-h-0 opacity-0'
+        'absolute inset-x-0 top-full hidden overflow-hidden border-t border-ink/10 bg-white text-ink shadow-luxe transition-all duration-300 ease-luxe lg:block',
+        item ? 'pointer-events-auto max-h-[440px] opacity-100' : 'pointer-events-none max-h-0 opacity-0'
       )}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
@@ -166,14 +173,18 @@ function MegaMenu({
         <div className="container-luxe grid grid-cols-12 gap-10 py-10">
           <div className="col-span-4">
             <span className="eyebrow">{item.label}</span>
-            <ul className="mt-5 flex flex-col gap-3.5">
+            <ul className="mt-5 flex flex-col gap-3">
               {item.children?.map((c) => (
-                <li key={c.href}>
+                <li key={`${c.href}-${c.label}`}>
                   <Link href={c.href} className="group flex items-baseline justify-between">
-                    <span className="font-display text-2xl font-light leading-tight text-ink transition-colors group-hover:text-champagne-deep">
+                    <span className="text-base font-medium text-ink transition-colors group-hover:text-champagne-deep">
                       {c.label}
                     </span>
-                    {c.note && <span className="ml-3 text-[10px] uppercase tracking-luxe text-ink/40">{c.note}</span>}
+                    {c.note && (
+                      <span className="ml-3 text-[10px] font-semibold uppercase tracking-luxe text-champagne-deep">
+                        {c.note}
+                      </span>
+                    )}
                   </Link>
                 </li>
               ))}
@@ -182,14 +193,20 @@ function MegaMenu({
           {product && (
             <div className="col-span-8">
               <Link href={`/product/${product.slug}`} className="group grid grid-cols-2 gap-6">
-                <div className="aspect-[4/5] overflow-hidden">
-                  <JewelArt art={product.art} gid={`menu-${product.slug}`} className="h-full w-full transition-transform duration-700 ease-luxe group-hover:scale-105" />
+                <div className="aspect-[4/5] overflow-hidden rounded-lg bg-ivory-warm">
+                  <JewelArt
+                    art={product.art}
+                    gid={`menu-${product.slug}`}
+                    className="h-full w-full transition-transform duration-700 ease-luxe group-hover:scale-105"
+                  />
                 </div>
                 <div className="flex flex-col justify-center">
                   <span className="eyebrow">Featured</span>
-                  <h3 className="mt-2 font-display text-3xl font-light">{product.name}</h3>
-                  <p className="mt-3 max-w-xs text-sm font-light leading-relaxed text-ink/60">{product.description}</p>
-                  <span className="mt-5 text-[11px] uppercase tracking-luxe text-champagne-deep">Discover →</span>
+                  <h3 className="mt-2 font-display text-2xl font-semibold text-noir">{product.name}</h3>
+                  <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink/60">{product.description}</p>
+                  <span className="mt-5 text-[12px] font-semibold uppercase tracking-luxe text-champagne-deep">
+                    Discover →
+                  </span>
                 </div>
               </Link>
             </div>
@@ -219,14 +236,14 @@ function MobileDrawer({
       />
       <div
         className={cn(
-          'absolute left-0 top-0 flex h-full w-full max-w-sm flex-col bg-ivory transition-transform duration-500 ease-luxe',
+          'absolute left-0 top-0 flex h-full w-full max-w-sm flex-col bg-white transition-transform duration-500 ease-luxe',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex items-center justify-between border-b border-ink/10 px-6 py-5">
-          <span className="font-display text-2xl">{siteConfig.name}</span>
+          <span className="font-display text-2xl font-bold text-noir">{siteConfig.name}</span>
           <button aria-label="Close menu" onClick={onClose}>
-            <X className="h-6 w-6" strokeWidth={1.25} />
+            <X className="h-6 w-6" strokeWidth={1.5} />
           </button>
         </div>
 
@@ -237,7 +254,7 @@ function MobileDrawer({
               return (
                 <li key={item.label} className="border-b border-ink/10">
                   <div className="flex items-center justify-between py-4">
-                    <Link href={item.href} onClick={onClose} className="font-display text-2xl font-light">
+                    <Link href={item.href} onClick={onClose} className="text-base font-semibold text-noir">
                       {item.label}
                     </Link>
                     {item.children && (
@@ -251,10 +268,10 @@ function MobileDrawer({
                     )}
                   </div>
                   {item.children && (
-                    <ul className={cn('overflow-hidden transition-all duration-300', isOpen ? 'max-h-72 pb-4' : 'max-h-0')}>
+                    <ul className={cn('overflow-hidden transition-all duration-300', isOpen ? 'max-h-96 pb-4' : 'max-h-0')}>
                       {item.children.map((c) => (
-                        <li key={c.href} className="py-2">
-                          <Link href={c.href} onClick={onClose} className="text-sm font-light text-ink/70 hover:text-ink">
+                        <li key={`${c.href}-${c.label}`} className="py-2">
+                          <Link href={c.href} onClick={onClose} className="text-sm text-ink/70 hover:text-champagne-deep">
                             {c.label}
                           </Link>
                         </li>
@@ -269,7 +286,12 @@ function MobileDrawer({
 
         <div className="border-t border-ink/10 px-6 py-6">
           {utilityNav.map((l) => (
-            <Link key={l.href} href={l.href} onClick={onClose} className="block py-2 text-[11px] uppercase tracking-luxe text-ink/60 hover:text-ink">
+            <Link
+              key={l.href}
+              href={l.href}
+              onClick={onClose}
+              className="block py-2 text-[12px] font-semibold uppercase tracking-luxe text-ink/60 hover:text-champagne-deep"
+            >
               {l.label}
             </Link>
           ))}

@@ -1,38 +1,33 @@
-import { cookies } from 'next/headers';
+import 'server-only';
 import { createServerClient } from '@supabase/ssr';
-import type { Database } from '@/types/database';
+import { cookies } from 'next/headers';
+import { getSupabaseUrl, getSupabaseAnonKey } from './env';
 
 /**
- * Server Supabase client (Server Components, Server Actions, Route Handlers).
+ * Server-side Supabase client for Route Handlers, Server Components, and
+ * Server Actions. Uses cookie-based session management via @supabase/ssr.
  *
- * Reads/writes the session via HTTP-only cookies and uses the anon key, so all
- * queries run under the signed-in user's RLS context. Use this for any
- * user-scoped read/write. For privileged operations that must bypass RLS (e.g.
- * writing audit logs), use ./admin.ts instead.
+ * Uses the anon key — RLS policies control data access.
+ * For privileged admin operations use the admin client in admin.ts instead.
  */
-export function createClient() {
-  const cookieStore = cookies();
+export async function createServerSupabaseClient() {
+  const cookieStore = await cookies();
 
-  return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
-            );
-          } catch {
-            // `setAll` is called from a Server Component where cookies are
-            // read-only. The middleware refreshes the session, so this is safe
-            // to ignore here.
-          }
-        },
+  return createServerClient(getSupabaseUrl(), getSupabaseAnonKey(), {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options),
+          );
+        } catch {
+          // setAll is called from a Server Component where cookies cannot be
+          // mutated. Safe to ignore — middleware handles session refresh.
+        }
       },
     },
-  );
+  });
 }

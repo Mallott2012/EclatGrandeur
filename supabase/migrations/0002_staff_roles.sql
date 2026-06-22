@@ -1,52 +1,70 @@
--- =============================================================================
--- Éclat Grandeur — Phase 0 migration 0002: staff_roles
--- =============================================================================
--- Staff role assignments. Structured as one row per (user, role) so a single
--- user can hold multiple roles in later phases. Only super_admin may manage
--- assignments; users cannot read or edit their own role rows directly through
--- table policies (they use the get_my_roles() helper instead).
--- =============================================================================
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 0002_staff_roles.sql
+-- Staff role assignments. Depends on 0001_profiles.sql.
+-- ─────────────────────────────────────────────────────────────────────────────
 
--- Constrained enum for roles.
-do $$
-begin
-  if not exists (select 1 from pg_type where typname = 'staff_role') then
-    create type public.staff_role as enum (
-      'super_admin',
-      'sales_adviser',
-      'diamond_buyer',
-      'content_editor'
-    );
-  end if;
-end
-$$;
+-- ── Role enum ────────────────────────────────────────────────────────────────
+
+do $$ begin
+  create type public.staff_role_type as enum (
+    'super_admin',
+    'sales_adviser',
+    'diamond_buyer',
+    'content_editor'
+  );
+exception
+  when duplicate_object then null;
+end $$;
+
+-- ── Table ────────────────────────────────────────────────────────────────────
 
 create table if not exists public.staff_roles (
-  id          uuid primary key default gen_random_uuid(),
-  user_id     uuid not null references public.profiles (id) on delete cascade,
-  role        public.staff_role not null,
-  created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now(),
-  unique (user_id, role)
+  id          uuid                    primary key default gen_random_uuid(),
+  user_id     uuid                    not null references public.profiles(id) on delete cascade,
+  role        public.staff_role_type  not null,
+  created_at  timestamptz             not null default now(),
+  updated_at  timestamptz             not null default now(),
+
+  constraint staff_roles_user_role_unique unique (user_id, role)
 );
 
-create index if not exists staff_roles_user_id_idx on public.staff_roles (user_id);
+comment on table public.staff_roles is
+  'Staff role assignments. A user may hold multiple roles. '
+  'Only super_admin may manage entries in this table.';
 
-drop trigger if exists staff_roles_set_updated_at on public.staff_roles;
-create trigger staff_roles_set_updated_at
+create index if not exists idx_staff_roles_user_id on public.staff_roles(user_id);
+
+-- ── Trigger: updated_at ───────────────────────────────────────────────────────
+
+create trigger trg_staff_roles_updated_at
   before update on public.staff_roles
   for each row execute function public.set_updated_at();
 
--- ---------------------------------------------------------------------------
--- Helper: is the current user a super_admin?
--- SECURITY DEFINER avoids RLS recursion when policies reference this table.
--- ---------------------------------------------------------------------------
+-- ── Helper: get current user's roles ─────────────────────────────────────────
+-- Returns the set of role values for the currently authenticated user.
+-- SECURITY INVOKER: runs as the calling user; auth.uid() is always correct.
+
+create or replace function public.get_my_staff_roles()
+  returns setof public.staff_role_type
+  language sql
+  security invoker
+  stable
+  set search_path = ''
+as $$
+  select role
+  from public.staff_roles
+  where user_id = auth.uid();
+$$;
+
+-- ── Helper: is the current user a super_admin? ────────────────────────────────
+-- Convenience boolean check. Same security model as get_my_staff_roles().
+
 create or replace function public.is_super_admin()
-returns boolean
-language sql
-security definer
-set search_path = public
-stable
+  returns boolean
+  language sql
+  security invoker
+  stable
+  set search_path = ''
 as $$
   select exists (
     select 1
@@ -56,58 +74,31 @@ as $$
   );
 $$;
 
--- ---------------------------------------------------------------------------
--- Helper: return the current user's own roles.
--- Lets the app resolve roles without a permissive RLS read policy and without
--- using the service-role key in the request path.
--- ---------------------------------------------------------------------------
-create or replace function public.get_my_roles()
-returns table (role public.staff_role)
-language sql
-security definer
-set search_path = public
-stable
-as $$
-  select role
-  from public.staff_roles
-  where user_id = auth.uid();
-$$;
+-- ── Row Level Security ────────────────────────────────────────────────────────
 
-revoke all on function public.get_my_roles() from public;
-grant execute on function public.get_my_roles() to authenticated;
-
--- ---------------------------------------------------------------------------
--- Row Level Security — only super_admin may read/manage assignments.
--- ---------------------------------------------------------------------------
 alter table public.staff_roles enable row level security;
 
-drop policy if exists "staff_roles_select_super_admin" on public.staff_roles;
-create policy "staff_roles_select_super_admin"
+-- Staff members may read their own role rows.
+create policy "staff_roles: owner read"
   on public.staff_roles
   for select
-  to authenticated
-  using (public.is_super_admin());
+  using (auth.uid() = user_id);
 
-drop policy if exists "staff_roles_insert_super_admin" on public.staff_roles;
-create policy "staff_roles_insert_super_admin"
+-- Only super_admin may insert new role assignments.
+create policy "staff_roles: super_admin insert"
   on public.staff_roles
   for insert
-  to authenticated
   with check (public.is_super_admin());
 
-drop policy if exists "staff_roles_update_super_admin" on public.staff_roles;
-create policy "staff_roles_update_super_admin"
+-- Only super_admin may update role assignments.
+create policy "staff_roles: super_admin update"
   on public.staff_roles
   for update
-  to authenticated
   using (public.is_super_admin())
   with check (public.is_super_admin());
 
-drop policy if exists "staff_roles_delete_super_admin" on public.staff_roles;
-create policy "staff_roles_delete_super_admin"
+-- Only super_admin may delete role assignments.
+create policy "staff_roles: super_admin delete"
   on public.staff_roles
   for delete
-  to authenticated
   using (public.is_super_admin());
-
--- Anonymous users have no access at all (no policies for the anon role).

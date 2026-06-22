@@ -42,7 +42,7 @@ export function CategoryPage({ category, eyebrow, title, description, bannerSlug
                 Design a ring around the diamond of a lifetime.
               </p>
             </div>
-            <Button href="/builder" variant="primary" size="md">Start Designing</Button>
+            <Button href="/build-a-ring" variant="primary" size="md">Start Designing</Button>
           </div>
         </section>
       )}

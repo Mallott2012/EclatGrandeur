@@ -1,29 +1,36 @@
--- =============================================================================
--- Éclat Grandeur — Phase 0 migration 0003: audit_logs
--- =============================================================================
--- Append-only audit trail. There are NO insert/select policies for the anon or
--- authenticated roles, so logs can only be written and read through trusted
--- server-side code using the service-role key (which bypasses RLS). RLS is
--- still enabled so that the anon/authenticated keys can never touch the table.
--- =============================================================================
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 0003_audit_logs.sql
+-- Append-only audit trail. Written exclusively by server-side service-role
+-- operations — no browser client or authenticated user can write directly.
+-- ─────────────────────────────────────────────────────────────────────────────
 
 create table if not exists public.audit_logs (
-  id             uuid primary key default gen_random_uuid(),
-  actor_user_id  uuid references auth.users (id) on delete set null,
-  action         text not null,
-  entity_type    text,
-  entity_id      uuid,
-  metadata       jsonb,
-  created_at     timestamptz not null default now()
+  id              uuid        primary key default gen_random_uuid(),
+  actor_user_id   uuid        references auth.users(id) on delete set null,
+  action          text        not null,
+  entity_type     text,
+  entity_id       uuid,
+  metadata        jsonb,
+  created_at      timestamptz not null default now()
 );
 
-create index if not exists audit_logs_actor_idx on public.audit_logs (actor_user_id);
-create index if not exists audit_logs_action_idx on public.audit_logs (action);
-create index if not exists audit_logs_created_at_idx on public.audit_logs (created_at desc);
+comment on table public.audit_logs is
+  'Append-only audit trail. Written only by the service-role server client. '
+  'No RLS read or write policy is granted to authenticated users or anon.';
 
--- RLS enabled with NO policies => fully locked for anon & authenticated.
--- Only the service-role key (server-only) can read or insert.
+-- ── Indexes ───────────────────────────────────────────────────────────────────
+
+create index if not exists idx_audit_logs_actor      on public.audit_logs(actor_user_id);
+create index if not exists idx_audit_logs_entity     on public.audit_logs(entity_type, entity_id);
+create index if not exists idx_audit_logs_created_at on public.audit_logs(created_at desc);
+
+-- ── Row Level Security ────────────────────────────────────────────────────────
+-- RLS is enabled but NO policies are granted to authenticated users or anon.
+-- All reads and writes must go through the service-role admin client
+-- (src/lib/supabase/admin.ts), which bypasses RLS entirely.
+
 alter table public.audit_logs enable row level security;
 
--- Defensive: ensure no implicit grants exist for client roles.
-revoke all on public.audit_logs from anon, authenticated;
+-- Intentionally no SELECT, INSERT, UPDATE, or DELETE policies for authenticated
+-- or anon roles. Only the service-role key (used server-side only) can access
+-- this table.

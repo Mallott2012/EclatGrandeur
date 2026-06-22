@@ -2,52 +2,71 @@
 
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
-import { getStaffRoles } from '@/lib/auth/session';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getCurrentStaffRoles } from '@/lib/staff';
+import { writeAuditLog } from '@/lib/audit';
 
-const credentialsSchema = z.object({
-  email: z.string().email('Enter a valid email address.'),
-  password: z.string().min(1, 'Enter your password.'),
+const loginSchema = z.object({
+  email: z.string().email('Please enter a valid email address.'),
+  password: z.string().min(1, 'Password is required.'),
 });
 
 export interface LoginState {
   error?: string;
 }
 
-/**
- * Sign in with email + password, then verify the user actually holds a staff
- * role before allowing them into /admin. An authenticated account with no staff
- * role is signed straight back out — authorisation is never UI-only.
- */
-export async function signIn(_prev: LoginState, formData: FormData): Promise<LoginState> {
-  const parsed = credentialsSchema.safeParse({
+export async function loginAction(_prev: LoginState, formData: FormData): Promise<LoginState> {
+  const parsed = loginSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? 'Invalid credentials.' };
+    return { error: parsed.error.errors[0].message };
   }
 
-  const supabase = createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const supabase = await createServerSupabaseClient();
 
-  if (error) {
-    return { error: 'Incorrect email or password.' };
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: parsed.data.email,
+    password: parsed.data.password,
+  });
+
+  if (error || !data.user) {
+    return { error: 'Invalid email or password.' };
   }
 
-  const roles = await getStaffRoles();
+  // Verify the user actually holds a staff role before granting access.
+  const roles = await getCurrentStaffRoles();
   if (roles.length === 0) {
+    // Sign them back out — authenticated but not staff.
     await supabase.auth.signOut();
-    return { error: 'This account does not have staff access.' };
+    return { error: 'Your account does not have staff access. Contact a super admin.' };
   }
+
+  await writeAuditLog({
+    actorUserId: data.user.id,
+    action: 'admin.login',
+    metadata: { roles },
+  });
 
   redirect('/admin');
 }
 
-/** Sign the current user out and return to the login page. */
-export async function signOut(): Promise<void> {
-  const supabase = createClient();
+export async function logoutAction(): Promise<void> {
+  const supabase = await createServerSupabaseClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    await writeAuditLog({
+      actorUserId: user.id,
+      action: 'admin.logout',
+    });
+  }
+
   await supabase.auth.signOut();
   redirect('/admin/login');
 }

@@ -11,13 +11,12 @@ export function Footer() {
       <div className="border-b border-ivory/10">
         <div className="container-luxe grid grid-cols-1 items-center gap-8 py-14 md:grid-cols-2">
           <div>
-            <span className="eyebrow-light">The Inner Circle</span>
-            <h3 className="mt-3 font-display text-3xl font-light md:text-4xl">
-              Private viewings & new arrivals
+            <span className="eyebrow-light">Stay in the know</span>
+            <h3 className="mt-3 font-display text-3xl font-semibold md:text-4xl">
+              Sign up & save on your first order
             </h3>
             <p className="mt-3 max-w-md text-sm font-light leading-relaxed text-ivory/60">
-              Join our list for first sight of rare stones, atelier stories and invitations
-              to private events.
+              Be first to hear about new arrivals, exclusive offers and expert diamond buying tips.
             </p>
           </div>
           <div className="md:pl-10">
@@ -34,8 +33,8 @@ export function Footer() {
         <div className="col-span-2 flex flex-col gap-4 lg:col-span-2">
           <span className="font-display text-3xl">{siteConfig.name}</span>
           <p className="max-w-xs text-sm font-light leading-relaxed text-ivory/55">
-            Rare diamonds and master-crafted fine jewellery, created in our Mayfair atelier
-            since {siteConfig.founded}.
+            The original online jeweler — certified diamonds and fine jewelry at a better value,
+            shipped direct since {siteConfig.founded}.
           </p>
           <div className="mt-2 flex flex-col gap-1 text-sm font-light text-ivory/55">
             <span>{siteConfig.contact.address}</span>
@@ -48,7 +47,7 @@ export function Footer() {
             href={siteConfig.social.instagram}
             className="mt-2 inline-flex w-fit items-center gap-2 text-xs uppercase tracking-luxe text-ivory/60 hover:text-ivory"
           >
-            <Instagram className="h-4 w-4" strokeWidth={1.25} /> @eclatgrandeur
+            <Instagram className="h-4 w-4" strokeWidth={1.25} /> @bluenile
           </a>
         </div>
 
@@ -72,10 +71,10 @@ export function Footer() {
 
       {/* Trust strip */}
       <div className="container-luxe flex flex-wrap items-center justify-center gap-x-8 gap-y-2 pb-10 text-[10.5px] uppercase tracking-luxe text-ivory/45">
-        <span className="inline-flex items-center gap-1.5"><Sparkles className="h-3 w-3 text-champagne" /> GIA-Certified</span>
-        <span>Lifetime Guarantee</span>
-        <span>Ethically Sourced</span>
-        <span>Insured Worldwide Delivery</span>
+        <span className="inline-flex items-center gap-1.5"><Sparkles className="h-3 w-3 text-champagne" /> Certified Diamonds</span>
+        <span>Lifetime Warranty</span>
+        <span>Conflict-Free</span>
+        <span>Free Shipping</span>
         <span>30-Day Returns</span>
       </div>
 

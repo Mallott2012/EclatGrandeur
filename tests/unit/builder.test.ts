@@ -56,7 +56,7 @@ describe('priceBuild', () => {
   });
 
   it('flags very expensive builds as enquiry-only', () => {
-    const bigStone: Diamond = { ...roundDiamond, price: { amount: 4_000_000, currency: 'GBP' } };
+    const bigStone: Diamond = { ...roundDiamond, price: { amount: 6_000_000, currency: 'USD' } };
     const p = priceBuild(setting, bigStone, 'platinum');
     expect(p.buyableOnline).toBe(false);
   });

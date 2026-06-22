@@ -1,65 +1,110 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { logoutAction } from '@/app/admin/login/actions';
+import type { StaffUser } from '@/lib/staff-shared';
+import { STAFF_ROLE_LABELS } from '@/lib/staff-shared';
 
 /**
- * Admin navigation. Phase 0 ships placeholders only — the linked modules are
- * not built yet. Each item notes the roles that will guard it in later phases;
- * those modules must call requireStaffRole(...) in their own server code.
+ * Admin sidebar navigation.
+ *
+ * IMPORTANT: Every future admin module linked from this sidebar must implement
+ * its own requireStaffRole([...allowedRoles]) check in the page/layout server
+ * component. Do not rely on sidebar visibility alone for access control.
  */
+
 interface NavItem {
   label: string;
   href: string;
-  /** Whether the destination route exists yet. */
-  ready?: boolean;
+  live: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', href: '/admin', ready: true },
-  { label: 'Diamonds', href: '/admin/diamonds' }, // future: super_admin, diamond_buyer
-  { label: 'Ring Settings', href: '/admin/ring-settings' }, // future: super_admin, content_editor
-  { label: 'Ready Rings', href: '/admin/ready-rings' }, // future: super_admin, content_editor
-  { label: 'Enquiries', href: '/admin/enquiries' }, // future: super_admin, sales_adviser
-  { label: 'Reservations', href: '/admin/reservations' }, // future: super_admin, sales_adviser
-  { label: 'Content', href: '/admin/content' }, // future: super_admin, content_editor
-  { label: 'Team', href: '/admin/team' }, // future: super_admin
+  { label: 'Dashboard', href: '/admin', live: true },
+  // Phase 1+ modules — routes do not exist yet.
+  // Each must add requireStaffRole() when implemented.
+  { label: 'Diamonds', href: '/admin/diamonds', live: false },
+  { label: 'Ring Settings', href: '/admin/ring-settings', live: false },
+  { label: 'Ready Rings', href: '/admin/ready-rings', live: false },
+  { label: 'Enquiries', href: '/admin/enquiries', live: false },
+  { label: 'Reservations', href: '/admin/reservations', live: false },
+  { label: 'Content', href: '/admin/content', live: false },
+  { label: 'Team', href: '/admin/team', live: false },
 ];
 
-export function AdminSidebar() {
+interface Props {
+  user: StaffUser;
+}
+
+export function AdminSidebar({ user }: Props) {
+  const pathname = usePathname();
+
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-white/10 bg-admin-forest text-admin-ivory">
-      <div className="border-b border-white/10 px-6 py-6">
-        <p className="font-display text-xl leading-none">Éclat Grandeur</p>
-        <p className="mt-1 font-sans text-[9px] uppercase tracking-[0.32em] text-admin-gold">
-          Staff Console
-        </p>
+    <aside className="flex w-56 shrink-0 flex-col border-r border-neutral-800 bg-neutral-950">
+      {/* Wordmark */}
+      <div className="border-b border-neutral-800 px-6 py-5">
+        <span className="font-display text-sm font-light tracking-[0.2em] text-white">
+          ÉCLAT GRANDEUR
+        </span>
+        <p className="mt-0.5 text-[10px] tracking-widest text-neutral-600">ADMIN</p>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-0.5 px-3 py-5">
-        {NAV_ITEMS.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-disabled={!item.ready}
-            className={[
-              'flex items-center justify-between rounded px-3 py-2.5 font-sans text-[11px] uppercase tracking-[0.18em] transition-colors',
-              item.ready
-                ? 'text-admin-ivory hover:bg-white/5'
-                : 'text-admin-ivory/45 hover:bg-white/5',
-            ].join(' ')}
-          >
-            <span>{item.label}</span>
-            {!item.ready ? (
-              <span className="font-sans text-[8px] tracking-[0.2em] text-admin-gold/70">
-                Soon
-              </span>
-            ) : null}
-          </Link>
-        ))}
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <ul className="space-y-0.5">
+          {NAV_ITEMS.map((item) => {
+            const isActive = item.href === '/admin'
+              ? pathname === '/admin'
+              : pathname.startsWith(item.href);
+
+            if (!item.live) {
+              return (
+                <li key={item.href}>
+                  <span className="flex items-center justify-between rounded px-3 py-2 text-sm text-neutral-600 cursor-not-allowed">
+                    {item.label}
+                    <span className="text-[10px] tracking-wider text-neutral-700">SOON</span>
+                  </span>
+                </li>
+              );
+            }
+
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={`flex rounded px-3 py-2 text-sm transition-colors ${
+                    isActive
+                      ? 'bg-neutral-800 text-white'
+                      : 'text-neutral-400 hover:bg-neutral-900 hover:text-white'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </nav>
 
-      <div className="border-t border-white/10 px-6 py-4">
-        <p className="font-sans text-[9px] uppercase tracking-[0.2em] text-admin-ivory/40">
-          Phase 0 · Foundation
-        </p>
+      {/* User footer */}
+      <div className="border-t border-neutral-800 px-4 py-4">
+        <p className="truncate text-xs text-neutral-400">{user.fullName ?? user.email}</p>
+        <div className="mt-1 flex flex-wrap gap-1">
+          {user.roles.map((role) => (
+            <span key={role} className="text-[10px] tracking-wider text-amber-600">
+              {STAFF_ROLE_LABELS[role]}
+            </span>
+          ))}
+        </div>
+        <form action={logoutAction} className="mt-3">
+          <button
+            type="submit"
+            className="text-xs text-neutral-600 transition-colors hover:text-neutral-300"
+          >
+            Sign out
+          </button>
+        </form>
       </div>
     </aside>
   );

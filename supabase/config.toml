@@ -1,0 +1,66 @@
+# Supabase local development configuration.
+# See: https://supabase.com/docs/guides/cli/config
+#
+# To link this project to your live Supabase project:
+#   supabase login
+#   supabase link --project-ref <your-project-ref>
+#
+# To apply migrations to the linked project:
+#   supabase db push
+#
+# To run migrations locally:
+#   supabase start
+#   supabase db reset
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1"
+openai_api_key = "env(OPENAI_API_KEY)"
+
+[inbucket]
+enabled = true
+port = 54324
+smtp_port = 54325
+pop3_port = 54326
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+# The base URL of your website. Used as an allow-list for redirects.
+site_url = "http://127.0.0.1:3000"
+# A list of *exact* URLs that auth providers are permitted to redirect to.
+additional_redirect_urls = ["https://127.0.0.1:3000"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+
+[analytics]
+enabled = false
