@@ -83,8 +83,98 @@ npm test           # vitest (pricing, compatibility, validation, utils)
 Copy `.env.example` to `.env.local`. Form submissions log to the server console
 unless `RESEND_API_KEY` is set, in which case they email the concierge inbox.
 
+## Phase 0 — Admin foundation (Supabase auth, roles & audit)
+
+The staff console at **`/admin`** is the technical foundation for all future
+internal modules (inventory, pricing, reservations, content). It ships **only**
+authentication, staff roles, audit logging and a protected shell — no business
+modules yet.
+
+### What's included
+
+- Supabase clients: browser (`src/lib/supabase/client.ts`), SSR server
+  (`server.ts`), and a **server-only** service-role admin client (`admin.ts`).
+- Cookie-based SSR auth with session refresh in `middleware.ts`.
+- `/admin/login` + logout, and a protected `/admin` dashboard.
+- `profiles`, `staff_roles` (enum: `super_admin`, `sales_adviser`,
+  `diamond_buyer`, `content_editor`) and `audit_logs` tables, all with RLS.
+- `requireStaffRole(allowedRoles)` server guard and a server-only
+  `writeAuditLog(...)` helper.
+
+### 1. Create the Supabase project
+
+1. Create a project at [supabase.com](https://supabase.com). Note the
+   **Project URL**, **anon key** and **service-role key**
+   (Settings → API).
+2. Run the migrations in order (SQL Editor, or `supabase db push` with the CLI):
+   - `supabase/migrations/0001_profiles.sql`
+   - `supabase/migrations/0002_staff_roles.sql`
+   - `supabase/migrations/0003_audit_logs.sql`
+3. Verify RLS is enabled on `profiles`, `staff_roles`, `audit_logs`
+   (Table Editor shows a shield on each).
+
+### 2. Environment variables
+
+Copy `.env.example` to `.env.local` and fill in:
+
+| Variable | Exposure | Purpose |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | public | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public | Anon key (RLS-protected) |
+| `SUPABASE_SERVICE_ROLE_KEY` | **server only** | Service role for audit writes — never expose to the browser |
+
+### 3. Create & promote the first user
+
+1. Supabase dashboard → **Authentication → Users → Add user**. Enter an email +
+   password and tick **Auto Confirm User**. The `handle_new_user` trigger
+   creates their `profiles` row automatically.
+2. Open `supabase/seed/promote_super_admin.sql`, change `CHANGE_ME@example.com`
+   to that user's email, and run it in the SQL Editor. This grants
+   `super_admin`.
+3. Add further staff by creating their user in Auth, then (as `super_admin`)
+   inserting rows into `staff_roles` — a UI for this arrives in a later phase.
+
+### 4. Local commands
+
+```bash
+npm install
+cp .env.example .env.local   # then fill in Supabase values
+npm run dev                  # http://localhost:3000/admin
+npm run lint
+npm run typecheck
+npm run build
+```
+
+### 5. Test protected admin access
+
+1. Visit `/admin` while signed out → redirected to `/admin/login`.
+2. Sign in as a user with **no** staff role → rejected ("no staff access").
+3. Sign in as the `super_admin` (or any staff role) → dashboard shows your
+   name, email and role, with the sidebar and a working **Log out**.
+4. Log out → returned to `/admin/login`; `/admin` is protected again.
+
+### Security model
+
+- Service-role key is confined to `import 'server-only'` modules; it never
+  enters a browser bundle.
+- Every table has RLS: users read only their own `profiles` row; only
+  `super_admin` may read/manage `staff_roles`; `audit_logs` is server-only.
+- The middleware gates authentication; `requireStaffRole(...)` independently
+  enforces authorisation in server code — UI hiding is never the only gate.
+
+### Vercel deployment notes
+
+- Add the three Supabase env vars in **Project → Settings → Environment
+  Variables**. Keep `SUPABASE_SERVICE_ROLE_KEY` un-prefixed so it stays
+  server-side only.
+- `middleware.ts` runs on the Edge runtime automatically; no extra config.
+- No build-time secrets are required beyond the env vars above.
+
 ## Roadmap
 
+- **Phase 1:** Internal modules (Diamonds, Ring Settings, Ready Rings,
+  Enquiries, Reservations, Content, Team) attaching to the Phase 0 auth and
+  permissions system via `requireStaffRole(...)`.
 - **Phase 2:** Stripe checkout + Klarna/Affirm, accounts & wishlists, a CMS
   (Sanity) behind the data seam, real photography alongside the SVG engine.
 - **Phase 3:** AR virtual try-on, CRM-backed appointment calendar,
