@@ -17,8 +17,8 @@
   }
 
   body {
-    background-color: #162218;
-    color: #f0ece0;
+    background-color: #1c1c17;
+    color: #e8e0cc;
     @apply font-sans antialiased;
     text-rendering: optimizeLegibility;
   }
