@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Pause, Play, VolumeX, Volume2 } from 'lucide-react';
 
@@ -28,29 +28,32 @@ function Controls({ paused, muted, onPause, onMute }: {
   onPause: () => void;
   onMute: () => void;
 }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   return (
     <>
       <button
         type="button"
-        aria-label={muted ? 'Unmute' : 'Mute'}
+        aria-label={mounted && !muted ? 'Mute' : 'Unmute'}
         onClick={onMute}
         className="flex items-center justify-center rounded-full backdrop-blur-sm transition-opacity hover:opacity-70"
         style={{ width: 28, height: 28, background: 'rgba(0,0,0,0.28)', color: 'rgba(255,255,255,0.85)' }}
       >
-        {muted
-          ? <VolumeX className="h-3 w-3" strokeWidth={1.25} />
-          : <Volume2 className="h-3 w-3" strokeWidth={1.25} />}
+        {mounted && !muted
+          ? <Volume2 className="h-3 w-3" strokeWidth={1.25} />
+          : <VolumeX className="h-3 w-3" strokeWidth={1.25} />}
       </button>
       <button
         type="button"
-        aria-label={paused ? 'Play' : 'Pause'}
+        aria-label={mounted && !paused ? 'Pause' : 'Play'}
         onClick={onPause}
         className="flex items-center justify-center rounded-full backdrop-blur-sm transition-opacity hover:opacity-70"
         style={{ width: 28, height: 28, background: 'rgba(0,0,0,0.28)', color: 'rgba(255,255,255,0.85)' }}
       >
-        {paused
-          ? <Play  className="h-3 w-3" style={{ fill: 'rgba(255,255,255,0.85)' }} strokeWidth={0} />
-          : <Pause className="h-3 w-3" style={{ fill: 'rgba(255,255,255,0.85)' }} strokeWidth={0} />}
+        {mounted && !paused
+          ? <Pause className="h-3 w-3" style={{ fill: 'rgba(255,255,255,0.85)' }} strokeWidth={0} />
+          : <Play  className="h-3 w-3" style={{ fill: 'rgba(255,255,255,0.85)' }} strokeWidth={0} />}
       </button>
     </>
   );
