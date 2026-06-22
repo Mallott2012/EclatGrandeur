@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { getCurrentStaffRoles } from '@/lib/staff';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { writeAuditLog } from '@/lib/audit';
 
 const loginSchema = z.object({
@@ -37,7 +37,22 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
   }
 
   // Verify the user actually holds a staff role before granting access.
-  const roles = await getCurrentStaffRoles();
+  // Use the admin client here because the session cookie set by signInWithPassword
+  // may not be readable in the same Server Action request cycle, causing the
+  // cookie-based RLS client to return zero rows even when the role exists.
+  const adminClient = createAdminClient();
+  const { data: roleRows, error: rolesError } = await adminClient
+    .from('staff_roles')
+    .select('role')
+    .eq('user_id', data.user.id);
+
+  if (rolesError) {
+    await supabase.auth.signOut();
+    return { error: 'Failed to verify staff access. Please try again.' };
+  }
+
+  const roles = (roleRows ?? []).map((r) => r.role as string);
+
   if (roles.length === 0) {
     // Sign them back out — authenticated but not staff.
     await supabase.auth.signOut();
