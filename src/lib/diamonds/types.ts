@@ -220,8 +220,9 @@ export interface DiamondMediaResponse {
 
 // ── Certificate result ────────────────────────────────────────────────────────
 export interface CertSignedUrlResult {
-  signed_url: string
-  expires_at: string   // ISO 8601 datetime
+  signed_url:    string
+  expires_at:    string    // ISO 8601 datetime
+  auditWarning?: boolean   // true when the audit event could not be written (upload only)
 }
 
 // ── RPC result types ──────────────────────────────────────────────────────────

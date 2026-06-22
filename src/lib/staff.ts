@@ -87,7 +87,7 @@ export async function requireStaffRole(allowedRoles: StaffRole[]): Promise<Staff
   if (allowedRoles.length > 0) {
     const hasRequiredRole = allowedRoles.some((role) => staffUser.roles.includes(role));
     if (!hasRequiredRole) {
-      redirect('/admin/login?error=insufficient_role');
+      redirect('/admin/forbidden');
     }
   }
 

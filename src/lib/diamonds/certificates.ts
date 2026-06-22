@@ -20,13 +20,17 @@ function requirePrivileged(actor: StaffUser): void {
 // Upload a certificate PDF and link it to the diamond's cert_lab/cert_number.
 //
 // Sequence:
-//   1. validate MIME from magic bytes
-//   2. upload new object (immutable versioned path)
-//   3. update diamond record (cert_lab, cert_number, cert_pdf_path)
-//   4. on DB failure → best-effort delete the new object, then rethrow
-//   5. write audit entry (strict — throws on failure)
-//   6. best-effort delete the old object (if one existed); log cleanup failures
-//   7. return a short-lived signed URL for the new certificate
+//   1. validate privileged role
+//   2. validate MIME from magic bytes (must be PDF)
+//   3. upload new object to an immutable UUID path (upsert: false)
+//   4. update diamond record; on DB failure → best-effort delete new object, rethrow
+//   5. attempt audit write (diamond.certificate_uploaded or diamond.certificate_replaced)
+//      — if audit fails: log server-side but do NOT throw; set auditWarning in result
+//   6. best-effort delete the superseded object (if one existed); log cleanup failures
+//   7. return a short-lived signed URL for the new certificate (with auditWarning if applicable)
+//
+// The DB update is the source of truth. Once it succeeds, the active certificate
+// is the new one regardless of audit or cleanup outcomes.
 export async function uploadCertificate(
   actor:    StaffUser,
   meta:     CertUploadMeta,
@@ -43,13 +47,14 @@ export async function uploadCertificate(
     throw new ServiceException({ code: 'invalid_file_type', message: 'Only PDF files are permitted for certificates', statusHint: 400 })
   }
 
-  // Capture existing path before any mutation — needed for step 6.
-  const oldPath  = diamond.cert_pdf_path
-  const fileUuid = crypto.randomUUID()
-  const newPath  = makeCertPath(meta.diamond_id, fileUuid)
-  const admin    = createAdminClient()
+  // Capture existing path before any mutation — needed for old-object cleanup.
+  const oldPath       = diamond.cert_pdf_path
+  const isReplacement = oldPath !== null
+  const fileUuid      = crypto.randomUUID()
+  const newPath       = makeCertPath(meta.diamond_id, fileUuid)
+  const admin         = createAdminClient()
 
-  // Step 2: upload to Storage (upsert: false — path is unique per UUID).
+  // Step 3: upload to Storage (upsert: false — path is unique per UUID).
   const { error: uploadError } = await admin.storage
     .from(CERT_BUCKET)
     .upload(newPath, fileData, { contentType: 'application/pdf', upsert: false })
@@ -58,7 +63,7 @@ export async function uploadCertificate(
     throw new ServiceException({ code: 'storage_error', message: 'Failed to upload certificate file', statusHint: 500 })
   }
 
-  // Step 3: update diamond row. Step 4: on failure, delete the new object.
+  // Step 4: update diamond row. On DB failure, clean up the newly uploaded object.
   try {
     await admin
       .from('diamonds')
@@ -77,33 +82,34 @@ export async function uploadCertificate(
     throw new ServiceException({ code: 'db_error', message: 'Failed to link certificate to diamond', statusHint: 500 })
   }
 
-  // Step 5: audit write — strict (must succeed before returning a URL).
+  // Step 5: attempt audit write — non-blocking for uploads.
+  // The DB update is authoritative; a failed audit does not reverse the replacement.
+  const auditAction = isReplacement ? 'diamond.certificate_replaced' : 'diamond.certificate_uploaded'
   const { error: auditError } = await admin.from('audit_logs').insert({
     actor_user_id: actor.id,
-    action:        'certificate_uploaded',
+    action:        auditAction,
     entity_type:   'diamond',
     entity_id:     meta.diamond_id,
     metadata:      { cert_lab: meta.cert_lab, cert_number: meta.cert_number },
   })
   if (auditError) {
     console.error('[certificates] Audit write failed after certificate upload for diamond:', meta.diamond_id, auditError)
-    // DB and storage are updated; old object orphan is cleaned up below anyway.
-    // Old path cleanup still runs before rethrowing.
-    cleanUpOldCert(admin, oldPath)
-    throw new ServiceException({ code: 'audit_write_failed', message: 'Failed to record certificate upload audit event', statusHint: 500 })
   }
 
   // Step 6: best-effort delete of the superseded object.
   cleanUpOldCert(admin, oldPath)
 
-  // Step 7: return signed URL for the new certificate.
-  return buildSignedUrl(admin, newPath)
+  // Step 7: return signed URL. Include auditWarning when the audit write failed.
+  const result = await buildSignedUrl(admin, newPath)
+  return auditError ? { ...result, auditWarning: true } : result
 }
 
 // Returns a short-lived signed URL for the diamond's certificate PDF.
 // Restricted to super_admin and diamond_buyer — sales_adviser must not receive
 // a certificate signed URL.
-// The audit write is strict — it throws before generating the URL if it fails.
+// The audit write is STRICT for viewing: a failed audit prevents URL generation.
+// This is different from uploadCertificate — viewing creates a deliberate access
+// record that must be durable before the URL is handed out.
 export async function getCertificateSignedUrl(
   actor:     StaffUser,
   diamondId: string,
@@ -121,7 +127,7 @@ export async function getCertificateSignedUrl(
   // Audit write — strict: URL is not returned if this fails.
   const { error: auditError } = await admin.from('audit_logs').insert({
     actor_user_id: actor.id,
-    action:        'certificate_viewed',
+    action:        'diamond.certificate_viewed',
     entity_type:   'diamond',
     entity_id:     diamondId,
     metadata:      { cert_lab: diamond.cert_lab, cert_number: diamond.cert_number },
