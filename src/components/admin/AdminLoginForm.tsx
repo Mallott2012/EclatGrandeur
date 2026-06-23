@@ -20,11 +20,18 @@ function SubmitButton() {
 export function AdminLoginForm() {
   const [state, formAction] = useFormState(loginAction, null);
 
-  // When the server action returns a redirectTo, do a hard page reload so the
-  // browser sends the newly-set session cookies with the next request.
+  // When the server action returns a redirectTo, do a hard top-level navigation
+  // so the browser sends the newly-set session cookies with the next request.
+  // When running inside an iframe (e.g. v0 preview), target the top frame so
+  // the cookie is not scoped to the iframe context.
   useEffect(() => {
     if (state?.redirectTo) {
-      window.location.href = state.redirectTo;
+      try {
+        const target = window.top && window.top !== window ? window.top : window;
+        target.location.href = state.redirectTo;
+      } catch {
+        window.location.href = state.redirectTo;
+      }
     }
   }, [state]);
 
