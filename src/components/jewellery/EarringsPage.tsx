@@ -2,6 +2,8 @@ import { JewelleryListingPage, type JewelleryConfig } from './JewelleryListingPa
 
 const config: JewelleryConfig = {
   title:     'Earrings',
+  heroCopy:  'The finest diamonds, perfectly matched',
+  heroImage: '/images/heroes/hero-earrings.png',
   basePath:  '/earrings',
   itemLabel: 'earring',
   styles: [

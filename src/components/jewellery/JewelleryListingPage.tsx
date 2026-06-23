@@ -30,16 +30,18 @@ export interface JewelleryProduct {
 
 export interface JewelleryConfig {
   title: string;
-  basePath: string;         // e.g. '/necklaces'
+  heroCopy: string;                   // short atmospheric line below the title
+  heroImage: string;                  // path to editorial hero image
+  basePath: string;                   // e.g. '/necklaces'
   styles: { id: string; label: string }[];
-  itemLabel: string;        // singular — 'necklace', 'bracelet', 'earring'
+  itemLabel: string;                  // singular — 'necklace', 'bracelet', 'earring'
   products: JewelleryProduct[];
 }
 
 interface Props { config: JewelleryConfig; }
 
 export function JewelleryListingPage({ config }: Props) {
-  const { title, basePath, styles, itemLabel, products } = config;
+  const { title, heroCopy, heroImage, basePath, styles, itemLabel, products } = config;
 
   const [activeStyle,  setActiveStyle]  = useState<string | null>(null);
   const [activeMetal,  setActiveMetal]  = useState<string | null>(null);
@@ -60,17 +62,38 @@ export function JewelleryListingPage({ config }: Props) {
   return (
     <div className="min-h-screen bg-white" style={{ color: G }}>
 
-      {/* PAGE TITLE */}
-      <div className="text-center pt-28 pb-1">
-        <h1
-          className="font-display"
-          style={{ fontSize: 'clamp(26px, 4vw, 44px)', fontWeight: 300, letterSpacing: '0.06em', color: G }}
-        >
-          {title}
-        </h1>
+      {/* ── EDITORIAL HERO ───────────────────────────────────────────────── */}
+      <div className="relative w-full overflow-hidden" style={{ paddingTop: 81, height: 'min(600px, 65vh)' }}>
+        <Image
+          src={heroImage}
+          alt={title}
+          fill
+          priority
+          className="object-cover object-center"
+          sizes="100vw"
+        />
+        {/* Gradient so serif heading reads cleanly over any image */}
+        <div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.38) 100%)' }}
+        />
+        <div className="absolute inset-0 flex flex-col items-center justify-end pb-14 px-6 text-center">
+          <h1
+            className="font-display text-white text-balance"
+            style={{ fontSize: 'clamp(32px, 5vw, 60px)', fontWeight: 300, letterSpacing: '0.08em', lineHeight: 1.1 }}
+          >
+            {title}
+          </h1>
+          <p
+            className="font-sans text-white mt-4"
+            style={{ fontSize: 13, letterSpacing: '0.18em', fontWeight: 300, opacity: 0.85, textTransform: 'uppercase' }}
+          >
+            {heroCopy}
+          </p>
+        </div>
       </div>
 
-      {/* SORT / COUNT / FILTER BAR */}
+      {/* ── SORT / COUNT / FILTER BAR — sticky ───────────────────────────── */}
       <div
         className="sticky top-0 z-30 bg-white flex items-center px-6 lg:px-14"
         style={{ height: 52, borderBottom: `1px solid ${BORDER}` }}
@@ -140,7 +163,7 @@ export function JewelleryListingPage({ config }: Props) {
         </div>
       </div>
 
-      {/* ACTIVE FILTER CHIPS */}
+      {/* ── ACTIVE FILTER CHIPS ──────────────────────────────────────────── */}
       {activeFilterCount > 0 && (
         <div className="flex items-center gap-3 flex-wrap px-6 lg:px-14 py-3" style={{ borderBottom: `1px solid ${BORDER}` }}>
           {activeStyle && (
@@ -176,8 +199,8 @@ export function JewelleryListingPage({ config }: Props) {
         </div>
       )}
 
-      {/* PRODUCT GRID */}
-      <div className="px-6 lg:px-14 py-12">
+      {/* ── PRODUCT GRID ─────────────────────────────────────────────────── */}
+      <div className="px-6 lg:px-14 py-16">
         {filtered.length === 0 ? (
           <div className="py-32 text-center">
             <p className="font-sans" style={{ fontSize: 14, color: '#ccc', letterSpacing: '0.06em' }}>
@@ -185,45 +208,47 @@ export function JewelleryListingPage({ config }: Props) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-20">
             {filtered.map(product => (
               <Link
                 key={product.id}
                 href={`${basePath}/${product.slug}`}
-                className="group block text-center"
+                className="group block"
               >
-                {/* Pure white square — product floats */}
-                <div className="relative w-full" style={{ aspectRatio: '1/1', backgroundColor: '#fff' }}>
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-contain transition-transform duration-700 group-hover:scale-[1.03]"
-                    sizes="(max-width: 768px) 50vw, 33vw"
-                  />
-                  {product.metals > 1 && (
-                    <div
-                      className="absolute bottom-3 left-1/2 -translate-x-1/2 font-sans whitespace-nowrap"
-                      style={{
-                        fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase',
-                        color: '#999', border: `1px solid ${BORDER}`,
-                        backgroundColor: '#fff', padding: '4px 14px',
-                      }}
-                    >
-                      {product.metals} Materials
-                    </div>
-                  )}
+                {/* 4:5 portrait card — jewel floats on pale white with inner padding */}
+                <div
+                  className="relative w-full overflow-hidden"
+                  style={{ aspectRatio: '4/5', backgroundColor: '#fafafa' }}
+                >
+                  <div className="absolute inset-[8%]">
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      className="object-contain transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+                      sizes="(max-width: 768px) 50vw, 33vw"
+                    />
+                  </div>
                 </div>
 
-                {/* 3-line text */}
-                <div className="mt-5 space-y-0.5">
-                  <p className="font-sans" style={{ fontSize: 13, fontWeight: 400, color: G }}>
+                {/* Text block — name in display serif, subtitle + price in light sans */}
+                <div className="mt-5 px-1">
+                  <p
+                    className="font-display text-balance"
+                    style={{ fontSize: 16, fontWeight: 300, color: G, letterSpacing: '0.02em', lineHeight: 1.3 }}
+                  >
                     {product.name}
                   </p>
-                  <p className="font-sans" style={{ fontSize: 12, fontWeight: 300, color: '#999' }}>
+                  <p
+                    className="font-sans mt-1.5"
+                    style={{ fontSize: 11, fontWeight: 300, color: '#aaa', letterSpacing: '0.06em', textTransform: 'uppercase' }}
+                  >
                     {product.subtitle}
                   </p>
-                  <p className="font-sans" style={{ fontSize: 12, fontWeight: 300, color: '#999' }}>
+                  <p
+                    className="font-sans mt-1"
+                    style={{ fontSize: 13, fontWeight: 300, color: '#666', letterSpacing: '0.02em' }}
+                  >
                     {product.price}
                   </p>
                 </div>
@@ -233,7 +258,7 @@ export function JewelleryListingPage({ config }: Props) {
         )}
       </div>
 
-      {/* FILTERS DRAWER */}
+      {/* ── FILTERS DRAWER ───────────────────────────────────────────────── */}
       <>
         {filtersOpen && (
           <div className="fixed inset-0 z-40 bg-black/10" onClick={() => setFiltersOpen(false)} />
