@@ -12,6 +12,12 @@ import {
   ImageIcon,
   ChevronRight,
   Circle,
+  ShoppingBag,
+  Users,
+  TrendingUp,
+  Mail,
+  FileText,
+  Layout,
 } from 'lucide-react';
 
 const G = '#1a2b1a';
@@ -156,6 +162,56 @@ export default async function AdminDashboardPage() {
                   style={{ color: '#ccc' }}
                   strokeWidth={1.5}
                 />
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* ── COMING SOON SECTIONS ────────────────────────────────────── */}
+        <section>
+          <p
+            className="font-sans uppercase mb-6"
+            style={{ fontSize: 9, letterSpacing: '0.28em', color: '#bbb' }}
+          >
+            In Development
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { icon: ShoppingBag, label: 'Orders',          href: '/admin/orders',          desc: 'Full order journey from reservation to delivery.' },
+              { icon: Users,       label: 'Clients',         href: '/admin/clients',         desc: 'Unified client profiles, history, and preferences.' },
+              { icon: TrendingUp,  label: 'Sales',           href: '/admin/sales',           desc: 'Revenue reporting and business analytics.' },
+              { icon: Mail,        label: 'Communications',  href: '/admin/communications',  desc: 'Shared inbox and client correspondence log.' },
+              { icon: FileText,    label: 'Email Templates', href: '/admin/email-templates', desc: 'Branded templates for every client touchpoint.' },
+              { icon: Layout,      label: 'Homepage',        href: '/admin/homepage',        desc: 'Edit all hero panels and homepage sections.' },
+            ].map(({ icon: Icon, label, href, desc }) => (
+              <Link
+                key={href}
+                href={href}
+                className="group flex items-start gap-4 px-6 py-5 transition-colors hover:bg-stone-50"
+                style={{ border: '1px solid #ebebeb' }}
+              >
+                <div
+                  className="flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{ width: 32, height: 32, border: '1px solid #eee', color: '#ccc' }}
+                >
+                  <Icon className="w-3.5 h-3.5" strokeWidth={1.5} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.16em', color: '#aaa' }}>
+                      {label}
+                    </p>
+                    <span
+                      className="font-sans uppercase"
+                      style={{ fontSize: 7, letterSpacing: '0.2em', color: '#fff', background: '#ccc', padding: '1px 5px' }}
+                    >
+                      soon
+                    </span>
+                  </div>
+                  <p className="font-sans leading-relaxed" style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.02em' }}>
+                    {desc}
+                  </p>
+                </div>
               </Link>
             ))}
           </div>
