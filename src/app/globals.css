@@ -5,7 +5,7 @@
 @layer base {
   :root {
     --font-display: 'Cormorant Garamond';
-    --font-sans: 'Jost';
+    --font-sans: 'Inter';
   }
 
   * {
@@ -17,7 +17,9 @@
   }
 
   body {
-    @apply bg-ivory text-ink font-sans antialiased;
+    background-color: #e8e2d4;
+    color: #1a2b1a;
+    @apply font-sans antialiased;
     text-rendering: optimizeLegibility;
   }
 

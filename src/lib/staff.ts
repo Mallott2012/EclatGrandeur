@@ -28,9 +28,7 @@ export async function getCurrentStaffUser(): Promise<StaffUser | null> {
   if (userError || !user) return null;
 
   // Use the admin client to query staff_roles so this works regardless of
-  // whether the RLS session context is fully initialised (e.g. immediately
-  // after sign-in or during Server Component rendering where cookies are
-  // readable but auth.uid() may not be set in the RLS context yet).
+  // whether the RLS session context is fully initialised.
   const adminClient = createAdminClient();
   const { data: roleRows, error: rolesError } = await adminClient
     .from('staff_roles')

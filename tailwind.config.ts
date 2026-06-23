@@ -1,62 +1,52 @@
 import type { Config } from 'tailwindcss';
 
 /**
- * Blue Nile — design tokens.
+ * Éclat Grandeur — design tokens.
  *
- * A clean, trustworthy diamond-commerce language: white grounds, a signature
- * cyan/navy "Nile" blue, crisp sans-serif type and confident product imagery.
- * The semantic token NAMES are kept stable so the whole component library
- * re-skins at once; only the VALUES move from the old warm-luxury palette to
- * Blue Nile's blue/white/navy system.
- *
- * Palette
- *  · noir      → deep navy grounds (footers, dark bands)
- *  · ivory     → white / cool off-white grounds (clean commerce)
- *  · champagne → the signature "Nile" blue accent (links, CTAs, prices)
- *  · glacier   → soft diamond blue (tints, chips, halos)
- *  · ink       → navy-charcoal text on white
+ * Luxury jewellery palette: ivory/cream grounds, forest green header and
+ * accents, warm gold highlights, dark green editorial typography.
  */
 const config: Config = {
   content: ['./src/**/*.{ts,tsx,mdx}'],
   theme: {
     extend: {
       colors: {
-        // dark navy grounds
+        // Forest green — header, nav, dark sections
         noir: {
-          DEFAULT: '#0a2540',
-          soft: '#143656',
-          deep: '#06182b',
+          DEFAULT: '#2c3d2e',
+          soft: '#3d5240',
+          deep: '#1a2519',
         },
-        // white / cool off-white grounds
+        // Ivory / warm cream grounds
         ivory: {
-          DEFAULT: '#ffffff',
-          warm: '#f5f9fc',
-          deep: '#e7eef5',
+          DEFAULT: '#f5f0e8',
+          warm: '#faf7f2',
+          deep: '#ede5d8',
         },
-        // the signature Nile blue accent (was "champagne" gold)
+        // Warm gold accent
         champagne: {
-          DEFAULT: '#1a86c2',
-          soft: '#4aa6d8',
-          leaf: '#8fcdec',
-          deep: '#0f6aa6',
+          DEFAULT: '#b8965a',
+          soft: '#d4b07a',
+          leaf: '#e8cfa0',
+          deep: '#8f6d35',
         },
-        // soft diamond blue
+        // Pale sage tint
         glacier: {
-          DEFAULT: '#7fb4d6',
-          soft: '#d7e8f3',
-          deep: '#1d4e6e',
+          DEFAULT: '#a8b5a0',
+          soft: '#dde5d8',
+          deep: '#5a6e55',
         },
-        // navy-charcoal text
+        // Dark green text
         ink: {
-          DEFAULT: '#13283c',
-          soft: '#3c5066',
-          muted: '#6b7d8f',
+          DEFAULT: '#2c3d2e',
+          soft: '#4a5e4c',
+          muted: '#7a8f7c',
         },
-        // commerce signal red (sale / price drops)
-        sale: '#c8102e',
+        // Sale red
+        sale: '#c0392b',
       },
       fontFamily: {
-        display: ['var(--font-display)', 'Montserrat', 'ui-sans-serif', 'sans-serif'],
+        display: ['var(--font-display)', 'Georgia', 'ui-serif', 'serif'],
         sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       letterSpacing: {
@@ -70,9 +60,9 @@ const config: Config = {
         luxe: 'cubic-bezier(0.22, 1, 0.36, 1)',
       },
       boxShadow: {
-        luxe: '0 24px 60px -34px rgba(10, 37, 64, 0.45)',
-        card: '0 10px 30px -18px rgba(10, 37, 64, 0.35)',
-        gold: '0 10px 30px -12px rgba(26, 134, 194, 0.4)',
+        luxe: '0 24px 60px -34px rgba(44, 61, 46, 0.35)',
+        card: '0 10px 30px -18px rgba(44, 61, 46, 0.25)',
+        gold: '0 10px 30px -12px rgba(184, 150, 90, 0.4)',
       },
       keyframes: {
         'fade-up': {

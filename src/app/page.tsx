@@ -1,27 +1,26 @@
 import { Hero } from '@/components/home/Hero';
-import { ServicePillars } from '@/components/home/ServicePillars';
-import { BuildYourRingBand } from '@/components/home/BuildYourRingBand';
-import { ShopByShape } from '@/components/home/ShopByShape';
-import { SectionShowcase } from '@/components/home/SectionShowcase';
-import { FeaturedPieces } from '@/components/home/FeaturedPieces';
-import { DiamondGuideTeaser } from '@/components/home/DiamondGuideTeaser';
-import { Testimonials } from '@/components/home/Testimonials';
-import { PressMarquee } from '@/components/home/PressMarquee';
-import { AppointmentCTA } from '@/components/home/AppointmentCTA';
+import { getPublishedHero } from '@/lib/hero/service';
 
-export default function HomePage() {
+export const revalidate = 60; // ISR: re-fetch hero data every 60 seconds
+
+export default async function HomePage() {
+  // Fetch hero overrides for each placement (null = use static fallback)
+  const [heroHome, heroEngagement, heroEarrings, heroNecklaces, heroBracelets] =
+    await Promise.allSettled([
+      getPublishedHero('homepage'),
+      getPublishedHero('engagement-rings'),
+      getPublishedHero('earrings'),
+      getPublishedHero('necklaces'),
+      getPublishedHero('bracelets'),
+    ]).then((results) => results.map((r) => (r.status === 'fulfilled' ? r.value : null)));
+
   return (
-    <>
-      <Hero />
-      <ServicePillars />
-      <BuildYourRingBand />
-      <ShopByShape />
-      <FeaturedPieces />
-      <SectionShowcase />
-      <DiamondGuideTeaser />
-      <PressMarquee />
-      <Testimonials />
-      <AppointmentCTA />
-    </>
+    <Hero
+      heroHome={heroHome}
+      heroEngagement={heroEngagement}
+      heroEarrings={heroEarrings}
+      heroNecklaces={heroNecklaces}
+      heroBracelets={heroBracelets}
+    />
   );
 }

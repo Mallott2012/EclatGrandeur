@@ -14,18 +14,17 @@ import { NextResponse, type NextRequest } from 'next/server';
  * grant access to protected data.
  */
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
-
-  // Env vars are read directly here — the env.ts helpers use process.env which
-  // is available in the middleware edge runtime.
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseUrl     = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // If Supabase is not configured yet (e.g. local dev without .env.local),
-  // skip auth logic entirely so the public storefront still loads.
+  // If Supabase env vars are missing, skip auth — storefront still loads.
   if (!supabaseUrl || !supabaseAnonKey) {
-    return supabaseResponse;
+    return NextResponse.next({ request });
   }
+
+  // ── Exact pattern from Supabase SSR docs ──────────────────────────────────
+  // https://supabase.com/docs/guides/auth/server-side/nextjs
+  let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -33,7 +32,9 @@ export async function middleware(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        cookiesToSet.forEach(({ name, value }) =>
+          request.cookies.set(name, value),
+        );
         supabaseResponse = NextResponse.next({ request });
         cookiesToSet.forEach(({ name, value, options }) =>
           supabaseResponse.cookies.set(name, value, options),
@@ -42,29 +43,31 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  // Refresh the session. Must be called before any redirect checks.
-  // Do not remove: this keeps auth cookies fresh.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // IMPORTANT: call getUser() — do NOT use getSession().
+  // getUser() validates the token server-side; getSession() trusts the cookie.
+  const { data: { user } } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
   const isAdminPath = pathname.startsWith('/admin');
   const isLoginPath = pathname.startsWith('/admin/login');
+  const isSetupPath = pathname.startsWith('/admin/setup');
 
-  // Redirect unauthenticated users away from /admin/* (but not /admin/login).
-  if (isAdminPath && !isLoginPath && !user) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = '/admin/login';
-    return NextResponse.redirect(loginUrl);
+  if (isAdminPath && !isLoginPath && !isSetupPath && !user) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/admin/login';
+    // IMPORTANT: copy cookies from supabaseResponse onto the redirect so
+    // any refreshed tokens are not lost.
+    const redirectResponse = NextResponse.redirect(redirectUrl);
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value);
+    });
+    return redirectResponse;
   }
 
+  // IMPORTANT: always return supabaseResponse — never a new NextResponse.
+  // supabaseResponse carries the refreshed session cookies.
   return supabaseResponse;
 }
-
-// Use the Node.js runtime — @supabase/supabase-js uses process.version which
-// is not available in the default Edge Runtime.
-export const runtime = 'nodejs';
 
 export const config = {
   matcher: [

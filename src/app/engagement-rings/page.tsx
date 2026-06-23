@@ -1,21 +1,17 @@
 import type { Metadata } from 'next';
-import { CategoryPage } from '@/components/product/CategoryPage';
+import { listRingSettings } from '@/lib/ring-settings/service';
+import { EngagementRingPage } from '@/components/engagement/EngagementRingPage';
 
 export const metadata: Metadata = {
-  title: 'Engagement Rings',
+  title: 'Engagement Rings — Éclat Grandeur',
   description:
-    'Diamond engagement rings hand-finished in our London atelier — solitaires, halos, three-stone and pavé — or design your own around a diamond of exceptional beauty.',
+    'Individually handcrafted engagement rings in platinum and gold. Choose your setting, stone shape and metal — each ring made to order in our London atelier.',
 };
 
-export default function Page() {
-  return (
-    <CategoryPage
-      category="engagement-rings"
-      eyebrow="The Promise"
-      title="Engagement Rings"
-      description="A signature design, or a ring created entirely around your diamond. Each one made to last forever."
-      bannerSlug="aurora-solitaire-ring"
-      showBuilder
-    />
-  );
+export default async function Page() {
+  const allSettings = await listRingSettings().catch(() => []);
+  // Only show published settings on the public storefront
+  const settings = allSettings.filter((s) => s.is_published);
+
+  return <EngagementRingPage settings={settings} />;
 }

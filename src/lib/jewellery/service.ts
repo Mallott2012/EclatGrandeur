@@ -1,0 +1,161 @@
+import 'server-only'
+
+import { createAdminClient } from '@/lib/supabase/admin'
+import type { StaffUser } from '@/lib/staff-shared'
+import {
+  parseJewelleryProduct,
+  type JewelleryProduct,
+  type JewelleryProductRecord,
+  type JewelleryProductMediaRecord,
+  type JewelleryCategory,
+} from './types'
+import type { CreateJewelleryProductInput, UpdateJewelleryProductInput } from './schemas'
+
+// ── Audit helper ──────────────────────────────────────────────────────────────
+
+async function writeAudit(
+  actorId:    string,
+  action:     string,
+  entityType: string,
+  entityId:   string,
+  metadata?:  Record<string, unknown>,
+): Promise<void> {
+  try {
+    const admin = createAdminClient()
+    await admin.from('audit_logs').insert({
+      actor_user_id: actorId,
+      action,
+      entity_type:   entityType,
+      entity_id:     entityId,
+      metadata:      metadata ?? {},
+    })
+  } catch {
+    // Non-blocking
+  }
+}
+
+// ── Jewellery products ────────────────────────────────────────────────────────
+
+export async function listJewelleryProducts(
+  category?: JewelleryCategory,
+): Promise<JewelleryProduct[]> {
+  const admin = createAdminClient()
+  let query = admin
+    .from('jewellery_products')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: false })
+  if (category) query = query.eq('category', category)
+  const { data, error } = await query
+  if (error) throw new Error('Failed to list jewellery products')
+  return ((data ?? []) as JewelleryProductRecord[]).map((r) => parseJewelleryProduct(r))
+}
+
+export async function listPublishedJewelleryProducts(
+  category: JewelleryCategory,
+): Promise<JewelleryProduct[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('jewellery_products')
+    .select('*')
+    .eq('category', category)
+    .eq('is_published', true)
+    .order('sort_order', { ascending: true })
+  if (error) throw new Error('Failed to list published jewellery products')
+  const records = (data ?? []) as JewelleryProductRecord[]
+
+  // Fetch primary media for each product in one query
+  if (records.length === 0) return []
+  const ids = records.map((r) => r.id)
+  const { data: mediaData } = await admin
+    .from('jewellery_product_media')
+    .select('*')
+    .in('jewellery_product_id', ids)
+    .eq('is_primary', true)
+  const mediaByProduct = ((mediaData ?? []) as JewelleryProductMediaRecord[])
+    .reduce<Record<string, JewelleryProductMediaRecord[]>>((acc, m) => {
+      if (!acc[m.jewellery_product_id]) acc[m.jewellery_product_id] = []
+      acc[m.jewellery_product_id].push(m)
+      return acc
+    }, {})
+  return records.map((r) => parseJewelleryProduct(r, mediaByProduct[r.id] ?? []))
+}
+
+export async function getJewelleryProductBySlug(
+  slug:     string,
+  category: JewelleryCategory,
+): Promise<JewelleryProduct | null> {
+  const admin = createAdminClient()
+  const { data: row, error } = await admin
+    .from('jewellery_products')
+    .select('*')
+    .eq('slug', slug)
+    .eq('category', category)
+    .eq('is_published', true)
+    .maybeSingle()
+  if (error) throw new Error('Failed to fetch jewellery product')
+  if (!row) return null
+
+  const { data: mediaData } = await admin
+    .from('jewellery_product_media')
+    .select('*')
+    .eq('jewellery_product_id', (row as JewelleryProductRecord).id)
+    .order('display_order', { ascending: true })
+  return parseJewelleryProduct(row as JewelleryProductRecord, (mediaData ?? []) as JewelleryProductMediaRecord[])
+}
+
+export async function getJewelleryProduct(id: string): Promise<JewelleryProduct | null> {
+  const admin = createAdminClient()
+  const { data: row, error } = await admin
+    .from('jewellery_products')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error('Failed to fetch jewellery product')
+  if (!row) return null
+  const { data: mediaData } = await admin
+    .from('jewellery_product_media')
+    .select('*')
+    .eq('jewellery_product_id', id)
+    .order('display_order', { ascending: true })
+  return parseJewelleryProduct(row as JewelleryProductRecord, (mediaData ?? []) as JewelleryProductMediaRecord[])
+}
+
+export async function createJewelleryProduct(
+  actor: StaffUser,
+  input: CreateJewelleryProductInput,
+): Promise<JewelleryProduct> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('jewellery_products')
+    .insert({ ...input, created_by: actor.id, updated_by: actor.id })
+    .select()
+    .single()
+  if (error || !data) throw new Error(error?.message ?? 'Failed to create jewellery product')
+  await writeAudit(actor.id, 'jewellery.create', 'jewellery_product', data.id, { name: input.name })
+  return parseJewelleryProduct(data as JewelleryProductRecord)
+}
+
+export async function updateJewelleryProduct(
+  actor: StaffUser,
+  id:    string,
+  patch: UpdateJewelleryProductInput,
+): Promise<JewelleryProduct> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('jewellery_products')
+    .update({ ...patch, updated_by: actor.id })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error || !data) throw new Error(error?.message ?? 'Failed to update jewellery product')
+  await writeAudit(actor.id, 'jewellery.update', 'jewellery_product', id)
+  return parseJewelleryProduct(data as JewelleryProductRecord)
+}
+
+export async function deleteJewelleryProduct(actor: StaffUser, id: string): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin.from('jewellery_products').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+  await writeAudit(actor.id, 'jewellery.delete', 'jewellery_product', id)
+}

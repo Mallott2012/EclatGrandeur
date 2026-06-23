@@ -1,23 +1,20 @@
 import type { Metadata } from 'next';
-import { Montserrat, Lato } from 'next/font/google';
+import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
 import { siteConfig } from '@/config/site';
-import { Header } from '@/components/layout/Header';
-import { HeaderSpacer } from '@/components/layout/HeaderSpacer';
-import { Footer } from '@/components/layout/Footer';
-import { LiveChat } from '@/components/layout/LiveChat';
-import { CartDrawer } from '@/components/cart/CartDrawer';
+import { HeaderWrapper } from '@/components/layout/HeaderWrapper';
 
-const display = Montserrat({
+const display = Cormorant_Garamond({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
   variable: '--font-display',
   display: 'swap',
 });
 
-const sans = Lato({
+const sans = Inter({
   subsets: ['latin'],
-  weight: ['300', '400', '700'],
+  weight: ['300', '400', '500', '600'],
   variable: '--font-sans',
   display: 'swap',
 });
@@ -48,16 +45,16 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image' },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable}`}>
-      <body className="flex min-h-screen flex-col">
-        <Header />
-        <HeaderSpacer />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <CartDrawer />
-        <LiveChat />
+    <html lang="en" className={`${display.variable} ${sans.variable}`} style={{ backgroundColor: '#ffffff' }}>
+      <body className="flex min-h-dvh flex-col">
+        <HeaderWrapper />
+        <main className="flex-1 flex flex-col">{children}</main>
       </body>
     </html>
   );

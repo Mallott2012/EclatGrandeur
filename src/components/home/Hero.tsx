@@ -1,76 +1,242 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/Button';
-import { Diamond } from '@/components/art/Diamond';
-import { SparkleField } from '@/components/art/Sparkle';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { Pause, Play, VolumeX, Volume2 } from 'lucide-react';
+import type { HeroMediaRecord } from '@/lib/hero/service';
 
-const ease = [0.22, 1, 0.36, 1] as const;
+/* ─── Static fallback panel definitions ──────────────────────────────── */
 
-export function Hero() {
+const STATIC_MODEL_PANEL = {
+  num: '01',
+  label: 'The Éclat Collection',
+  sublabel: 'A woman in full',
+  image: '/images/hero/model.png',
+};
+
+const STATIC_PRODUCT_PANELS = [
+  { num: '02', label: 'The Promise',    sublabel: 'Engagement', image: '/images/hero/ring.png',     key: 'engagement' },
+  { num: '03', label: 'Lumière',        sublabel: 'Necklaces',  image: '/images/hero/necklace.png', key: 'necklaces'  },
+  { num: '04', label: 'Éternité',       sublabel: 'Bracelets',  image: '/images/hero/bracelet.png', key: 'bracelets'  },
+  { num: '05', label: 'Aura',           sublabel: 'Earrings',   image: '/images/hero/earrings.png', key: 'earrings'   },
+];
+
+/* ─── Shared controls ─────────────────────────────────────────────────── */
+
+function Controls({ paused, muted, onPause, onMute }: {
+  paused: boolean;
+  muted: boolean;
+  onPause: () => void;
+  onMute: () => void;
+}) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   return (
-    <section className="relative w-full overflow-hidden bg-gradient-to-b from-glacier-soft/60 via-ivory to-ivory">
-      <div className="container-luxe grid grid-cols-1 items-center gap-10 pt-28 pb-12 md:pt-36 md:pb-16 lg:grid-cols-2">
-        {/* copy */}
-        <div className="relative z-10 text-center lg:text-left">
-          <motion.span
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease }}
-            className="eyebrow"
-          >
-            The Original Online Jeweler
-          </motion.span>
+    <>
+      <button
+        type="button"
+        aria-label={mounted && !muted ? 'Mute' : 'Unmute'}
+        onClick={onMute}
+        className="flex items-center justify-center rounded-full backdrop-blur-sm transition-opacity hover:opacity-70"
+        style={{ width: 28, height: 28, background: 'rgba(0,0,0,0.28)', color: 'rgba(255,255,255,0.85)' }}
+      >
+        {mounted && !muted
+          ? <Volume2 className="h-3 w-3" strokeWidth={1.25} />
+          : <VolumeX className="h-3 w-3" strokeWidth={1.25} />}
+      </button>
+      <button
+        type="button"
+        aria-label={mounted && !paused ? 'Pause' : 'Play'}
+        onClick={onPause}
+        className="flex items-center justify-center rounded-full backdrop-blur-sm transition-opacity hover:opacity-70"
+        style={{ width: 28, height: 28, background: 'rgba(0,0,0,0.28)', color: 'rgba(255,255,255,0.85)' }}
+      >
+        {mounted && !paused
+          ? <Pause className="h-3 w-3" style={{ fill: 'rgba(255,255,255,0.85)' }} strokeWidth={0} />
+          : <Play  className="h-3 w-3" style={{ fill: 'rgba(255,255,255,0.85)' }} strokeWidth={0} />}
+      </button>
+    </>
+  );
+}
 
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease, delay: 0.1 }}
-            className="mt-4 font-display text-4xl font-semibold leading-[1.08] text-noir md:text-6xl"
-          >
-            Find the one.
-            <br />
-            <span className="text-champagne-deep">Build your own ring.</span>
-          </motion.h1>
+/* ─── Vignette overlay ────────────────────────────────────────────────── */
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease, delay: 0.2 }}
-            className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-ink/60 lg:mx-0"
-          >
-            Choose a setting, search thousands of certified diamonds by the 4Cs, and complete a
-            one-of-a-kind ring — with free shipping, free returns and a lifetime warranty.
-          </motion.p>
+function Vignette() {
+  return (
+    <div
+      className="pointer-events-none absolute inset-0"
+      style={{
+        background:
+          'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 20%, transparent 60%, rgba(0,0,0,0.6) 100%)',
+      }}
+    />
+  );
+}
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease, delay: 0.3 }}
-            className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start"
-          >
-            <Button href="/build-a-ring" variant="primary" size="lg">
-              Build Your Own Ring
-            </Button>
-            <Button href="/diamonds" variant="outline" size="lg">
-              Search Diamonds
-            </Button>
-          </motion.div>
-        </div>
+/* ─── Large model panel (left, 45%) ──────────────────────────────────── */
 
-        {/* visual */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.1, ease }}
-          className="relative flex items-center justify-center"
-        >
-          <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-full bg-gradient-to-b from-white to-glacier-soft/50 shadow-luxe">
-            <SparkleField color="text-champagne/50" />
-            <Diamond shape="round" size={300} id="hero-stone" className="animate-float" />
-          </div>
-        </motion.div>
+function ModelPanel({ hero }: { hero?: HeroMediaRecord | null }) {
+  const [paused, setPaused] = useState(false);
+  const [muted,  setMuted]  = useState(true);
+
+  const image    = hero?.storage_path ?? STATIC_MODEL_PANEL.image;
+  const label    = hero?.headline     ?? STATIC_MODEL_PANEL.label;
+  const sublabel = hero?.subheadline  ?? STATIC_MODEL_PANEL.sublabel;
+
+  return (
+    <div className="group relative overflow-hidden" style={{ flex: '0 0 45%' }}>
+      <Image
+        src={image}
+        alt={label}
+        fill
+        sizes="45vw"
+        className="object-cover object-top transition-transform duration-1000 ease-out group-hover:scale-[1.03]"
+        priority
+      />
+      <Vignette />
+
+      {/* number */}
+      <div className="absolute left-5 top-5">
+        <span className="font-sans text-white/50" style={{ fontSize: '9px', fontWeight: 300, letterSpacing: '0.3em' }}>
+          {STATIC_MODEL_PANEL.num}
+        </span>
       </div>
-    </section>
+
+      {/* controls — top right */}
+      <div className="absolute right-4 top-4 flex items-center gap-2">
+        <Controls paused={paused} muted={muted} onPause={() => setPaused(p => !p)} onMute={() => setMuted(m => !m)} />
+      </div>
+
+      {/* label — bottom left, large editorial type */}
+      <div className="absolute bottom-10 left-8 right-8">
+        <p
+          className="font-sans uppercase text-white/45 mb-2"
+          style={{ fontSize: '9px', fontWeight: 300, letterSpacing: '0.4em' }}
+        >
+          {sublabel}
+        </p>
+        {/* thin gold hairline */}
+        <div style={{ width: 32, height: '1px', backgroundColor: 'rgba(212,168,71,0.6)', marginBottom: '14px' }} />
+        <h2
+          className="font-display italic text-white"
+          style={{ fontSize: 'clamp(32px, 3.8vw, 56px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '0.02em' }}
+        >
+          {label}
+        </h2>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Small product panel (2×2 grid, right 55%) ──────────────────────── */
+
+type StaticPanel = (typeof STATIC_PRODUCT_PANELS)[number];
+
+function ProductPanel({
+  panel,
+  hero,
+  priority,
+}: {
+  panel:    StaticPanel;
+  hero?:    HeroMediaRecord | null;
+  priority: boolean;
+}) {
+  const [paused, setPaused] = useState(false);
+  const [muted,  setMuted]  = useState(true);
+
+  const image    = hero?.storage_path ?? panel.image;
+  const label    = hero?.headline     ?? panel.label;
+  const sublabel = hero?.subheadline  ?? panel.sublabel;
+
+  return (
+    <div className="group relative overflow-hidden">
+      <Image
+        src={image}
+        alt={label}
+        fill
+        sizes="27vw"
+        className="object-cover transition-transform duration-1000 ease-out group-hover:scale-[1.05]"
+        priority={priority}
+      />
+      <Vignette />
+
+      {/* number */}
+      <div className="absolute left-4 top-4">
+        <span className="font-sans text-white/50" style={{ fontSize: '9px', fontWeight: 300, letterSpacing: '0.3em' }}>
+          {panel.num}
+        </span>
+      </div>
+
+      {/* controls — top right */}
+      <div className="absolute right-3 top-3 flex items-center gap-1.5">
+        <Controls paused={paused} muted={muted} onPause={() => setPaused(p => !p)} onMute={() => setMuted(m => !m)} />
+      </div>
+
+      {/* label — bottom */}
+      <div className="absolute bottom-5 left-5 right-5">
+        <p
+          className="font-sans uppercase text-white/50 mb-1"
+          style={{ fontSize: '8px', fontWeight: 300, letterSpacing: '0.32em' }}
+        >
+          {sublabel}
+        </p>
+        <span
+          className="font-display italic text-white"
+          style={{ fontSize: 'clamp(14px, 1.4vw, 20px)', fontWeight: 300, letterSpacing: '0.03em', lineHeight: 1.1 }}
+        >
+          {label}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Main export ─────────────────────────────────────────────────────── */
+
+interface HeroProps {
+  heroHome?:        HeroMediaRecord | null;
+  heroEngagement?:  HeroMediaRecord | null;
+  heroEarrings?:    HeroMediaRecord | null;
+  heroNecklaces?:   HeroMediaRecord | null;
+  heroBracelets?:   HeroMediaRecord | null;
+}
+
+export function Hero({
+  heroHome,
+  heroEngagement,
+  heroEarrings,
+  heroNecklaces,
+  heroBracelets,
+}: HeroProps = {}) {
+  const panelHeroes: Record<string, HeroMediaRecord | null | undefined> = {
+    engagement: heroEngagement,
+    necklaces:  heroNecklaces,
+    bracelets:  heroBracelets,
+    earrings:   heroEarrings,
+  };
+
+  return (
+    <div className="flex flex-1" style={{ minHeight: 0, height: 'calc(100dvh - 81px)' }}>
+
+      {/* Left — model hero (45%) */}
+      <ModelPanel hero={heroHome} />
+
+      {/* Hairline divider */}
+      <div style={{ width: '1px', flexShrink: 0, background: 'rgba(255,255,255,0.08)' }} />
+
+      {/* Right — 2×2 product grid (55%) */}
+      <div className="grid flex-1 grid-cols-2 grid-rows-2">
+        {STATIC_PRODUCT_PANELS.map((panel, i) => (
+          <ProductPanel
+            key={panel.num}
+            panel={panel}
+            hero={panelHeroes[panel.key]}
+            priority={i < 2}
+          />
+        ))}
+      </div>
+
+    </div>
   );
 }

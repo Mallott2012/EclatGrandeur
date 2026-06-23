@@ -1,51 +1,38 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
+import { loginAction } from '@/app/admin/login/actions';
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full rounded bg-white py-3 text-xs font-semibold tracking-widest text-neutral-950 transition-opacity hover:opacity-80 disabled:opacity-40"
+    >
+      {pending ? 'SIGNING IN…' : 'SIGN IN'}
+    </button>
+  );
+}
 
 export function AdminLoginForm() {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+  const [state, formAction] = useFormState(loginAction, null);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setPending(true);
-
-    const form = e.currentTarget;
-    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
-    const password = (form.elements.namedItem('password') as HTMLInputElement).value;
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const json = await res.json();
-
-      if (!res.ok) {
-        setError(json.error ?? 'Login failed. Please try again.');
-        return;
-      }
-
-      // Cookies are now set on the browser by the Route Handler response.
-      // A full page navigation (not client-side push) ensures middleware sees them.
-      window.location.href = '/admin';
-    } catch {
-      setError('Network error. Please try again.');
-    } finally {
-      setPending(false);
+  // When the server action returns a redirectTo, do a hard page reload so the
+  // browser sends the newly-set session cookies with the next request.
+  useEffect(() => {
+    if (state?.redirectTo) {
+      window.location.href = state.redirectTo;
     }
-  }
+  }, [state]);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {error && (
+    <form action={formAction} className="space-y-5">
+      {state?.error && (
         <p className="rounded border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-300">
-          {error}
+          {state.error}
         </p>
       )}
 
@@ -59,7 +46,6 @@ export function AdminLoginForm() {
           type="email"
           autoComplete="email"
           required
-          disabled={pending}
           className="w-full rounded border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-600 focus:border-neutral-400 focus:outline-none disabled:opacity-50"
           placeholder="you@example.com"
         />
@@ -75,19 +61,12 @@ export function AdminLoginForm() {
           type="password"
           autoComplete="current-password"
           required
-          disabled={pending}
           className="w-full rounded border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-600 focus:border-neutral-400 focus:outline-none disabled:opacity-50"
           placeholder="••••••••"
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded bg-white py-3 text-xs font-semibold tracking-widest text-neutral-950 transition-opacity hover:opacity-80 disabled:opacity-40"
-      >
-        {pending ? 'SIGNING IN…' : 'SIGN IN'}
-      </button>
+      <SubmitButton />
     </form>
   );
 }
