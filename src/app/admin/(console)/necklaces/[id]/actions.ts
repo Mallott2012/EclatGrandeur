@@ -10,6 +10,13 @@ import {
   unassignDiamondFromJewellery,
   getJewelleryDiamonds,
 } from '@/lib/jewellery/service'
+import {
+  createDiamond,
+  updateDiamond,
+  deleteDiamond,
+  listDiamonds,
+} from '@/lib/diamonds/service'
+import type { CreateDiamondInput, UpdateDiamondInput } from '@/lib/diamonds/schemas'
 
 const CATEGORY = 'necklaces' as const
 const BACK     = '/admin/necklaces'
@@ -60,3 +67,20 @@ export async function unassignDiamondAction(productId: string, diamondId: string
 }
 
 export { getJewelleryDiamonds }
+
+export async function createDiamondAction(data: CreateDiamondInput) {
+  const user = await requireStaffRole([])
+  return await createDiamond(user, data)
+}
+
+export async function updateDiamondAction(id: string, data: UpdateDiamondInput) {
+  const user = await requireStaffRole([])
+  await updateDiamond(user, id, data)
+}
+
+export async function deleteDiamondAction(id: string) {
+  const user = await requireStaffRole([])
+  await deleteDiamond(user, id)
+}
+
+export { listDiamonds }

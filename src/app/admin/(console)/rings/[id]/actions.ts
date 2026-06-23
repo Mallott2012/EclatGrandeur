@@ -10,6 +10,13 @@ import {
   unassignDiamondFromRingSetting,
   getRingSettingDiamonds,
 } from '@/lib/ring-settings/service'
+import {
+  createDiamond,
+  updateDiamond,
+  deleteDiamond,
+  listDiamonds,
+} from '@/lib/diamonds/service'
+import type { CreateDiamondInput, UpdateDiamondInput } from '@/lib/diamonds/schemas'
 
 export async function updateRingAction(id: string, patch: Record<string, unknown>) {
   const user = await requireStaffRole([])
@@ -67,3 +74,26 @@ export async function unassignRingDiamondAction(ringId: string, diamondId: strin
 }
 
 export { getRingSettingDiamonds }
+
+// ── Diamond CRUD (inline, no separate page needed) ────────────────────────────
+
+export async function createDiamondAction(data: CreateDiamondInput) {
+  const user = await requireStaffRole([])
+  const diamond = await createDiamond(user, data)
+  revalidatePath('/admin/rings')
+  return diamond
+}
+
+export async function updateDiamondAction(id: string, data: UpdateDiamondInput) {
+  const user = await requireStaffRole([])
+  await updateDiamond(user, id, data)
+  revalidatePath('/admin/rings')
+}
+
+export async function deleteDiamondAction(id: string) {
+  const user = await requireStaffRole([])
+  await deleteDiamond(user, id)
+  revalidatePath('/admin/rings')
+}
+
+export { listDiamonds }

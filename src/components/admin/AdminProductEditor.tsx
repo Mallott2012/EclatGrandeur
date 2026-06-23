@@ -4,7 +4,7 @@ import { useState, useTransition, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Pencil, Check, X, Plus, Trash2, Eye, EyeOff, ChevronLeft } from 'lucide-react';
-import { DiamondAssignmentPanel, type DiamondSummary } from '@/components/admin/DiamondAssignmentPanel';
+import { DiamondPanel, type DiamondRow } from '@/components/admin/DiamondPanel';
 
 const G      = '#1a2b1a';
 const BORDER = '#e8e8e8';
@@ -27,15 +27,18 @@ export interface AdminProductData {
   metals:      string[];
   images:      string[];
   published:   boolean;
-  // diamond assignment
-  assignedDiamondIds: string[];
-  allDiamonds:        DiamondSummary[];
+  // diamond management (full CRUD + assignment)
+  assignedDiamondIds:  string[];
+  allDiamonds:         DiamondRow[];
   // callbacks (server actions)
-  onSave:            (patch: Partial<AdminProductData>) => Promise<void>;
-  onTogglePublish:   () => Promise<void>;
-  onDelete:          () => Promise<void>;
-  onAssignDiamond:   (diamondId: string) => Promise<void>;
-  onUnassignDiamond: (diamondId: string) => Promise<void>;
+  onSave:              (patch: Partial<AdminProductData>) => Promise<void>;
+  onTogglePublish:     () => Promise<void>;
+  onDelete:            () => Promise<void>;
+  onAssignDiamond:     (diamondId: string) => Promise<void>;
+  onUnassignDiamond:   (diamondId: string) => Promise<void>;
+  onCreateDiamond:     (data: Omit<DiamondRow, 'id' | 'sku'>) => Promise<DiamondRow>;
+  onUpdateDiamond:     (id: string, data: Partial<Omit<DiamondRow, 'id' | 'sku'>>) => Promise<void>;
+  onDeleteDiamond:     (id: string) => Promise<void>;
   // nav
   backHref:    string;
   backLabel:   string;
@@ -424,16 +427,16 @@ export function AdminProductEditor(props: AdminProductData) {
             />
           </div>
 
-          {/* Diamond assignment */}
+          {/* Diamond management */}
           <div className="pt-6">
-            <p className="font-sans uppercase mb-4" style={{ fontSize: 10, letterSpacing: '0.24em', color: '#bbb' }}>
-              Available Diamonds
-            </p>
-            <DiamondAssignmentPanel
+            <DiamondPanel
               diamonds={props.allDiamonds}
               assignedIds={props.assignedDiamondIds}
               onAssign={props.onAssignDiamond}
               onUnassign={props.onUnassignDiamond}
+              onCreate={props.onCreateDiamond}
+              onUpdate={props.onUpdateDiamond}
+              onDelete={props.onDeleteDiamond}
             />
           </div>
         </div>
