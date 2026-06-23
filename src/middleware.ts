@@ -49,11 +49,12 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isAdminPath = pathname.startsWith('/admin');
-  const isLoginPath = pathname.startsWith('/admin/login');
+  const isAdminPath  = pathname.startsWith('/admin');
+  const isLoginPath  = pathname.startsWith('/admin/login');
+  const isSetupPath  = pathname.startsWith('/admin/setup');
 
-  // Redirect unauthenticated users away from /admin/* (but not /admin/login).
-  if (isAdminPath && !isLoginPath && !user) {
+  // Redirect unauthenticated users away from /admin/* (but not /admin/login or /admin/setup).
+  if (isAdminPath && !isLoginPath && !isSetupPath && !user) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = '/admin/login';
     return NextResponse.redirect(loginUrl);
@@ -61,10 +62,6 @@ export async function middleware(request: NextRequest) {
 
   return supabaseResponse;
 }
-
-// Use the Node.js runtime — @supabase/supabase-js uses process.version which
-// is not available in the default Edge Runtime.
-export const runtime = 'nodejs';
 
 export const config = {
   matcher: [
