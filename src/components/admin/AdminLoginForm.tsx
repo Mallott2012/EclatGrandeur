@@ -1,52 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useActionState } from 'react';
+import { loginAction } from '@/app/admin/login/actions';
 
 export function AdminLoginForm() {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setPending(true);
-
-    const form = e.currentTarget;
-    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
-    const password = (form.elements.namedItem('password') as HTMLInputElement).value;
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-        redirect: 'manual', // we handle the redirect ourselves
-      });
-
-      // The route handler returns a redirect on success, or JSON error on failure.
-      if (res.type === 'opaqueredirect' || res.status === 200 || res.redirected) {
-        // Hard navigate so the browser sends the new session cookies.
-        window.location.href = '/admin';
-        return;
-      }
-
-      // Error response — parse JSON for message.
-      const json = await res.json().catch(() => ({}));
-      setError(json.error ?? 'Login failed. Please try again.');
-    } catch {
-      setError('Network error. Please try again.');
-    } finally {
-      setPending(false);
-    }
-  }
+  const [state, formAction, pending] = useActionState(loginAction, null);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {error && (
+    <form action={formAction} className="space-y-5">
+      {state?.error && (
         <p className="rounded border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-300">
-          {error}
+          {state.error}
         </p>
       )}
 
