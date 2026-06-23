@@ -9,7 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const settings = await listRingSettings().catch(() => []);
+  const allSettings = await listRingSettings().catch(() => []);
+  // Only show published settings on the public storefront
+  const settings = allSettings.filter((s) => s.is_published);
 
   return <EngagementRingPage settings={settings} />;
 }

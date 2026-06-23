@@ -43,10 +43,22 @@ const RINGS: Record<string, {
 
 const FALLBACK = RINGS['eclat-solitaire'];
 
-interface Props { slug: string; }
+interface RingData {
+  name:        string;
+  subtitle:    string;
+  basePrice:   number;
+  description: string;
+  images:      string[];
+  materials:   string[];
+}
 
-export function RingDetailPage({ slug }: Props) {
-  const ring = RINGS[slug] ?? FALLBACK;
+interface Props {
+  slug:    string;
+  dbRing?: RingData | null;
+}
+
+export function RingDetailPage({ slug, dbRing }: Props) {
+  const ring = dbRing ?? RINGS[slug] ?? FALLBACK;
 
   const [selectedMetal,   setSelectedMetal]   = useState(ring.materials[0]);
   const [activeImage,     setActiveImage]     = useState(0);
