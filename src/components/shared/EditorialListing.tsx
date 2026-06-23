@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { SlidersHorizontal, X, ArrowRight } from 'lucide-react';
+import { SlidersHorizontal, X } from 'lucide-react';
 
 const G      = '#1a2b1a';
 const STONE  = '#f5f3ef';
@@ -210,12 +210,11 @@ export function EditorialListing({
               >
                 <div
                   className="flex flex-col md:flex-row"
-                  style={{ height: 'clamp(280px, 32vw, 420px)' }}
+                  style={{ height: 'clamp(260px, 30vw, 400px)' }}
                 >
-                  {/* ── VIDEO PANEL (35%) ── */}
+                  {/* ── MEDIA PANEL (50%) — video if available, else image ── */}
                   <div
-                    className={`relative flex-shrink-0 w-full md:w-[35%] overflow-hidden
-                      ${imageLeft ? 'md:order-1' : 'md:order-3'}`}
+                    className={`relative w-full md:w-1/2 overflow-hidden ${imageLeft ? 'md:order-1' : 'md:order-2'}`}
                     style={{ minHeight: 180, backgroundColor: STONE, borderRight: imageLeft ? `1px solid ${BORDER}` : 'none', borderLeft: imageLeft ? 'none' : `1px solid ${BORDER}` }}
                   >
                     {item.video ? (
@@ -225,119 +224,42 @@ export function EditorialListing({
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
                       />
                     ) : item.image ? (
-                      /* Fallback: show image in video slot if no video yet */
                       <Image
                         src={item.image}
                         alt={item.name}
                         fill
                         className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
-                        sizes="35vw"
+                        sizes="50vw"
                         priority={index < 2}
                       />
                     ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                        <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#d0d0d0' }}>
-                          No media
-                        </p>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#d0d0d0' }}>No media</p>
                       </div>
                     )}
                   </div>
 
-                  {/* ── STILL PHOTO PANEL (25%) ── */}
+                  {/* ── PRODUCT PHOTO PANEL (50%) — still image, object-contain ── */}
                   <div
-                    className={`relative flex-shrink-0 w-full md:w-[25%] overflow-hidden
-                      ${imageLeft ? 'md:order-2' : 'md:order-2'}`}
-                    style={{ minHeight: 180, backgroundColor: '#faf9f7', borderRight: `1px solid ${BORDER}` }}
+                    className={`relative w-full md:w-1/2 overflow-hidden ${imageLeft ? 'md:order-2' : 'md:order-1'}`}
+                    style={{ minHeight: 180, backgroundColor: '#faf9f7' }}
                   >
                     {item.image ? (
                       <Image
                         src={item.image}
                         alt={item.name}
                         fill
-                        className="object-contain p-6 transition-transform duration-[1200ms] ease-out group-hover:scale-[1.03]"
-                        sizes="25vw"
+                        className="object-contain p-8 transition-transform duration-[1200ms] ease-out group-hover:scale-[1.03]"
+                        sizes="50vw"
                         priority={index < 2}
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#d0d0d0' }}>
-                          No image
-                        </p>
+                        <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#d0d0d0' }}>No image</p>
                       </div>
                     )}
                   </div>
-
-                  {/* ── TEXT PANEL (40%) ── */}
-                  <div
-                    className={`flex-1 flex flex-col justify-center
-                      ${imageLeft ? 'md:order-3' : 'md:order-1'}`}
-                    style={{
-                      padding: 'clamp(28px, 3.5vw, 56px) clamp(24px, 3.5vw, 56px)',
-                      backgroundColor: '#fff',
-                    }}
-                  >
-                    {/* Index number */}
-                    <p
-                      className="font-sans"
-                      style={{
-                        fontSize: 9, letterSpacing: '0.3em', color: '#d8d8d8',
-                        textTransform: 'uppercase', marginBottom: 16,
-                      }}
-                    >
-                      {String(index + 1).padStart(2, '0')}
-                    </p>
-
-                    {/* Name */}
-                    <h2
-                      className="font-display text-balance"
-                      style={{
-                        fontSize: 'clamp(20px, 2.2vw, 36px)',
-                        fontWeight: 300,
-                        letterSpacing: '0.03em',
-                        lineHeight: 1.1,
-                        color: G,
-                      }}
-                    >
-                      {item.name}
-                    </h2>
-
-                    {/* Subtitle */}
-                    {item.subtitle && (
-                      <p
-                        className="font-sans"
-                        style={{
-                          fontSize: 10, letterSpacing: '0.2em', color: MUTED,
-                          textTransform: 'uppercase', fontWeight: 300, marginTop: 12,
-                        }}
-                      >
-                        {item.subtitle}
-                      </p>
-                    )}
-
-                    {/* Thin rule */}
-                    <div style={{ width: 28, height: 1, backgroundColor: BORDER, margin: '18px 0' }} />
-
-                    {/* Price */}
-                    <p
-                      className="font-sans"
-                      style={{ fontSize: 13, fontWeight: 300, color: '#555', letterSpacing: '0.04em' }}
-                    >
-                      {item.price}
-                    </p>
-
-                    {/* CTA */}
-                    <div className="flex items-center gap-3 mt-7" style={{ color: G }}>
-                      <span className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.3em', fontWeight: 400 }}>
-                        Discover
-                      </span>
-                      <div
-                        style={{ width: 40, height: 1, backgroundColor: G, transition: 'width 0.4s ease' }}
-                        className="group-hover:w-[64px]"
-                      />
-                      <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" strokeWidth={1.5} />
-                    </div>
-                  </div>{/* end text panel */}
-                </div>{/* end row */}
+                </div>
               </Link>
             );
           })}
