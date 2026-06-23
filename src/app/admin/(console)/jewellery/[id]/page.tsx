@@ -42,10 +42,10 @@ export default async function EditJewelleryPage({ params }: Props) {
       id:        d.id,
       sku:       d.sku,
       cut:       d.cut,
-      carat:     d.carat,
+      carat:     String(d.carat),
       colour:    d.colour,
       clarity:   d.clarity,
-      price_gbp: d.price_gbp,
+      price_gbp: String(d.price_gbp),
     }))
 
   return (
