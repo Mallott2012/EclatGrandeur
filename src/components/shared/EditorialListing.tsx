@@ -196,27 +196,26 @@ export function EditorialListing({
           </p>
         </div>
       ) : (
-        <div>
+        <div style={{ padding: '48px clamp(24px, 6vw, 96px)', display: 'flex', flexDirection: 'column', gap: 24 }}>
           {filtered.map((item, index) => {
-            const isEven    = index % 2 === 0;   // even → image left; odd → image right
-            const imageLeft = isEven;
+            const imageLeft = index % 2 === 0;
 
             return (
               <Link
                 key={item.id}
                 href={`${basePath}/${item.slug}`}
                 className="group block"
-                style={{ borderBottom: `1px solid ${BORDER}` }}
+                style={{ border: `1px solid ${BORDER}` }}
               >
                 <div
                   className="flex flex-col md:flex-row"
-                  style={{ minHeight: 'clamp(460px, 55vw, 700px)' }}
+                  style={{ height: 'clamp(280px, 32vw, 420px)' }}
                 >
                   {/* ── IMAGE HALF ── */}
                   <div
-                    className={`relative flex-shrink-0 w-full md:w-[55%] overflow-hidden
+                    className={`relative flex-shrink-0 w-full md:w-[52%] overflow-hidden
                       ${imageLeft ? 'md:order-1' : 'md:order-2'}`}
-                    style={{ minHeight: 320, backgroundColor: STONE }}
+                    style={{ minHeight: 200, backgroundColor: STONE }}
                   >
                     {item.image ? (
                       <Image
@@ -224,11 +223,10 @@ export function EditorialListing({
                         alt={item.name}
                         fill
                         className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
-                        sizes="(max-width: 768px) 100vw, 55vw"
+                        sizes="(max-width: 768px) 100vw, 52vw"
                         priority={index < 2}
                       />
                     ) : (
-                      /* Placeholder — warm stone with centred label */
                       <div className="absolute inset-0 flex items-center justify-center">
                         <p
                           className="font-sans uppercase"
@@ -245,16 +243,16 @@ export function EditorialListing({
                     className={`flex-1 flex flex-col justify-center
                       ${imageLeft ? 'md:order-2' : 'md:order-1'}`}
                     style={{
-                      padding: 'clamp(48px, 6vw, 96px) clamp(32px, 5vw, 80px)',
+                      padding: 'clamp(28px, 3.5vw, 56px) clamp(24px, 3.5vw, 56px)',
                       backgroundColor: '#fff',
                     }}
                   >
-                    {/* Index number — editorial touch */}
+                    {/* Index number */}
                     <p
                       className="font-sans"
                       style={{
-                        fontSize: 10, letterSpacing: '0.3em', color: '#d0d0d0',
-                        textTransform: 'uppercase', marginBottom: 28,
+                        fontSize: 9, letterSpacing: '0.3em', color: '#d8d8d8',
+                        textTransform: 'uppercase', marginBottom: 16,
                       }}
                     >
                       {String(index + 1).padStart(2, '0')}
@@ -264,23 +262,23 @@ export function EditorialListing({
                     <h2
                       className="font-display text-balance"
                       style={{
-                        fontSize: 'clamp(28px, 3.5vw, 52px)',
+                        fontSize: 'clamp(20px, 2.2vw, 36px)',
                         fontWeight: 300,
                         letterSpacing: '0.03em',
-                        lineHeight: 1.08,
+                        lineHeight: 1.1,
                         color: G,
                       }}
                     >
                       {item.name}
                     </h2>
 
-                    {/* Subtitle / Collection */}
+                    {/* Subtitle */}
                     {item.subtitle && (
                       <p
                         className="font-sans"
                         style={{
-                          fontSize: 11, letterSpacing: '0.22em', color: MUTED,
-                          textTransform: 'uppercase', fontWeight: 300, marginTop: 20,
+                          fontSize: 10, letterSpacing: '0.2em', color: MUTED,
+                          textTransform: 'uppercase', fontWeight: 300, marginTop: 12,
                         }}
                       >
                         {item.subtitle}
@@ -288,24 +286,19 @@ export function EditorialListing({
                     )}
 
                     {/* Thin rule */}
-                    <div
-                      style={{
-                        width: 32, height: 1, backgroundColor: BORDER,
-                        margin: '28px 0',
-                      }}
-                    />
+                    <div style={{ width: 28, height: 1, backgroundColor: BORDER, margin: '18px 0' }} />
 
                     {/* Price */}
                     <p
                       className="font-sans"
-                      style={{ fontSize: 14, fontWeight: 300, color: '#555', letterSpacing: '0.04em' }}
+                      style={{ fontSize: 13, fontWeight: 300, color: '#555', letterSpacing: '0.04em' }}
                     >
                       {item.price}
                     </p>
 
                     {/* CTA */}
                     <div
-                      className="flex items-center gap-3 mt-10"
+                      className="flex items-center gap-3 mt-7"
                       style={{ color: G }}
                     >
                       <span

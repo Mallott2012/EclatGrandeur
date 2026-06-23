@@ -83,19 +83,19 @@ export function AdminProductGrid({ title, lede, addHref, products, itemLabel }: 
           </Link>
         </div>
       ) : (
-        <div>
+        <div style={{ padding: '40px clamp(24px, 6vw, 96px)', display: 'flex', flexDirection: 'column', gap: 20 }}>
           {products.map((product, index) => {
             const imageLeft = index % 2 === 0;
             return (
               <div
                 key={product.id}
                 className="group relative flex flex-col md:flex-row"
-                style={{ borderBottom: `1px solid ${BORDER}`, minHeight: 'clamp(380px, 48vw, 580px)' }}
+                style={{ border: `1px solid ${BORDER}`, height: 'clamp(260px, 30vw, 400px)' }}
               >
                 {/* ── IMAGE HALF ── */}
                 <div
-                  className={`relative flex-shrink-0 w-full md:w-[55%] overflow-hidden ${imageLeft ? 'md:order-1' : 'md:order-2'}`}
-                  style={{ minHeight: 280, backgroundColor: STONE }}
+                  className={`relative flex-shrink-0 w-full md:w-[52%] overflow-hidden ${imageLeft ? 'md:order-1' : 'md:order-2'}`}
+                  style={{ minHeight: 180, backgroundColor: STONE }}
                 >
                   {product.image ? (
                     <Image
@@ -145,38 +145,38 @@ export function AdminProductGrid({ title, lede, addHref, products, itemLabel }: 
                 {/* ── TEXT HALF — exact mirror of EditorialListing ── */}
                 <div
                   className={`flex-1 flex flex-col justify-center ${imageLeft ? 'md:order-2' : 'md:order-1'}`}
-                  style={{ padding: 'clamp(40px, 5vw, 80px) clamp(28px, 4vw, 72px)', backgroundColor: '#fff' }}
+                  style={{ padding: 'clamp(24px, 3vw, 48px) clamp(20px, 3vw, 52px)', backgroundColor: '#fff' }}
                 >
                   {/* Index */}
-                  <p className="font-sans" style={{ fontSize: 10, letterSpacing: '0.3em', color: '#d0d0d0', textTransform: 'uppercase', marginBottom: 24 }}>
+                  <p className="font-sans" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#d8d8d8', textTransform: 'uppercase', marginBottom: 14 }}>
                     {String(index + 1).padStart(2, '0')}
                   </p>
 
                   {/* Name */}
                   <h2
                     className="font-display text-balance"
-                    style={{ fontSize: 'clamp(26px, 3vw, 48px)', fontWeight: 300, letterSpacing: '0.03em', lineHeight: 1.08, color: G }}
+                    style={{ fontSize: 'clamp(18px, 2.2vw, 34px)', fontWeight: 300, letterSpacing: '0.03em', lineHeight: 1.1, color: G }}
                   >
                     {product.name}
                   </h2>
 
                   {/* Subtitle */}
                   {product.subtitle && (
-                    <p className="font-sans" style={{ fontSize: 11, letterSpacing: '0.22em', color: MUTED, textTransform: 'uppercase', fontWeight: 300, marginTop: 18 }}>
+                    <p className="font-sans" style={{ fontSize: 10, letterSpacing: '0.2em', color: MUTED, textTransform: 'uppercase', fontWeight: 300, marginTop: 10 }}>
                       {product.subtitle}
                     </p>
                   )}
 
                   {/* Rule */}
-                  <div style={{ width: 32, height: 1, backgroundColor: BORDER, margin: '24px 0' }} />
+                  <div style={{ width: 28, height: 1, backgroundColor: BORDER, margin: '16px 0' }} />
 
                   {/* Price */}
-                  <p className="font-sans" style={{ fontSize: 14, fontWeight: 300, color: '#555', letterSpacing: '0.04em' }}>
+                  <p className="font-sans" style={{ fontSize: 13, fontWeight: 300, color: '#555', letterSpacing: '0.04em' }}>
                     {product.price}
                   </p>
 
                   {/* CTA row */}
-                  <div className="flex items-center gap-6 mt-8">
+                  <div className="flex items-center gap-5 mt-6">
                     <Link
                       href={product.editHref}
                       className="flex items-center gap-2 font-sans uppercase"
