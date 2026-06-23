@@ -197,7 +197,7 @@ export function EditorialListing({
           </p>
         </div>
       ) : (
-        <div style={{ padding: '48px clamp(24px, 6vw, 96px)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div style={{ padding: '48px clamp(24px, 6vw, 96px)', display: 'flex', flexDirection: 'column', gap: 48 }}>
           {filtered.map((item, index) => {
             const mediaLeft = index % 2 === 0;
 
@@ -205,18 +205,12 @@ export function EditorialListing({
               <Link
                 key={item.id}
                 href={`${basePath}/${item.slug}`}
-                className="group flex flex-col md:flex-row"
-                style={{ border: `1px solid ${BORDER}`, marginBottom: 24 }}
+                className="group flex flex-col md:flex-row md:items-stretch gap-6 md:gap-10"
               >
-                {/* ── MEDIA HALF — full-bleed video or cover image ── */}
+                {/* ── BOX 1 · MEDIA — smaller box on one side ── */}
                 <div
-                  className={`relative w-full md:w-1/2 overflow-hidden ${mediaLeft ? 'md:order-1' : 'md:order-2'}`}
-                  style={{
-                    minHeight: 480,
-                    backgroundColor: STONE,
-                    borderRight: mediaLeft ? `1px solid ${BORDER}` : 'none',
-                    borderLeft:  mediaLeft ? 'none' : `1px solid ${BORDER}`,
-                  }}
+                  className={`relative w-full md:w-[40%] overflow-hidden ${mediaLeft ? 'md:order-1' : 'md:order-2'}`}
+                  style={{ aspectRatio: '4 / 3', backgroundColor: STONE, border: `1px solid ${BORDER}` }}
                 >
                   {item.video ? (
                     <video
@@ -230,7 +224,7 @@ export function EditorialListing({
                       alt={item.name}
                       fill
                       className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.03]"
-                      sizes="50vw"
+                      sizes="40vw"
                       priority={index < 2}
                     />
                   ) : (
@@ -240,19 +234,19 @@ export function EditorialListing({
                   )}
                 </div>
 
-                {/* ── PRODUCT CARD HALF — light bg, ring isolated, name + price below ── */}
+                {/* ── BOX 2 · PRODUCT — image, name and price all in one box ── */}
                 <div
-                  className={`w-full md:w-1/2 flex flex-col ${mediaLeft ? 'md:order-2' : 'md:order-1'}`}
-                  style={{ backgroundColor: '#f5f4f2' }}
+                  className={`relative flex-1 flex flex-col ${mediaLeft ? 'md:order-2' : 'md:order-1'}`}
+                  style={{ backgroundColor: '#ffffff', border: `1px solid ${BORDER}` }}
                 >
-                  {/* Image area — takes most of the space */}
-                  <div className="relative flex-1" style={{ minHeight: 380 }}>
+                  {/* Product image */}
+                  <div className="relative flex-1" style={{ minHeight: 320 }}>
                     {item.image ? (
                       <Image
                         src={item.image}
                         alt={item.name}
                         fill
-                        className="object-contain p-12 transition-transform duration-[1400ms] ease-out group-hover:scale-[1.04]"
+                        className="object-contain p-10 transition-transform duration-[1400ms] ease-out group-hover:scale-[1.04]"
                         sizes="50vw"
                         priority={index < 2}
                       />
@@ -263,17 +257,17 @@ export function EditorialListing({
                     )}
                   </div>
 
-                  {/* Name + price strip — below the image, white bg */}
-                  <div style={{ backgroundColor: '#fff', padding: '28px 32px', borderTop: `1px solid ${BORDER}` }}>
+                  {/* Name + price — together, same box, bottom-left */}
+                  <div style={{ padding: '24px 32px 32px' }}>
                     <p
                       className="font-display"
-                      style={{ fontSize: 'clamp(16px, 1.6vw, 22px)', fontWeight: 300, letterSpacing: '0.02em', color: G, lineHeight: 1.3 }}
+                      style={{ fontSize: 'clamp(18px, 1.7vw, 24px)', fontWeight: 300, letterSpacing: '0.02em', color: G, lineHeight: 1.25 }}
                     >
                       {item.name}
                     </p>
                     <p
                       className="font-sans"
-                      style={{ fontSize: 13, fontWeight: 300, color: '#777', letterSpacing: '0.02em', marginTop: 10 }}
+                      style={{ fontSize: 13, fontWeight: 300, color: '#777', letterSpacing: '0.02em', marginTop: 6 }}
                     >
                       {item.price}
                     </p>
