@@ -24,8 +24,8 @@ interface Props {
   record?: HeroMediaRecord
 }
 
-const inputCls = 'w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder-neutral-600 focus:border-amber-700 focus:outline-none'
-const labelCls = 'block text-xs font-semibold tracking-widest text-neutral-400 mb-1'
+const inputCls = 'w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:border-stone-500 focus:outline-none'
+const labelCls = 'block text-xs font-semibold tracking-widest text-stone-500 mb-1'
 
 export function HeroForm({ record }: Props) {
   const router = useRouter()
@@ -49,7 +49,7 @@ export function HeroForm({ record }: Props) {
         {record ? (
           <>
             <input type="hidden" name="placement" value={record.placement} />
-            <p className="text-sm text-white capitalize">{record.placement.replace(/-/g, ' ')}</p>
+            <p className="text-sm text-stone-900 capitalize">{record.placement.replace(/-/g, ' ')}</p>
           </>
         ) : (
           <select name="placement" required className={inputCls} defaultValue="">
@@ -84,7 +84,7 @@ export function HeroForm({ record }: Props) {
           placeholder="/images/hero-homepage.jpg  or  https://…"
           className={inputCls}
         />
-        <p className="mt-1 text-[11px] text-neutral-700">
+        <p className="mt-1 text-[11px] text-stone-400">
           Enter a Supabase Storage path or any public URL to the image/video.
         </p>
       </div>
@@ -151,18 +151,18 @@ export function HeroForm({ record }: Props) {
 
       {/* Error */}
       {'message' in state && state.message && !state.success && (
-        <p className="rounded bg-red-900/20 px-4 py-2 text-sm text-red-400">{state.message}</p>
+        <p className="rounded border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{state.message}</p>
       )}
 
       <div className="flex items-center gap-4 pt-2">
         <button
           type="submit"
           disabled={pending}
-          className="rounded bg-amber-700 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+          className="rounded bg-stone-900 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-stone-700 disabled:opacity-50"
         >
           {pending ? 'Saving…' : record ? 'Save changes' : 'Create hero'}
         </button>
-        <a href="/admin/hero" className="text-xs text-neutral-500 hover:text-white">
+        <a href="/admin/hero" className="text-xs text-stone-400 hover:text-stone-700">
           Cancel
         </a>
       </div>

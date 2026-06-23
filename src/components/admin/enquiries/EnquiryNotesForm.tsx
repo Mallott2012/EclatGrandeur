@@ -28,12 +28,12 @@ export function EnquiryNotesForm({ id, current }: Props) {
         <p className="text-xs text-red-600">{state.message}</p>
       )}
       {state.success && (
-        <p className="text-xs text-emerald-500">Notes saved.</p>
+        <p className="text-xs text-emerald-600">Notes saved.</p>
       )}
       <button
         type="submit"
         disabled={pending}
-        className="rounded bg-neutral-800 px-4 py-1.5 text-xs text-white transition-colors hover:bg-neutral-700 disabled:opacity-50"
+        className="rounded bg-stone-900 px-4 py-1.5 text-xs text-white transition-colors hover:bg-stone-700 disabled:opacity-50"
       >
         {pending ? 'Saving…' : 'Save notes'}
       </button>

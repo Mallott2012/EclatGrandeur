@@ -45,13 +45,13 @@ export function JewelleryForm({ action, defaultValues: dv = {}, submitLabel, can
   return (
     <form action={formAction} className="space-y-8">
       {!state.success && state.message && (
-        <div className="rounded border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-300">
+        <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {state.message}
         </div>
       )}
 
       {state.success && (
-        <div className="rounded border border-emerald-800 bg-emerald-950/40 px-4 py-3 text-sm text-emerald-300">
+        <div className="rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
           Saved successfully.
         </div>
       )}
@@ -88,7 +88,7 @@ export function JewelleryForm({ action, defaultValues: dv = {}, submitLabel, can
             rows={4}
             defaultValue={dv.description ?? ''}
             placeholder="Atmospheric product description…"
-            className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 placeholder-neutral-600 focus:border-amber-600 focus:outline-none resize-y"
+            className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:border-stone-500 focus:outline-none resize-y"
           />
         </Field>
       </Fieldset>
@@ -122,11 +122,11 @@ export function JewelleryForm({ action, defaultValues: dv = {}, submitLabel, can
                   defaultChecked={dv.metals?.includes(m) ?? false}
                   className="h-4 w-4 accent-amber-600"
                 />
-                <span className="text-sm text-neutral-300">{METAL_LABELS[m]}</span>
+                <span className="text-sm text-stone-700">{METAL_LABELS[m]}</span>
               </label>
             ))}
           </div>
-          {fe.metals && <p className="mt-1 text-xs text-red-400">{fe.metals}</p>}
+          {fe.metals && <p className="mt-1 text-xs text-red-600">{fe.metals}</p>}
         </Field>
       </Fieldset>
 
@@ -140,25 +140,25 @@ export function JewelleryForm({ action, defaultValues: dv = {}, submitLabel, can
               defaultChecked={dv.show_diamond ?? true}
               className="h-4 w-4 accent-amber-600"
             />
-            <span className="text-sm text-neutral-300">Show diamond selector (customer chooses a diamond)</span>
+            <span className="text-sm text-stone-700">Show diamond selector (customer chooses a diamond)</span>
           </label>
           <label className="flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"
               name="is_total_carat"
               defaultChecked={dv.is_total_carat ?? false}
-              className="h-4 w-4 accent-amber-600"
+              className="h-4 w-4 accent-stone-700"
             />
-            <span className="text-sm text-neutral-300">Total carat mode (earrings: combined weight)</span>
+            <span className="text-sm text-stone-700">Total carat mode (earrings: combined weight)</span>
           </label>
           <label className="flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"
               name="is_pair"
               defaultChecked={dv.is_pair ?? false}
-              className="h-4 w-4 accent-amber-600"
+              className="h-4 w-4 accent-stone-700"
             />
-            <span className="text-sm text-neutral-300">Pair mode (earrings: matched pair selection)</span>
+            <span className="text-sm text-stone-700">Pair mode (earrings: matched pair selection)</span>
           </label>
         </div>
       </Fieldset>
@@ -172,14 +172,14 @@ export function JewelleryForm({ action, defaultValues: dv = {}, submitLabel, can
             defaultChecked={dv.is_published ?? false}
             className="h-4 w-4 accent-amber-600"
           />
-          <span className="text-sm text-neutral-300">Published (visible on storefront)</span>
+          <span className="text-sm text-stone-700">Published (visible on storefront)</span>
         </label>
       </Fieldset>
 
       {/* ── Submit ── */}
-      <div className="flex items-center gap-4 border-t border-neutral-800 pt-6">
+      <div className="flex items-center gap-4 border-t border-stone-200 pt-6">
         <SubmitButton label={submitLabel} />
-        <a href={cancelHref} className="text-sm text-neutral-500 transition-colors hover:text-neutral-300">
+        <a href={cancelHref} className="text-sm text-stone-400 transition-colors hover:text-stone-700">
           Cancel
         </a>
       </div>
@@ -195,7 +195,7 @@ function SubmitButton({ label }: { label: string }) {
     <button
       type="submit"
       disabled={pending}
-      className="rounded bg-amber-700 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+      className="rounded bg-stone-900 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-stone-700 disabled:opacity-50"
     >
       {pending ? 'Saving…' : label}
     </button>
@@ -205,7 +205,7 @@ function SubmitButton({ label }: { label: string }) {
 function Fieldset({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="mb-4 text-xs font-semibold tracking-widest text-neutral-500">{title.toUpperCase()}</h3>
+      <h3 className="mb-4 text-xs font-semibold tracking-widest text-stone-400">{title.toUpperCase()}</h3>
       <div className="space-y-4">{children}</div>
     </div>
   )
@@ -222,12 +222,12 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium tracking-widest text-neutral-400">
-        {label.toUpperCase()}{required && <span className="ml-0.5 text-amber-600">*</span>}
+      <label className="mb-1 block text-xs font-medium tracking-widest text-stone-500">
+        {label.toUpperCase()}{required && <span className="ml-0.5 text-stone-900">*</span>}
       </label>
-      {hint && <p className="mb-1 text-xs text-neutral-600">{hint}</p>}
+      {hint && <p className="mb-1 text-xs text-stone-400">{hint}</p>}
       {children}
-      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   )
 }
@@ -236,7 +236,7 @@ function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInputEleme
   return (
     <input
       {...props}
-      className={`w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 placeholder-neutral-600 focus:border-amber-600 focus:outline-none ${className ?? ''}`}
+      className={`w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:border-stone-500 focus:outline-none ${className ?? ''}`}
     />
   )
 }
@@ -247,7 +247,7 @@ function Select({
   return (
     <select
       {...props}
-      className={`w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 focus:border-amber-600 focus:outline-none ${className ?? ''}`}
+      className={`w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-stone-500 focus:outline-none ${className ?? ''}`}
     >
       {children}
     </select>

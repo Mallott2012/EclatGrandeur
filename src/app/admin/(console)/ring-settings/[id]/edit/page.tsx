@@ -27,11 +27,11 @@ export default async function EditRingSettingPage({ params }: Props) {
     <div className="max-w-2xl">
       <Link
         href={`/admin/ring-settings/${id}`}
-        className="mb-4 inline-block text-xs tracking-widest text-neutral-500 transition-colors hover:text-neutral-300"
+        className="mb-4 inline-block text-xs tracking-widest text-stone-400 transition-colors hover:text-stone-700"
       >
         ← {setting.name.toUpperCase()}
       </Link>
-      <h1 className="mb-8 font-display text-3xl font-light tracking-widest text-white">EDIT RING SETTING</h1>
+      <h1 className="mb-8 font-display text-3xl font-light tracking-widest text-stone-900">EDIT RING SETTING</h1>
       <RingSettingForm
         action={boundAction}
         defaultValues={{
