@@ -71,7 +71,7 @@ export async function listPublishedJewelleryProducts(
     .from('jewellery_product_media')
     .select('*')
     .in('jewellery_product_id', ids)
-    .eq('is_primary', true)
+    .order('display_order', { ascending: true })
   const mediaByProduct = ((mediaData ?? []) as JewelleryProductMediaRecord[])
     .reduce<Record<string, JewelleryProductMediaRecord[]>>((acc, m) => {
       if (!acc[m.jewellery_product_id]) acc[m.jewellery_product_id] = []

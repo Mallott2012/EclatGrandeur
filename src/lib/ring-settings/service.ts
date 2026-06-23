@@ -7,16 +7,16 @@ import type { CreateRingSettingInput, UpdateRingSettingInput } from './schemas'
 
 // ── Queries ──────────────────────────────────────────────────────────────────
 
-export async function listRingSettings(): Promise<RingSettingRecord[]> {
+export async function listRingSettings(): Promise<RingSettingFull[]> {
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('ring_settings')
-    .select('*')
+    .select('*, media:ring_setting_media(*)')
     .order('sort_order', { ascending: true })
     .order('name', { ascending: true })
 
   if (error) throw new ServiceException({ code: 'db_error', message: 'Failed to list ring settings', statusHint: 500 })
-  return (data ?? []) as RingSettingRecord[]
+  return (data ?? []) as RingSettingFull[]
 }
 
 export async function getRingSetting(id: string): Promise<RingSettingFull | null> {

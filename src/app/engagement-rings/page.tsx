@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { listRingSettings } from '@/lib/ring-settings/service';
+import type { RingSettingFull } from '@/lib/ring-settings/types';
 import { EngagementRingPage } from '@/components/engagement/EngagementRingPage';
 
 export const metadata: Metadata = {
