@@ -288,22 +288,36 @@ export function JewelleryDetailPage({ product, config }: Props) {
             </button>
           )}
 
-          {/* Add to Bag — only appears once selection is made */}
+          {/* Add to Bag + Checkout — only appears once selection is made (or no diamond required) */}
           {(!showDiamond || hasSelection) && (
-            <button
-              type="button"
-              className="w-full font-sans uppercase mt-3 py-4"
-              style={{
-                fontSize: 11, letterSpacing: '0.28em',
-                backgroundColor: showDiamond ? '#fff' : G,
-                color: showDiamond ? G : '#fff',
-                border: showDiamond ? `1px solid ${G}` : 'none',
-              }}
-            >
-              {showDiamond
-                ? `Add to Bag — £${totalPrice.toLocaleString('en-GB')}`
-                : 'Add to Bag'}
-            </button>
+            <>
+              {/* Add to Bag */}
+              <button
+                type="button"
+                className="w-full font-sans uppercase mt-3 py-4"
+                style={{
+                  fontSize: 11, letterSpacing: '0.28em',
+                  backgroundColor: showDiamond ? '#fff' : G,
+                  color: showDiamond ? G : '#fff',
+                  border: showDiamond ? `1px solid ${G}` : 'none',
+                }}
+              >
+                {showDiamond
+                  ? `Add to Bag — £${totalPrice.toLocaleString('en-GB')}`
+                  : 'Add to Bag'}
+              </button>
+
+              {/* Checkout */}
+              <Link
+                href="/checkout"
+                className="block w-full font-sans uppercase text-center mt-3 py-4"
+                style={{ fontSize: 11, letterSpacing: '0.28em', backgroundColor: '#fff', color: '#999', border: `1px solid ${BORDER}` }}
+              >
+                {showDiamond
+                  ? `Checkout — £${totalPrice.toLocaleString('en-GB')}`
+                  : 'Checkout'}
+              </Link>
+            </>
           )}
 
           {/* Save to Shortlist */}
@@ -321,16 +335,19 @@ export function JewelleryDetailPage({ product, config }: Props) {
             {isShortlisted ? 'Saved to Shortlist' : 'Save to Shortlist'}
           </button>
 
-          {/* Expert link */}
-          <p className="font-sans text-center mt-5" style={{ fontSize: 12, color: '#aaa', letterSpacing: '0.02em' }}>
-            Need an Éclat jewellery expert?{' '}
+          {/* Speak to a Consultant */}
+          <div className="mt-5" style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 20 }}>
+            <p className="font-sans text-center" style={{ fontSize: 12, color: '#aaa', letterSpacing: '0.02em' }}>
+              Prefer to speak with an Éclat expert?
+            </p>
             <Link
               href="/contact"
-              style={{ color: G, textDecoration: 'underline', textUnderlineOffset: 3 }}
+              className="flex items-center justify-center w-full font-sans uppercase mt-3 py-3 transition-opacity hover:opacity-70"
+              style={{ fontSize: 10, letterSpacing: '0.22em', color: G, border: `1px solid ${BORDER}` }}
             >
-              Book an appointment
+              Speak to a Consultant
             </Link>
-          </p>
+          </div>
 
           <div className="mt-10 mb-8" style={{ height: 1, backgroundColor: BORDER }} />
 
