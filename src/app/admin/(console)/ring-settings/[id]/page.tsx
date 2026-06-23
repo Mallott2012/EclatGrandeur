@@ -2,10 +2,13 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaffRole } from '@/lib/staff'
-import { getRingSetting } from '@/lib/ring-settings/service'
+import { getRingSetting, getRingSettingDiamonds } from '@/lib/ring-settings/service'
+import { listDiamonds } from '@/lib/diamonds/service'
 import { METAL_LABELS } from '@/lib/ring-settings/types'
 import { DeleteRingSettingForm } from '@/components/admin/ring-settings/DeleteRingSettingForm'
+import { DiamondAssignmentPanel, type DiamondSummary } from '@/components/admin/DiamondAssignmentPanel'
 import { deleteRingSettingAction } from './actions'
+import { assignRingDiamondAction, unassignRingDiamondAction } from './diamond-actions'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -23,13 +26,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function RingSettingDetailPage({ params }: Props) {
   await requireStaffRole(['super_admin'])
   const { id } = await params
-  const setting = await getRingSetting(id)
+
+  const [setting, assignedByMetal, allDiamonds] = await Promise.all([
+    getRingSetting(id),
+    getRingSettingDiamonds(id),
+    listDiamonds(),
+  ])
+
   if (!setting) notFound()
 
   const deleteWithId = deleteRingSettingAction.bind(null, id)
 
+  // Shape diamonds into summary rows
+  const diamondSummaries: DiamondSummary[] = allDiamonds
+    .filter((d) => d.status === 'available')
+    .map((d) => ({
+      id:        d.id,
+      sku:       d.sku,
+      cut:       d.cut,
+      carat:     d.carat,
+      colour:    d.colour,
+      clarity:   d.clarity,
+      price_gbp: d.price_gbp,
+    }))
+
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-4xl">
       <Link
         href="/admin/ring-settings"
         className="mb-4 inline-block text-xs tracking-widest text-neutral-500 transition-colors hover:text-neutral-300"
@@ -54,7 +76,7 @@ export default async function RingSettingDetailPage({ params }: Props) {
             href={`/admin/ring-settings/${id}/edit`}
             className="rounded border border-neutral-700 px-4 py-2 text-sm text-neutral-300 transition-colors hover:border-neutral-500 hover:text-white"
           >
-            Edit
+            Edit Details
           </Link>
           <DeleteRingSettingForm deleteAction={deleteWithId} />
         </div>
@@ -72,16 +94,40 @@ export default async function RingSettingDetailPage({ params }: Props) {
           </dl>
         </section>
 
-        {/* Metals */}
+        {/* Per-metal diamond assignment */}
         <section className="rounded border border-neutral-800 bg-neutral-900/30 p-6">
-          <h2 className="mb-4 text-xs font-semibold tracking-widest text-neutral-400">METALS</h2>
-          <div className="flex flex-wrap gap-2">
-            {setting.metals.map((m) => (
-              <span key={m} className="rounded border border-neutral-700 px-3 py-1 text-sm text-neutral-300">
-                {METAL_LABELS[m]}
-              </span>
-            ))}
-          </div>
+          <h2 className="mb-1 text-xs font-semibold tracking-widest text-neutral-400">AVAILABLE DIAMONDS BY METAL</h2>
+          <p className="mb-6 text-xs text-neutral-600">
+            Tick the diamonds available for each metal option. Only ticked diamonds will appear on the product page for that metal.
+          </p>
+
+          {setting.metals.length === 0 ? (
+            <p className="text-sm text-neutral-600">No metals configured. Edit the ring setting to add metals first.</p>
+          ) : (
+            <div className="space-y-8">
+              {setting.metals.map((metal) => {
+                const assigned = assignedByMetal[metal] ?? []
+                const assignFn = assignRingDiamondAction.bind(null, id, metal)
+                const unassignFn = unassignRingDiamondAction.bind(null, id, metal)
+                return (
+                  <div key={metal}>
+                    <h3 className="mb-3 text-sm font-semibold text-neutral-200">
+                      {METAL_LABELS[metal]}
+                      <span className="ml-2 text-xs font-normal text-neutral-500">
+                        ({assigned.length} assigned)
+                      </span>
+                    </h3>
+                    <DiamondAssignmentPanel
+                      diamonds={diamondSummaries}
+                      assignedIds={assigned}
+                      onAssign={assignFn}
+                      onUnassign={unassignFn}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </section>
 
         {/* Description */}

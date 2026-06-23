@@ -100,3 +100,63 @@ export async function toggleRingSettingPublished(
 ): Promise<RingSettingRecord> {
   return updateRingSetting(id, { is_published }, updatedBy)
 }
+
+// ── Diamond assignments ───────────────────────────────────────────────────────
+
+export interface RingSettingDiamondRow {
+  id:               string
+  ring_setting_id:  string
+  metal:            string
+  diamond_id:       string
+  created_at:       string
+}
+
+/** Returns all diamond IDs assigned to a ring setting, keyed by metal */
+export async function getRingSettingDiamonds(
+  ringSettingId: string,
+): Promise<Record<string, string[]>> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('ring_setting_diamonds')
+    .select('metal, diamond_id')
+    .eq('ring_setting_id', ringSettingId)
+  if (error) throw new ServiceException({ code: 'db_error', message: 'Failed to fetch ring setting diamonds', statusHint: 500 })
+  const result: Record<string, string[]> = {}
+  for (const row of data ?? []) {
+    if (!result[row.metal]) result[row.metal] = []
+    result[row.metal].push(row.diamond_id)
+  }
+  return result
+}
+
+/** Assign a diamond to a ring setting + metal combo */
+export async function assignDiamondToRingSetting(
+  ringSettingId: string,
+  metal:         string,
+  diamondId:     string,
+): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('ring_setting_diamonds')
+    .insert({ ring_setting_id: ringSettingId, metal, diamond_id: diamondId })
+  // Ignore duplicate (already assigned)
+  if (error && error.code !== '23505') {
+    throw new ServiceException({ code: 'db_error', message: 'Failed to assign diamond', statusHint: 500 })
+  }
+}
+
+/** Remove a diamond from a ring setting + metal combo */
+export async function unassignDiamondFromRingSetting(
+  ringSettingId: string,
+  metal:         string,
+  diamondId:     string,
+): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('ring_setting_diamonds')
+    .delete()
+    .eq('ring_setting_id', ringSettingId)
+    .eq('metal', metal)
+    .eq('diamond_id', diamondId)
+  if (error) throw new ServiceException({ code: 'db_error', message: 'Failed to unassign diamond', statusHint: 500 })
+}
