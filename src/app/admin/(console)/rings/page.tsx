@@ -1,13 +1,13 @@
 import { listRingSettings } from '@/lib/ring-settings/service';
-import { getPublishedHero } from '@/lib/hero/service';
+import { listAllCollageMedia } from '@/app/admin/(console)/hero/actions';
 import { AdminProductGrid, type AdminProduct } from '@/components/admin/AdminProductGrid';
 import { METAL_LABELS } from '@/lib/ring-settings/types';
 import { saveHeroAction, deleteHeroAction } from '@/app/admin/(console)/hero/actions';
 
 export default async function AdminRingsPage() {
-  const [rings, heroRecord] = await Promise.all([
+  const [rings, collageMedia] = await Promise.all([
     listRingSettings().catch(() => []),
-    getPublishedHero('engagement-rings').catch(() => null),
+    listAllCollageMedia('engagement-rings').catch(() => []),
   ]);
 
   const products: AdminProduct[] = rings.map((r) => ({
@@ -16,20 +16,21 @@ export default async function AdminRingsPage() {
     name:      r.name,
     subtitle:  r.metals.map((m) => METAL_LABELS[m]).join(' · ') || 'Engagement Ring',
     price:     r.base_price_gbp ? `Starting from £${parseFloat(String(r.base_price_gbp)).toLocaleString('en-GB')}` : 'Price on request',
-    image:     '/images/rings/ring-1.png',
+    image:     (r as any).media?.[0]?.storage_path ?? '',
     published: r.is_published,
     editHref:  `/admin/rings/${r.id}`,
   }));
+
+  const collageSlots = Array.from({ length: 6 }, (_, i) => collageMedia[i] ?? null);
 
   return (
     <AdminProductGrid
       title="Rings"
       heroCopy="Manage your ring collection"
-      heroImage="/images/heroes/hero-engagement-rings.png"
       addHref="/admin/rings/new"
       products={products}
       heroPlacement="engagement-rings"
-      heroRecord={heroRecord}
+      collageSlots={collageSlots}
       heroCallbacks={{ onSave: saveHeroAction, onDelete: deleteHeroAction }}
     />
   );

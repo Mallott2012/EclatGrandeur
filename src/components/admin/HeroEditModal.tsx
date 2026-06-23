@@ -19,6 +19,7 @@ export interface HeroSavePayload {
   headline:     string | null;
   subheadline:  string | null;
   is_published: boolean;
+  sort_order?:  number;
 }
 
 /* ── Button shown on hero image in the listing grid ─────────────────────── */

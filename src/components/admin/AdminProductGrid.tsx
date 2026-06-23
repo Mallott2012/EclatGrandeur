@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Pencil, Eye, EyeOff, Plus } from 'lucide-react';
-import { HeroEditButton, type HeroEditCallbacks } from '@/components/admin/HeroEditModal';
+import { Pencil, EyeOff, Plus } from 'lucide-react';
+import { AdminCategoryCollage } from '@/components/admin/AdminCategoryCollage';
+import type { HeroEditCallbacks } from '@/components/admin/HeroEditModal';
 import type { HeroMediaRecord, HeroPlacement } from '@/lib/hero/service';
 
 const G      = '#1a2b1a';
@@ -23,63 +24,26 @@ export interface AdminProduct {
 interface Props {
   title:          string;
   heroCopy:       string;
-  heroImage:      string;
+  heroImage?:     string;   // kept for backwards compat, no longer used
   addHref:        string;
   products:       AdminProduct[];
   heroPlacement:  HeroPlacement;
-  heroRecord:     HeroMediaRecord | null;
+  collageSlots:   (HeroMediaRecord | null)[];
   heroCallbacks:  HeroEditCallbacks;
 }
 
-export function AdminProductGrid({ title, heroCopy, heroImage, addHref, products, heroPlacement, heroRecord, heroCallbacks }: Props) {
-  // Use the live hero image if one is set, otherwise fall back to static
-  const displayHeroImage = heroRecord?.storage_path ?? heroImage;
+export function AdminProductGrid({ title, heroCopy, addHref, products, heroPlacement, collageSlots, heroCallbacks }: Props) {
   return (
     <div className="min-h-screen bg-white" style={{ color: G }}>
 
-      {/* ── HERO — identical to frontend, click overlay to change ──────── */}
-      <div className="relative w-full overflow-hidden" style={{ height: 'min(500px, 58vh)' }}>
-        <Image
-          src={displayHeroImage}
-          alt={title}
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.38) 100%)' }} />
-        <div className="absolute inset-0 flex flex-col items-center justify-end pb-14 px-6 text-center">
-          <h1
-            className="font-display text-white text-balance"
-            style={{ fontSize: 'clamp(32px, 5vw, 58px)', fontWeight: 300, letterSpacing: '0.08em', lineHeight: 1.1 }}
-          >
-            {heroRecord?.headline ?? title}
-          </h1>
-          <p
-            className="font-sans text-white mt-4"
-            style={{ fontSize: 12, letterSpacing: '0.2em', fontWeight: 300, opacity: 0.8, textTransform: 'uppercase' }}
-          >
-            {heroRecord?.subheadline ?? heroCopy}
-          </p>
-        </div>
-
-        {/* Admin badge */}
-        <div
-          className="absolute top-4 left-4 font-sans uppercase"
-          style={{ fontSize: 9, letterSpacing: '0.3em', color: '#fff', background: 'rgba(0,0,0,0.35)', padding: '4px 10px', backdropFilter: 'blur(4px)' }}
-        >
-          Admin
-        </div>
-
-        {/* Hero edit button — bottom right */}
-        <div className="absolute bottom-5 right-6">
-          <HeroEditButton
-            current={heroRecord}
-            placement={heroPlacement}
-            callbacks={heroCallbacks}
-          />
-        </div>
-      </div>
+      {/* ── COLLAGE — identical layout to frontend, each cell editable ─── */}
+      <AdminCategoryCollage
+        title={title}
+        subheading={heroCopy}
+        placement={heroPlacement}
+        initialSlots={collageSlots}
+        callbacks={heroCallbacks}
+      />
 
       {/* ── TOOLBAR ──────────────────────────────────────────────────────── */}
       <div

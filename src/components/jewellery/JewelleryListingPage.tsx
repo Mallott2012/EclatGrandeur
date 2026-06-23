@@ -4,6 +4,8 @@ import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
+import { CategoryCollage } from '@/components/shared/CategoryCollage';
+import type { HeroMediaRecord } from '@/lib/hero/service';
 
 const G      = '#1a2b1a';
 const BORDER = '#e8e8e8';
@@ -29,19 +31,20 @@ export interface JewelleryProduct {
 }
 
 export interface JewelleryConfig {
-  title: string;
-  heroCopy: string;                   // short atmospheric line below the title
-  heroImage: string;                  // path to editorial hero image
-  basePath: string;                   // e.g. '/necklaces'
-  styles: { id: string; label: string }[];
-  itemLabel: string;                  // singular — 'necklace', 'bracelet', 'earring'
-  products: JewelleryProduct[];
+  title:        string;
+  heroCopy:     string;
+  heroImage:    string;               // kept for backwards compat but no longer used
+  basePath:     string;               // e.g. '/necklaces'
+  styles:       { id: string; label: string }[];
+  itemLabel:    string;               // singular — 'necklace', 'bracelet', 'earring'
+  products:     JewelleryProduct[];
+  collageSlots: (HeroMediaRecord | null)[];
 }
 
 interface Props { config: JewelleryConfig; }
 
 export function JewelleryListingPage({ config }: Props) {
-  const { title, heroCopy, heroImage, basePath, styles, itemLabel, products } = config;
+  const { title, heroCopy, basePath, styles, itemLabel, products, collageSlots } = config;
 
   const [activeStyle,  setActiveStyle]  = useState<string | null>(null);
   const [activeMetal,  setActiveMetal]  = useState<string | null>(null);
@@ -62,36 +65,11 @@ export function JewelleryListingPage({ config }: Props) {
   return (
     <div className="min-h-screen bg-white" style={{ color: G }}>
 
-      {/* ── EDITORIAL HERO ───────────────────────────────────────────────── */}
-      <div className="relative w-full overflow-hidden" style={{ paddingTop: 81, height: 'min(600px, 65vh)' }}>
-        <Image
-          src={heroImage}
-          alt={title}
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="100vw"
-        />
-        {/* Gradient so serif heading reads cleanly over any image */}
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.38) 100%)' }}
-        />
-        <div className="absolute inset-0 flex flex-col items-center justify-end pb-14 px-6 text-center">
-          <h1
-            className="font-display text-white text-balance"
-            style={{ fontSize: 'clamp(32px, 5vw, 60px)', fontWeight: 300, letterSpacing: '0.08em', lineHeight: 1.1 }}
-          >
-            {title}
-          </h1>
-          <p
-            className="font-sans text-white mt-4"
-            style={{ fontSize: 13, letterSpacing: '0.18em', fontWeight: 300, opacity: 0.85, textTransform: 'uppercase' }}
-          >
-            {heroCopy}
-          </p>
-        </div>
-      </div>
+      <CategoryCollage
+        title={title}
+        subheading={heroCopy}
+        slots={collageSlots}
+      />
 
       {/* ── SORT / COUNT / FILTER BAR — sticky ───────────────────────────── */}
       <div

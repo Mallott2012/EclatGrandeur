@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { listPublishedJewelleryProducts } from '@/lib/jewellery/service';
+import { listCollageMedia } from '@/lib/hero/service';
 import { JewelleryListingPage, type JewelleryProduct, type JewelleryConfig } from '@/components/jewellery/JewelleryListingPage';
 
 export const metadata: Metadata = {
@@ -7,10 +8,10 @@ export const metadata: Metadata = {
   description: 'Diamond pendants, rivière necklaces and statement drops — each stone GIA-certified and ethically sourced, handcrafted in our London atelier.',
 };
 
-const CONFIG: Omit<JewelleryConfig, 'products'> = {
+const CONFIG_BASE: Omit<JewelleryConfig, 'products' | 'collageSlots'> = {
   title:     'Necklaces',
   heroCopy:  'Diamonds to be worn close to the heart',
-  heroImage: '/images/heroes/hero-necklaces.png',
+  heroImage: '',
   basePath:  '/necklaces',
   itemLabel: 'necklace',
   styles: [
@@ -23,7 +24,10 @@ const CONFIG: Omit<JewelleryConfig, 'products'> = {
 };
 
 export default async function Page() {
-  const db = await listPublishedJewelleryProducts('necklaces').catch(() => []);
+  const [db, collageMedia] = await Promise.all([
+    listPublishedJewelleryProducts('necklaces').catch(() => []),
+    listCollageMedia('necklaces').catch(() => []),
+  ]);
   const products: JewelleryProduct[] = db.map(p => ({
     id:       p.id,
     slug:     p.slug,
@@ -34,5 +38,6 @@ export default async function Page() {
     style:    '',
     image:    p.media?.[0]?.storage_path ?? '',
   }));
-  return <JewelleryListingPage config={{ ...CONFIG, products }} />;
+  const collageSlots = Array.from({ length: 6 }, (_, i) => collageMedia[i] ?? null);
+  return <JewelleryListingPage config={{ ...CONFIG_BASE, products, collageSlots }} />;
 }

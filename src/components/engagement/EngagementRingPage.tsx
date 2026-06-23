@@ -3,6 +3,8 @@
 import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { CategoryCollage } from '@/components/shared/CategoryCollage';
+import type { HeroMediaRecord } from '@/lib/hero/service';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import type { RingSettingRecord, RingMetal } from '@/lib/ring-settings/types';
 
@@ -18,9 +20,12 @@ const METALS: { id: RingMetal; label: string }[] = [
 
 const SORT_OPTIONS = ['Featured', 'Price: Low to High', 'Price: High to Low', 'Newest'];
 
-interface Props { settings: RingSettingRecord[]; }
+interface Props {
+  settings:     RingSettingRecord[];
+  collageSlots: (HeroMediaRecord | null)[];
+}
 
-export function EngagementRingPage({ settings }: Props) {
+export function EngagementRingPage({ settings, collageSlots }: Props) {
   const [activeMetal,   setActiveMetal]   = useState<RingMetal | null>(null);
   const [filtersOpen,   setFiltersOpen]   = useState(false);
   const [sortOpen,      setSortOpen]      = useState(false);
@@ -42,33 +47,13 @@ export function EngagementRingPage({ settings }: Props) {
   const clearAll = useCallback(() => { setActiveMetal(null); }, []);
 
   return (
-    <div className="min-h-screen bg-white" style={{ color: G }}>
+    <div className="min-h-screen bg-white" style={{ color: G, paddingTop: 0 }}>
 
-      {/* ── EDITORIAL HERO ─────────────────────────────────────────────── */}
-      <div className="relative w-full overflow-hidden" style={{ paddingTop: 81, height: 'min(600px, 65vh)' }}>
-        <Image
-          src="/images/heroes/hero-engagement-rings.png"
-          alt="Engagement Rings"
-          fill priority
-          className="object-cover object-center"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.35) 100%)' }} />
-        <div className="absolute inset-0 flex flex-col items-center justify-end pb-14 px-6 text-center">
-          <h1
-            className="font-display text-white text-balance"
-            style={{ fontSize: 'clamp(32px, 5vw, 60px)', fontWeight: 300, letterSpacing: '0.08em', lineHeight: 1.1 }}
-          >
-            Engagement Rings
-          </h1>
-          <p
-            className="font-sans text-white mt-4"
-            style={{ fontSize: 13, letterSpacing: '0.18em', fontWeight: 300, opacity: 0.85, textTransform: 'uppercase' }}
-          >
-            Crafted to last a lifetime
-          </p>
-        </div>
-      </div>
+      <CategoryCollage
+        title="Engagement Rings"
+        subheading="Crafted to last a lifetime"
+        slots={collageSlots}
+      />
 
       {/* ── SORT / COUNT / FILTER BAR ──────────────────────────────────── */}
       <div

@@ -1,12 +1,12 @@
 import { listJewelleryProducts } from '@/lib/jewellery/service';
-import { getPublishedHero } from '@/lib/hero/service';
+import { listAllCollageMedia } from '@/app/admin/(console)/hero/actions';
 import { AdminProductGrid, type AdminProduct } from '@/components/admin/AdminProductGrid';
 import { saveHeroAction, deleteHeroAction } from '@/app/admin/(console)/hero/actions';
 
 export default async function AdminBraceletsPage() {
-  const [products_db, heroRecord] = await Promise.all([
+  const [products_db, collageMedia] = await Promise.all([
     listJewelleryProducts('bracelets').catch(() => []),
-    getPublishedHero('bracelets').catch(() => null),
+    listAllCollageMedia('bracelets').catch(() => []),
   ]);
 
   const products: AdminProduct[] = products_db.map((p) => ({
@@ -14,21 +14,22 @@ export default async function AdminBraceletsPage() {
     slug:      p.slug,
     name:      p.name,
     subtitle:  p.subtitle ?? 'Bracelet',
-    price:     `Starting from £${p.base_price_gbp.toLocaleString('en-GB')}`,
-    image:     p.media?.[0]?.storage_path ?? '/images/bracelets/bracelet-1.png',
+    price:     p.base_price_gbp ? `Starting from £${Number(p.base_price_gbp).toLocaleString('en-GB')}` : 'Price on application',
+    image:     p.media?.[0]?.storage_path ?? '',
     published: p.is_published,
     editHref:  `/admin/bracelets/${p.id}`,
   }));
+
+  const collageSlots = Array.from({ length: 6 }, (_, i) => collageMedia[i] ?? null);
 
   return (
     <AdminProductGrid
       title="Bracelets"
       heroCopy="Manage your bracelet collection"
-      heroImage="/images/heroes/hero-bracelets.png"
       addHref="/admin/bracelets/new"
       products={products}
       heroPlacement="bracelets"
-      heroRecord={heroRecord}
+      collageSlots={collageSlots}
       heroCallbacks={{ onSave: saveHeroAction, onDelete: deleteHeroAction }}
     />
   );

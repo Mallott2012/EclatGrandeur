@@ -6,9 +6,12 @@ import {
   createHeroMedia,
   updateHeroMedia,
   deleteHeroMedia,
+  listAllCollageMedia,
   type HeroPlacement,
   type CreateHeroInput,
 } from '@/lib/hero/service';
+
+export { listAllCollageMedia };
 
 export async function saveHeroAction(payload: {
   id?:          string;
@@ -18,6 +21,7 @@ export async function saveHeroAction(payload: {
   headline:     string | null;
   subheadline:  string | null;
   is_published: boolean;
+  sort_order?:  number;
 }) {
   const user = await requireStaffRole([]);
 
@@ -28,6 +32,7 @@ export async function saveHeroAction(payload: {
     headline:     payload.headline,
     subheadline:  payload.subheadline,
     is_published: payload.is_published,
+    sort_order:   payload.sort_order,
   };
 
   const record = payload.id
