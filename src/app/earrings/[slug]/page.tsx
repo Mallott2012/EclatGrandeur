@@ -34,6 +34,7 @@ export default async function Page({ params }: Props) {
         <JewelleryDetailPage
           product={product}
           config={{ categoryLabel: 'Earrings', categoryPath: '/earrings' }}
+          jewelleryId={dbProduct.id}
         />
       );
     }

@@ -11,9 +11,11 @@ export default async function EngagementRingDetailRoute({ params }: Props) {
 
   // Fetch from DB; fall back to hardcoded data if not found
   let dbRing = null;
+  let ringSettingId: string | null = null;
   try {
     const setting = await getRingSettingBySlug(slug);
     if (setting) {
+      ringSettingId = setting.id;
       const images = setting.media.length > 0
         ? setting.media
             .sort((a, b) => a.display_order - b.display_order)
@@ -32,5 +34,5 @@ export default async function EngagementRingDetailRoute({ params }: Props) {
     // Fall through to hardcoded data
   }
 
-  return <RingDetailPage slug={slug} dbRing={dbRing} />;
+  return <RingDetailPage slug={slug} dbRing={dbRing} ringSettingId={ringSettingId} />;
 }

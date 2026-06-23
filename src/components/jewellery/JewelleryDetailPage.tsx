@@ -40,11 +40,14 @@ export interface JewelleryDetailConfig {
 }
 
 interface Props {
-  product: JewelleryDetailProduct;
-  config: JewelleryDetailConfig;
+  product:      JewelleryDetailProduct;
+  config:       JewelleryDetailConfig;
+  /** DB id of the jewellery_products row — when present the diamond selector is
+   *  scoped to only the diamonds assigned to this product. */
+  jewelleryId?: string | null;
 }
 
-export function JewelleryDetailPage({ product, config }: Props) {
+export function JewelleryDetailPage({ product, config, jewelleryId }: Props) {
   const [selectedMetal,   setSelectedMetal]   = useState(product.materials[0]);
   const [activeImage,     setActiveImage]     = useState(0);
   const [metalOpen,       setMetalOpen]       = useState(false);
@@ -56,6 +59,11 @@ export function JewelleryDetailPage({ product, config }: Props) {
   const isTotalCarat = diamondMode === 'total-carat';
   const isPair       = diamondMode === 'pair';
   const showDiamond  = diamondMode !== 'none';
+
+  // Scope the diamond API to only assigned diamonds when we have a DB jewellery id
+  const diamondApiUrl = jewelleryId
+    ? `/api/diamonds?jewellery_id=${jewelleryId}`
+    : '/api/diamonds'
 
   // price: base setting + diamond(s)
   const caratExtra   = isTotalCarat && selectedCarat ? Math.round(selectedCarat * (product.pricePerCarat ?? 0)) : 0;
@@ -402,6 +410,7 @@ export function JewelleryDetailPage({ product, config }: Props) {
               pairMode={isPair || (isTotalCarat && product.caratIsPair === true)}
               totalCaratMode={isTotalCarat}
               pricePerCarat={product.pricePerCarat ?? 1000}
+              diamondApiUrl={diamondApiUrl}
             />
           </div>
         </div>
