@@ -123,7 +123,7 @@ export function DiamondSelector({
       .filter(d => d.price >= priceRange[0]  && d.price <= priceRange[1])
       .filter(d => activeColors.length    === 0 || activeColors.includes(d.color))
       .filter(d => activeClarities.length === 0 || activeClarities.includes(d.clarity));
-  }, [totalCaratMode, caratRange, priceRange, activeColors, activeClarities, activeCuts, pricePerCarat]);
+  }, [totalCaratMode, caratRange, priceRange, activeColors, activeClarities, pricePerCarat]);
 
   const sorted = useMemo(() => [...rows].sort((a, b) => {
     let diff = 0;
