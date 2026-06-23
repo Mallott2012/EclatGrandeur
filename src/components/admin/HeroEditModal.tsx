@@ -68,17 +68,20 @@ export function HeroEditButton({
 
 /* ── Modal ────────────────────────────────────────────────────────────────── */
 
-function HeroEditModal({
-  current,
-  placement,
-  callbacks,
-  onClose,
-}: {
+export interface HeroEditModalProps {
+  open?:     boolean; // unused here, kept for external consumers
   current:   HeroMediaRecord | null;
   placement: HeroPlacement;
   callbacks: HeroEditCallbacks;
   onClose:   () => void;
-}) {
+}
+
+export function HeroEditModal({
+  current,
+  placement,
+  callbacks,
+  onClose,
+}: HeroEditModalProps) {
   const [mediaType,   setMediaType]   = useState<'image' | 'video'>(current?.media_type === 'video' ? 'video' : 'image');
   const [storagePath, setStoragePath] = useState(current?.storage_path ?? '');
   const [headline,    setHeadline]    = useState(current?.headline    ?? '');
