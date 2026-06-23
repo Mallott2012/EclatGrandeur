@@ -2,124 +2,139 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Pencil, EyeOff, Plus } from 'lucide-react';
-import { AdminCategoryCollage } from '@/components/admin/AdminCategoryCollage';
-import type { HeroEditCallbacks } from '@/components/admin/HeroEditModal';
-import type { HeroMediaRecord, HeroPlacement } from '@/lib/hero/service';
+import { Pencil, EyeOff, Plus, ArrowRight } from 'lucide-react';
 
 const G      = '#1a2b1a';
+const STONE  = '#f5f3ef';
 const BORDER = '#e8e8e8';
+const MUTED  = '#aaa';
 
 export interface AdminProduct {
-  id:          string;
-  slug:        string;
-  name:        string;
-  subtitle:    string;
-  price:       string;
-  image:       string;
-  published:   boolean;
-  editHref:    string;
+  id:        string;
+  slug:      string;
+  name:      string;
+  subtitle:  string;
+  price:     string;
+  image:     string;
+  published: boolean;
+  editHref:  string;
 }
 
 interface Props {
-  title:          string;
-  heroCopy:       string;
-  heroImage?:     string;   // kept for backwards compat, no longer used
-  addHref:        string;
-  products:       AdminProduct[];
-  heroPlacement:  HeroPlacement;
-  collageSlots:   (HeroMediaRecord | null)[];
-  heroCallbacks:  HeroEditCallbacks;
+  title:     string;
+  lede:      string;
+  addHref:   string;
+  products:  AdminProduct[];
+  itemLabel: string;
 }
 
-export function AdminProductGrid({ title, heroCopy, addHref, products, heroPlacement, collageSlots, heroCallbacks }: Props) {
+export function AdminProductGrid({ title, lede, addHref, products, itemLabel }: Props) {
   return (
     <div className="min-h-screen bg-white" style={{ color: G }}>
 
-      {/* ── COLLAGE — identical layout to frontend, each cell editable ─── */}
-      <AdminCategoryCollage
-        title={title}
-        subheading={heroCopy}
-        placement={heroPlacement}
-        initialSlots={collageSlots}
-        callbacks={heroCallbacks}
-      />
+      {/* ── CATEGORY HEADER — exact mirror of EditorialListing ─────────── */}
+      <div style={{ paddingTop: 40, paddingBottom: 48, textAlign: 'center', borderBottom: `1px solid ${BORDER}` }}>
+        <p className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.36em', color: MUTED, marginBottom: 18 }}>
+          Admin
+        </p>
+        <h1
+          className="font-display"
+          style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1.0, color: G }}
+        >
+          {title}
+        </h1>
+        <div style={{ width: 40, height: 1, backgroundColor: G, margin: '24px auto 18px', opacity: 0.2 }} />
+        <p className="font-sans" style={{ fontSize: 11, letterSpacing: '0.2em', color: MUTED, textTransform: 'uppercase', fontWeight: 300 }}>
+          {lede}
+        </p>
+      </div>
 
-      {/* ── TOOLBAR ──────────────────────────────────────────────────────── */}
+      {/* ── TOOLBAR ────────────────────────────────────────────────────── */}
       <div
-        className="flex items-center justify-between px-6 lg:px-14 py-4"
-        style={{ borderBottom: `1px solid ${BORDER}` }}
+        className="flex items-center justify-between"
+        style={{ padding: '0 clamp(24px, 5vw, 80px)', height: 50, borderBottom: `1px solid ${BORDER}` }}
       >
         <span className="font-sans" style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.08em' }}>
-          {products.length} {products.length === 1 ? 'product' : 'products'}
+          {products.length} {products.length === 1 ? itemLabel : `${itemLabel}s`}
         </span>
         <Link
           href={addHref}
           className="flex items-center gap-2 font-sans uppercase"
-          style={{ fontSize: 10, letterSpacing: '0.2em', color: G, border: `1px solid ${G}`, padding: '8px 16px' }}
+          style={{ fontSize: 10, letterSpacing: '0.2em', color: G, border: `1px solid ${G}`, padding: '7px 16px' }}
         >
           <Plus className="w-3 h-3" strokeWidth={2} />
           Add New
         </Link>
       </div>
 
-      {/* ── PRODUCT GRID ─────────────────────────────────────────────────── */}
-      <div className="px-6 lg:px-14 py-16">
-        {products.length === 0 ? (
-          <div className="py-32 text-center">
-            <p className="font-sans" style={{ fontSize: 14, color: '#ccc', letterSpacing: '0.06em' }}>
-              No products yet.
-            </p>
-            <Link
-              href={addHref}
-              className="inline-flex items-center gap-2 font-sans uppercase mt-6"
-              style={{ fontSize: 10, letterSpacing: '0.2em', color: G, border: `1px solid ${G}`, padding: '10px 20px' }}
-            >
-              <Plus className="w-3 h-3" strokeWidth={2} />
-              Add First Product
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-20">
-            {products.map(product => (
-              <div key={product.id} className="group relative block">
-
-                {/* Card — same 4:5 portrait as frontend */}
+      {/* ── EDITORIAL ROWS ─────────────────────────────────────────────── */}
+      {products.length === 0 ? (
+        <div style={{ padding: '120px 0', textAlign: 'center' }}>
+          <p className="font-display" style={{ fontSize: 26, fontWeight: 300, color: '#ccc', letterSpacing: '0.04em' }}>
+            No {itemLabel}s yet
+          </p>
+          <Link
+            href={addHref}
+            className="inline-flex items-center gap-2 font-sans uppercase mt-8"
+            style={{ fontSize: 10, letterSpacing: '0.2em', color: G, border: `1px solid ${G}`, padding: '10px 22px' }}
+          >
+            <Plus className="w-3 h-3" strokeWidth={2} />
+            Add First {itemLabel.charAt(0).toUpperCase() + itemLabel.slice(1)}
+          </Link>
+        </div>
+      ) : (
+        <div>
+          {products.map((product, index) => {
+            const imageLeft = index % 2 === 0;
+            return (
+              <div
+                key={product.id}
+                className="group relative flex flex-col md:flex-row"
+                style={{ borderBottom: `1px solid ${BORDER}`, minHeight: 'clamp(380px, 48vw, 580px)' }}
+              >
+                {/* ── IMAGE HALF ── */}
                 <div
-                  className="relative w-full overflow-hidden"
-                  style={{ aspectRatio: '4/5', backgroundColor: '#fafafa' }}
+                  className={`relative flex-shrink-0 w-full md:w-[55%] overflow-hidden ${imageLeft ? 'md:order-1' : 'md:order-2'}`}
+                  style={{ minHeight: 280, backgroundColor: STONE }}
                 >
-                  <div className="absolute inset-[8%]">
+                  {product.image ? (
                     <Image
                       src={product.image}
                       alt={product.name}
                       fill
-                      className="object-contain"
-                      sizes="(max-width: 768px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.03]"
+                      sizes="(max-width: 768px) 100vw, 55vw"
+                      priority={index < 2}
                     />
-                  </div>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <p className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.3em', color: '#c8c8c8' }}>
+                        No image
+                      </p>
+                    </div>
+                  )}
 
                   {/* Draft badge */}
                   {!product.published && (
                     <div
-                      className="absolute top-3 left-3 flex items-center gap-1 font-sans uppercase"
-                      style={{ fontSize: 9, letterSpacing: '0.2em', color: '#fff', background: 'rgba(0,0,0,0.55)', padding: '3px 8px' }}
+                      className="absolute top-4 left-4 flex items-center gap-1.5 font-sans uppercase"
+                      style={{ fontSize: 9, letterSpacing: '0.2em', color: '#fff', background: 'rgba(0,0,0,0.55)', padding: '4px 10px' }}
                     >
                       <EyeOff className="w-2.5 h-2.5" strokeWidth={2} />
                       Draft
                     </div>
                   )}
 
-                  {/* Edit overlay — appears on hover */}
+                  {/* Edit image overlay on hover */}
                   <Link
                     href={product.editHref}
-                    className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ background: 'rgba(26,43,26,0.12)', backdropFilter: 'blur(1px)' }}
+                    className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: 'rgba(26,43,26,0.14)', backdropFilter: 'blur(2px)' }}
                     aria-label={`Edit ${product.name}`}
                   >
                     <span
                       className="flex items-center gap-2 font-sans uppercase"
-                      style={{ fontSize: 10, letterSpacing: '0.22em', color: '#fff', background: 'rgba(26,43,26,0.85)', padding: '10px 20px' }}
+                      style={{ fontSize: 10, letterSpacing: '0.22em', color: '#fff', background: 'rgba(26,43,26,0.88)', padding: '11px 22px' }}
                     >
                       <Pencil className="w-3 h-3" strokeWidth={2} />
                       Edit
@@ -127,42 +142,65 @@ export function AdminProductGrid({ title, heroCopy, addHref, products, heroPlace
                   </Link>
                 </div>
 
-                {/* Text block — same as frontend */}
-                <div className="mt-5 px-1 flex items-start justify-between gap-2">
-                  <div>
-                    <p
-                      className="font-display text-balance"
-                      style={{ fontSize: 16, fontWeight: 300, color: G, letterSpacing: '0.02em', lineHeight: 1.3 }}
-                    >
-                      {product.name}
-                    </p>
-                    <p
-                      className="font-sans mt-1.5"
-                      style={{ fontSize: 11, fontWeight: 300, color: '#aaa', letterSpacing: '0.06em', textTransform: 'uppercase' }}
-                    >
+                {/* ── TEXT HALF — exact mirror of EditorialListing ── */}
+                <div
+                  className={`flex-1 flex flex-col justify-center ${imageLeft ? 'md:order-2' : 'md:order-1'}`}
+                  style={{ padding: 'clamp(40px, 5vw, 80px) clamp(28px, 4vw, 72px)', backgroundColor: '#fff' }}
+                >
+                  {/* Index */}
+                  <p className="font-sans" style={{ fontSize: 10, letterSpacing: '0.3em', color: '#d0d0d0', textTransform: 'uppercase', marginBottom: 24 }}>
+                    {String(index + 1).padStart(2, '0')}
+                  </p>
+
+                  {/* Name */}
+                  <h2
+                    className="font-display text-balance"
+                    style={{ fontSize: 'clamp(26px, 3vw, 48px)', fontWeight: 300, letterSpacing: '0.03em', lineHeight: 1.08, color: G }}
+                  >
+                    {product.name}
+                  </h2>
+
+                  {/* Subtitle */}
+                  {product.subtitle && (
+                    <p className="font-sans" style={{ fontSize: 11, letterSpacing: '0.22em', color: MUTED, textTransform: 'uppercase', fontWeight: 300, marginTop: 18 }}>
                       {product.subtitle}
                     </p>
-                    <p
-                      className="font-sans mt-1"
-                      style={{ fontSize: 13, fontWeight: 300, color: '#666', letterSpacing: '0.02em' }}
+                  )}
+
+                  {/* Rule */}
+                  <div style={{ width: 32, height: 1, backgroundColor: BORDER, margin: '24px 0' }} />
+
+                  {/* Price */}
+                  <p className="font-sans" style={{ fontSize: 14, fontWeight: 300, color: '#555', letterSpacing: '0.04em' }}>
+                    {product.price}
+                  </p>
+
+                  {/* CTA row */}
+                  <div className="flex items-center gap-6 mt-8">
+                    <Link
+                      href={product.editHref}
+                      className="flex items-center gap-2 font-sans uppercase"
+                      style={{ fontSize: 10, letterSpacing: '0.22em', color: G, border: `1px solid ${G}`, padding: '9px 20px' }}
                     >
-                      {product.price}
-                    </p>
+                      <Pencil className="w-3 h-3" strokeWidth={1.8} />
+                      Edit
+                    </Link>
+
+                    {/* Discover arrow — same as frontend */}
+                    <div className="flex items-center gap-3" style={{ color: '#bbb' }}>
+                      <span className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.3em', fontWeight: 400 }}>
+                        Discover
+                      </span>
+                      <div style={{ width: 32, height: 1, backgroundColor: BORDER }} />
+                      <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    </div>
                   </div>
-                  <Link
-                    href={product.editHref}
-                    className="flex-shrink-0 mt-0.5 p-1.5 rounded-full transition-colors hover:bg-stone-100"
-                    aria-label={`Edit ${product.name}`}
-                    title="Edit"
-                  >
-                    <Pencil className="w-3.5 h-3.5" style={{ color: '#bbb' }} strokeWidth={1.5} />
-                  </Link>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

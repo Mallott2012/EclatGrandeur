@@ -1,13 +1,8 @@
 import { listJewelleryProducts } from '@/lib/jewellery/service';
-import { listAllCollageMedia } from '@/app/admin/(console)/hero/actions';
 import { AdminProductGrid, type AdminProduct } from '@/components/admin/AdminProductGrid';
-import { saveHeroAction, deleteHeroAction } from '@/app/admin/(console)/hero/actions';
 
 export default async function AdminEarringsPage() {
-  const [products_db, collageMedia] = await Promise.all([
-    listJewelleryProducts('earrings').catch(() => []),
-    listAllCollageMedia('earrings').catch(() => []),
-  ]);
+  const products_db = await listJewelleryProducts('earrings').catch(() => []);
 
   const products: AdminProduct[] = products_db.map((p) => ({
     id:        p.id,
@@ -20,17 +15,13 @@ export default async function AdminEarringsPage() {
     editHref:  `/admin/earrings/${p.id}`,
   }));
 
-  const collageSlots = Array.from({ length: 6 }, (_, i) => collageMedia[i] ?? null);
-
   return (
     <AdminProductGrid
       title="Earrings"
-      heroCopy="Manage your earring collection"
+      lede="The finest diamonds, perfectly matched"
       addHref="/admin/earrings/new"
       products={products}
-      heroPlacement="earrings"
-      collageSlots={collageSlots}
-      heroCallbacks={{ onSave: saveHeroAction, onDelete: deleteHeroAction }}
+      itemLabel="earring"
     />
   );
 }

@@ -1,13 +1,8 @@
 import { listJewelleryProducts } from '@/lib/jewellery/service';
-import { listAllCollageMedia } from '@/app/admin/(console)/hero/actions';
 import { AdminProductGrid, type AdminProduct } from '@/components/admin/AdminProductGrid';
-import { saveHeroAction, deleteHeroAction } from '@/app/admin/(console)/hero/actions';
 
 export default async function AdminBraceletsPage() {
-  const [products_db, collageMedia] = await Promise.all([
-    listJewelleryProducts('bracelets').catch(() => []),
-    listAllCollageMedia('bracelets').catch(() => []),
-  ]);
+  const products_db = await listJewelleryProducts('bracelets').catch(() => []);
 
   const products: AdminProduct[] = products_db.map((p) => ({
     id:        p.id,
@@ -20,17 +15,13 @@ export default async function AdminBraceletsPage() {
     editHref:  `/admin/bracelets/${p.id}`,
   }));
 
-  const collageSlots = Array.from({ length: 6 }, (_, i) => collageMedia[i] ?? null);
-
   return (
     <AdminProductGrid
       title="Bracelets"
-      heroCopy="Manage your bracelet collection"
+      lede="Diamonds that grace every gesture"
       addHref="/admin/bracelets/new"
       products={products}
-      heroPlacement="bracelets"
-      collageSlots={collageSlots}
-      heroCallbacks={{ onSave: saveHeroAction, onDelete: deleteHeroAction }}
+      itemLabel="bracelet"
     />
   );
 }
