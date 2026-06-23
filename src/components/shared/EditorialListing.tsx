@@ -197,67 +197,86 @@ export function EditorialListing({
           </p>
         </div>
       ) : (
-        <div style={{ padding: '48px clamp(24px, 6vw, 96px)', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div style={{ padding: '48px clamp(24px, 6vw, 96px)', display: 'flex', flexDirection: 'column', gap: 2 }}>
           {filtered.map((item, index) => {
-            const imageLeft = index % 2 === 0;
+            const mediaLeft = index % 2 === 0;
 
             return (
               <Link
                 key={item.id}
                 href={`${basePath}/${item.slug}`}
-                className="group block"
-                style={{ border: `1px solid ${BORDER}` }}
+                className="group flex flex-col md:flex-row"
+                style={{ border: `1px solid ${BORDER}`, marginBottom: 24 }}
               >
+                {/* ── MEDIA HALF — full-bleed video or cover image ── */}
                 <div
-                  className="flex flex-col md:flex-row"
-                  style={{ height: 'clamp(260px, 30vw, 400px)' }}
+                  className={`relative w-full md:w-1/2 overflow-hidden ${mediaLeft ? 'md:order-1' : 'md:order-2'}`}
+                  style={{
+                    minHeight: 480,
+                    backgroundColor: STONE,
+                    borderRight: mediaLeft ? `1px solid ${BORDER}` : 'none',
+                    borderLeft:  mediaLeft ? 'none' : `1px solid ${BORDER}`,
+                  }}
                 >
-                  {/* ── MEDIA PANEL (50%) — video if available, else image ── */}
-                  <div
-                    className={`relative w-full md:w-1/2 overflow-hidden ${imageLeft ? 'md:order-1' : 'md:order-2'}`}
-                    style={{ minHeight: 180, backgroundColor: STONE, borderRight: imageLeft ? `1px solid ${BORDER}` : 'none', borderLeft: imageLeft ? 'none' : `1px solid ${BORDER}` }}
-                  >
-                    {item.video ? (
-                      <video
-                        src={item.video}
-                        autoPlay muted loop playsInline
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
-                      />
-                    ) : item.image ? (
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
-                        sizes="50vw"
-                        priority={index < 2}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#d0d0d0' }}>No media</p>
-                      </div>
-                    )}
-                  </div>
+                  {item.video ? (
+                    <video
+                      src={item.video}
+                      autoPlay muted loop playsInline
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.03]"
+                    />
+                  ) : item.image ? (
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.03]"
+                      sizes="50vw"
+                      priority={index < 2}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#ccc' }}>No media</p>
+                    </div>
+                  )}
+                </div>
 
-                  {/* ── PRODUCT PHOTO PANEL (50%) — still image, object-contain ── */}
-                  <div
-                    className={`relative w-full md:w-1/2 overflow-hidden ${imageLeft ? 'md:order-2' : 'md:order-1'}`}
-                    style={{ minHeight: 180, backgroundColor: '#faf9f7' }}
-                  >
+                {/* ── PRODUCT CARD HALF — light bg, ring isolated, name + price below ── */}
+                <div
+                  className={`w-full md:w-1/2 flex flex-col ${mediaLeft ? 'md:order-2' : 'md:order-1'}`}
+                  style={{ backgroundColor: '#f5f4f2' }}
+                >
+                  {/* Image area — takes most of the space */}
+                  <div className="relative flex-1" style={{ minHeight: 380 }}>
                     {item.image ? (
                       <Image
                         src={item.image}
                         alt={item.name}
                         fill
-                        className="object-contain p-8 transition-transform duration-[1200ms] ease-out group-hover:scale-[1.03]"
+                        className="object-contain p-12 transition-transform duration-[1400ms] ease-out group-hover:scale-[1.04]"
                         sizes="50vw"
                         priority={index < 2}
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#d0d0d0' }}>No image</p>
+                        <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#ccc' }}>No image</p>
                       </div>
                     )}
+                  </div>
+
+                  {/* Name + price strip — below the image, white bg */}
+                  <div style={{ backgroundColor: '#fff', padding: '28px 32px', borderTop: `1px solid ${BORDER}` }}>
+                    <p
+                      className="font-display"
+                      style={{ fontSize: 'clamp(16px, 1.6vw, 22px)', fontWeight: 300, letterSpacing: '0.02em', color: G, lineHeight: 1.3 }}
+                    >
+                      {item.name}
+                    </p>
+                    <p
+                      className="font-sans"
+                      style={{ fontSize: 13, fontWeight: 300, color: '#777', letterSpacing: '0.02em', marginTop: 10 }}
+                    >
+                      {item.price}
+                    </p>
                   </div>
                 </div>
               </Link>
