@@ -1,10 +1,23 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import { loginAction } from '@/app/admin/login/actions';
 
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full rounded bg-white py-3 text-xs font-semibold tracking-widest text-neutral-950 transition-opacity hover:opacity-80 disabled:opacity-40"
+    >
+      {pending ? 'SIGNING IN…' : 'SIGN IN'}
+    </button>
+  );
+}
+
 export function AdminLoginForm() {
-  const [state, formAction, pending] = useActionState(loginAction, null);
+  const [state, formAction] = useFormState(loginAction, null);
 
   return (
     <form action={formAction} className="space-y-5">
@@ -24,7 +37,6 @@ export function AdminLoginForm() {
           type="email"
           autoComplete="email"
           required
-          disabled={pending}
           className="w-full rounded border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-600 focus:border-neutral-400 focus:outline-none disabled:opacity-50"
           placeholder="you@example.com"
         />
@@ -40,19 +52,12 @@ export function AdminLoginForm() {
           type="password"
           autoComplete="current-password"
           required
-          disabled={pending}
           className="w-full rounded border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white placeholder-neutral-600 focus:border-neutral-400 focus:outline-none disabled:opacity-50"
           placeholder="••••••••"
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded bg-white py-3 text-xs font-semibold tracking-widest text-neutral-950 transition-opacity hover:opacity-80 disabled:opacity-40"
-      >
-        {pending ? 'SIGNING IN…' : 'SIGN IN'}
-      </button>
+      <SubmitButton />
     </form>
   );
 }
