@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { DiamondSelector } from './DiamondSelector';
+import { useShortlist, type ShortlistItem } from '@/hooks/useShortlist';
+import { Heart } from 'lucide-react';
 
 const G      = '#1a2b1a';
 const BORDER = '#e8e8e8';
@@ -52,6 +54,30 @@ export function RingDetailPage({ slug }: Props) {
   const [metalOpen,       setMetalOpen]       = useState(false);
   const [diamondOpen,     setDiamondOpen]     = useState(false);
   const [selectedDiamond, setSelectedDiamond] = useState<Diamond | null>(null);
+  const { toggle, has } = useShortlist();
+
+  const shortlistId   = `ring-${slug}`;
+  const isShortlisted = has(shortlistId);
+
+  function buildShortlistItem(): ShortlistItem {
+    return {
+      id:             shortlistId,
+      category:       'Engagement Rings',
+      name:           ring.name,
+      subtitle:       ring.subtitle,
+      image:          ring.images[0],
+      href:           `/engagement-rings/${slug}`,
+      metal:          selectedMetal,
+      basePrice:      ring.basePrice,
+      diamondCarat:   selectedDiamond?.carat,
+      diamondColor:   selectedDiamond?.color,
+      diamondClarity: selectedDiamond?.clarity,
+      diamondCut:     selectedDiamond?.cut,
+      diamondPrice:   selectedDiamond?.price,
+      totalPrice,
+      savedAt:        Date.now(),
+    };
+  }
 
   const totalPrice  = ring.basePrice + (selectedDiamond?.price ?? 0);
   const displayPrice = selectedDiamond
@@ -59,6 +85,12 @@ export function RingDetailPage({ slug }: Props) {
     : `Starting from £${ring.basePrice.toLocaleString('en-GB')}`;
 
   const metalMeta = METALS.find(m => m.label === selectedMetal) ?? METALS[0];
+
+  // Live size preview — scale the ring image proportionally to the diamond carat
+  // Baseline: 1.0ct = scale 1.0. Range: 0.5ct → 0.88, 3ct → 1.22
+  const diamondScale = selectedDiamond
+    ? Math.min(1.28, Math.max(0.82, 0.88 + (selectedDiamond.carat / 3) * 0.4))
+    : 1.0;
 
   return (
     <>
@@ -90,7 +122,15 @@ export function RingDetailPage({ slug }: Props) {
                   className="object-contain"
                   priority
                   sizes="(max-width: 1024px) 100vw, 58vw"
+                  style={{ transform: `scale(${diamondScale})`, transition: 'transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)', transformOrigin: 'center center' }}
                 />
+                {selectedDiamond && (
+                  <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
+                    <span className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.22em', color: '#aaa' }}>
+                      {selectedDiamond.carat.toFixed(2)}ct · approximate size
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -242,6 +282,21 @@ export function RingDetailPage({ slug }: Props) {
                 Add to Bag — £{totalPrice.toLocaleString('en-GB')}
               </button>
             )}
+
+            {/* Save to Shortlist */}
+            <button
+              type="button"
+              onClick={() => toggle(buildShortlistItem())}
+              className="flex items-center justify-center gap-2 w-full font-sans uppercase mt-3 py-3 transition-opacity hover:opacity-70"
+              style={{ fontSize: 10, letterSpacing: '0.22em', color: isShortlisted ? G : '#aaa', border: `1px solid ${isShortlisted ? G : '#ddd'}` }}
+            >
+              <Heart
+                className="w-3.5 h-3.5"
+                strokeWidth={1.5}
+                style={{ fill: isShortlisted ? G : 'none', color: isShortlisted ? G : '#aaa' }}
+              />
+              {isShortlisted ? 'Saved to Shortlist' : 'Save to Shortlist'}
+            </button>
 
             {/* Expert link — exactly Tiffany */}
             <p className="font-sans text-center mt-5" style={{ fontSize: 12, color: '#aaa', letterSpacing: '0.02em' }}>

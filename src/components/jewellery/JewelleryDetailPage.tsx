@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, ChevronDown } from 'lucide-react'; // ChevronDown used in metal dropdown
 import { DiamondSelector } from '@/components/engagement/DiamondSelector';
+import { useShortlist, type ShortlistItem } from '@/hooks/useShortlist';
+import { Heart } from 'lucide-react';
 
 
 const G      = '#1a2b1a';
@@ -47,7 +49,7 @@ export function JewelleryDetailPage({ product, config }: Props) {
   const [activeImage,     setActiveImage]     = useState(0);
   const [metalOpen,       setMetalOpen]       = useState(false);
   const [diamondOpen,     setDiamondOpen]     = useState(false);
-  const [selectedDiamond, setSelectedDiamond] = useState<{ id: string; carat: number; color: string; clarity: string; price: number } | null>(null);
+  const [selectedDiamond, setSelectedDiamond] = useState<{ id: string; carat: number; color: string; clarity: string; cut: string; price: number } | null>(null);
   const [selectedCarat,   setSelectedCarat]   = useState<number | null>(null);
 
   const diamondMode  = product.diamondMode ?? 'single';
@@ -65,6 +67,36 @@ export function JewelleryDetailPage({ product, config }: Props) {
     : `Starting from £${product.basePrice.toLocaleString('en-GB')}`;
 
   const metalMeta = METALS.find(m => m.label === selectedMetal) ?? METALS[0];
+
+  const { toggle, has } = useShortlist();
+  const shortlistId   = `${config.categoryPath.replace('/', '')}-${product.name.toLowerCase().replace(/\s+/g, '-')}`;
+  const isShortlisted = has(shortlistId);
+
+  function buildShortlistItem(): ShortlistItem {
+    return {
+      id:           shortlistId,
+      category:     config.categoryLabel,
+      name:         product.name,
+      subtitle:     product.subtitle,
+      image:        product.images[0],
+      href:         `${config.categoryPath}/${product.name.toLowerCase().replace(/\s+/g, '-')}`,
+      metal:        selectedMetal,
+      basePrice:    product.basePrice,
+      diamondCarat: isTotalCarat ? (selectedCarat ?? undefined) : (selectedDiamond?.carat),
+      diamondColor:   selectedDiamond?.color,
+      diamondClarity: selectedDiamond?.clarity,
+      diamondCut:     selectedDiamond?.cut,
+      diamondPrice:   selectedDiamond?.price,
+      totalPrice,
+      savedAt:      Date.now(),
+    };
+  }
+
+  // Live size preview
+  const previewCarat = isTotalCarat ? selectedCarat : selectedDiamond?.carat ?? null;
+  const diamondScale = previewCarat
+    ? Math.min(1.28, Math.max(0.82, 0.88 + (previewCarat / (isTotalCarat ? 5 : 3)) * 0.4))
+    : 1.0;
 
   return (
     <div className="min-h-screen bg-white" style={{ color: G }}>
@@ -107,7 +139,15 @@ export function JewelleryDetailPage({ product, config }: Props) {
                 className="object-contain"
                 priority
                 sizes="(max-width: 1024px) 100vw, 58vw"
+                style={{ transform: `scale(${diamondScale})`, transition: 'transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)', transformOrigin: 'center center' }}
               />
+              {previewCarat && (
+                <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
+                  <span className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.22em', color: '#aaa' }}>
+                    {previewCarat}ct total · approximate size
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -266,6 +306,21 @@ export function JewelleryDetailPage({ product, config }: Props) {
                 : 'Add to Bag'}
             </button>
           )}
+
+          {/* Save to Shortlist */}
+          <button
+            type="button"
+            onClick={() => toggle(buildShortlistItem())}
+            className="flex items-center justify-center gap-2 w-full font-sans uppercase mt-3 py-3 transition-opacity hover:opacity-70"
+            style={{ fontSize: 10, letterSpacing: '0.22em', color: isShortlisted ? G : '#aaa', border: `1px solid ${isShortlisted ? G : '#ddd'}` }}
+          >
+            <Heart
+              className="w-3.5 h-3.5"
+              strokeWidth={1.5}
+              style={{ fill: isShortlisted ? G : 'none', color: isShortlisted ? G : '#aaa' }}
+            />
+            {isShortlisted ? 'Saved to Shortlist' : 'Save to Shortlist'}
+          </button>
 
           {/* Expert link */}
           <p className="font-sans text-center mt-5" style={{ fontSize: 12, color: '#aaa', letterSpacing: '0.02em' }}>

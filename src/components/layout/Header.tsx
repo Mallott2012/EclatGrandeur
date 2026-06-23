@@ -2,20 +2,26 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { X, ChevronDown } from 'lucide-react';
+import { X, ChevronDown, Heart } from 'lucide-react';
 import { primaryNav, utilityNav } from '@/config/site';
 import { cn } from '@/lib/utils';
+import { useShortlist } from '@/hooks/useShortlist';
+import { ShortlistDrawer } from './ShortlistDrawer';
+
+const G = '#1a2b1a';
 
 const THEMES = {
-  ivory: { bg: '#ede7d9', text: '#1a2b1a' },
-  white: { bg: '#ffffff', text: '#1a2b1a' },
+  ivory: { bg: '#ede7d9', text: G },
+  white: { bg: '#ffffff', text: G },
 };
 
 interface HeaderProps { theme?: 'ivory' | 'white'; }
 
 export function Header({ theme = 'ivory' }: HeaderProps) {
-  const [drawer, setDrawer] = useState(false);
-  const [openAccordion, setOpenAccordion] = useState<string | null>(null);
+  const [drawer,         setDrawer]         = useState(false);
+  const [shortlistOpen,  setShortlistOpen]  = useState(false);
+  const [openAccordion,  setOpenAccordion]  = useState<string | null>(null);
+  const { count }  = useShortlist();
 
   const BG   = THEMES[theme].bg;
   const TEXT = THEMES[theme].text;
@@ -89,6 +95,23 @@ export function Header({ theme = 'ivory' }: HeaderProps) {
           >
             My Account
           </Link>
+          {/* Shortlist heart */}
+          <button
+            type="button"
+            onClick={() => setShortlistOpen(true)}
+            aria-label={`My Shortlist${count > 0 ? ` (${count} item${count !== 1 ? 's' : ''})` : ''}`}
+            className="relative flex items-center transition-opacity hover:opacity-50"
+          >
+            <Heart className="w-4 h-4" strokeWidth={1.5} style={{ color: TEXT }} />
+            {count > 0 && (
+              <span
+                className="absolute -top-1.5 -right-1.5 flex items-center justify-center font-sans rounded-full"
+                style={{ width: 14, height: 14, fontSize: 8, backgroundColor: G, color: '#fff', letterSpacing: 0 }}
+              >
+                {count}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
@@ -103,6 +126,8 @@ export function Header({ theme = 'ivory' }: HeaderProps) {
         bg={BG}
         text={TEXT}
       />
+
+      <ShortlistDrawer open={shortlistOpen} onClose={() => setShortlistOpen(false)} />
     </header>
   );
 }
