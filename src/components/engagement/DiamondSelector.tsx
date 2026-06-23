@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import useSWR from 'swr';
 import { X, ChevronUp, ChevronDown } from 'lucide-react';
 
 const G      = '#1a2b1a';
@@ -9,33 +10,25 @@ const BORDER = '#e8e8e8';
 const COLORS    = ['D', 'E', 'F', 'G', 'H', 'I'] as const;
 const CLARITIES = ['VS2', 'VS1', 'VVS2', 'VVS1', 'IF', 'FL'] as const;
 
-// All Éclat diamonds are Excellent cut, Excellent symmetry, Excellent polish, No fluorescence — as standard.
-const DIAMONDS = [
-  { id: 'd1',  carat: 1.00, color: 'D', clarity: 'VVS1', price: 8500  },
-  { id: 'd2',  carat: 1.01, color: 'E', clarity: 'VS1',  price: 7200  },
-  { id: 'd3',  carat: 1.05, color: 'F', clarity: 'VVS2', price: 7800  },
-  { id: 'd4',  carat: 1.10, color: 'D', clarity: 'VS2',  price: 8100  },
-  { id: 'd5',  carat: 1.15, color: 'G', clarity: 'VS1',  price: 6900  },
-  { id: 'd6',  carat: 1.20, color: 'E', clarity: 'VVS1', price: 9400  },
-  { id: 'd7',  carat: 1.25, color: 'F', clarity: 'IF',   price: 11200 },
-  { id: 'd8',  carat: 1.30, color: 'D', clarity: 'FL',   price: 14800 },
-  { id: 'd9',  carat: 1.50, color: 'E', clarity: 'VVS2', price: 12600 },
-  { id: 'd10', carat: 1.51, color: 'G', clarity: 'VS2',  price: 9200  },
-  { id: 'd11', carat: 1.75, color: 'F', clarity: 'VS1',  price: 14100 },
-  { id: 'd12', carat: 2.00, color: 'D', clarity: 'VVS2', price: 22000 },
-  { id: 'd13', carat: 2.01, color: 'E', clarity: 'VS1',  price: 18400 },
-  { id: 'd14', carat: 2.05, color: 'F', clarity: 'VVS1', price: 21500 },
-  { id: 'd15', carat: 2.10, color: 'G', clarity: 'VS2',  price: 16800 },
-];
+const fetcher = (url: string) => fetch(url).then(r => r.json()).then(d => d.diamonds as Diamond[]);
 
 // ─── Total carat tiers ────────────────────────────────────────────────────────
 const CARAT_TIERS = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
 
 function caratTierToDiamond(carat: number, pricePerCarat: number) {
-  return { id: `tier_${carat}`, carat, color: '—', clarity: '—', price: Math.round(carat * pricePerCarat) };
+  return { id: `tier_${carat}`, carat, color: '—', clarity: '—', price: Math.round(carat * pricePerCarat), shape: 'round' as const, sku: '', fluorescence: 'none' };
 }
 
-export type Diamond = (typeof DIAMONDS)[0];
+export type Diamond = {
+  id: string;
+  sku: string;
+  carat: number;
+  shape: string;
+  color: string;
+  clarity: string;
+  fluorescence: string;
+  price: number;
+};
 type SortKey = 'carat' | 'color' | 'clarity' | 'price' | 'ppc';
 type SortDir = 'asc' | 'desc';
 
@@ -87,6 +80,13 @@ export function DiamondSelector({
   onClose, onSelect, selectedId,
   pairMode = false, totalCaratMode = false, pricePerCarat = 1000,
 }: Props) {
+  // ── Live diamond data from Supabase via API ───────────────────────────────
+  const { data: liveDiamonds = [], isLoading: diamondsLoading } = useSWR<Diamond[]>(
+    totalCaratMode ? null : '/api/diamonds',
+    fetcher,
+    { revalidateOnFocus: false },
+  );
+
   const [activeTab,       setActiveTab]       = useState<'select' | 'guide'>('select');
   const [caratRange,      setCaratRange]      = useState<[number, number]>(totalCaratMode ? [0.5, 5] : [0.5, 3.0]);
   const [priceRange,      setPriceRange]      = useState<[number, number]>([2000, 30000]);
@@ -113,12 +113,12 @@ export function DiamondSelector({
         .filter(ct => { const p = Math.round(ct * pricePerCarat); return p >= priceRange[0] && p <= priceRange[1]; })
         .map(ct => caratTierToDiamond(ct, pricePerCarat));
     }
-    return DIAMONDS
+    return liveDiamonds
       .filter(d => d.carat >= caratRange[0] && d.carat <= caratRange[1])
       .filter(d => d.price >= priceRange[0]  && d.price <= priceRange[1])
       .filter(d => activeColors.length    === 0 || activeColors.includes(d.color))
       .filter(d => activeClarities.length === 0 || activeClarities.includes(d.clarity));
-  }, [totalCaratMode, caratRange, priceRange, activeColors, activeClarities, pricePerCarat]);
+  }, [totalCaratMode, caratRange, priceRange, activeColors, activeClarities, pricePerCarat, liveDiamonds]);
 
   const sorted = useMemo(() => [...rows].sort((a, b) => {
     let diff = 0;
@@ -131,7 +131,7 @@ export function DiamondSelector({
   }), [rows, sortKey, sortDir]);
 
   const pendingDiamond = sorted.find(x => x.id === pendingId)
-    ?? DIAMONDS.find(x => x.id === pendingId)
+    ?? liveDiamonds.find(x => x.id === pendingId)
     ?? (totalCaratMode ? CARAT_TIERS.map(ct => caratTierToDiamond(ct, pricePerCarat)).find(x => x.id === pendingId) : undefined);
 
   function SortArrow({ col }: { col: SortKey }) {
@@ -299,7 +299,11 @@ export function DiamondSelector({
 
           {/* Scrollable rows */}
           <div className="flex-1 overflow-y-auto">
-            {sorted.length === 0 ? (
+            {diamondsLoading ? (
+              <div className="py-16 text-center px-7">
+                <p className="font-sans" style={{ fontSize: 13, color: '#ccc', letterSpacing: '0.04em' }}>Loading diamonds…</p>
+              </div>
+            ) : sorted.length === 0 ? (
               <div className="py-16 text-center px-7">
                 <p className="font-sans" style={{ fontSize: 13, color: '#ccc' }}>No diamonds match your filters.</p>
               </div>

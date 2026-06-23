@@ -48,14 +48,14 @@ export async function GET(request: Request) {
 
     // Transform DB records to frontend shape (British English column names → frontend keys)
     const diamonds = (data ?? []).map((d) => ({
-      id: d.id,
-      sku: d.sku,
-      carat: d.carat,
-      shape: d.cut,         // DB uses 'cut' for shape
-      color: d.colour,      // British → American
-      clarity: d.clarity,
+      id:          d.id,
+      sku:         d.sku,
+      carat:       parseFloat(d.carat as unknown as string),
+      shape:       d.cut,      // DB uses 'cut' for shape
+      color:       d.colour,   // British → American spelling for DiamondSelector
+      clarity:     d.clarity,
       fluorescence: d.fluorescence,
-      price: Math.round(d.price_gbp * 100), // Convert GBP to pence for frontend
+      price:       parseFloat(d.price_gbp as unknown as string), // GBP float
     }))
 
     return NextResponse.json({ diamonds })

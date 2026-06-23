@@ -34,14 +34,14 @@ interface Props {
 export function RingGrid({ settings, activeSetting, activeMetal }: Props) {
   const rings: PlaceholderRing[] = settings.length > 0
     ? settings
-        .filter(r => !activeSetting || r.setting_style === activeSetting)
+        .filter(r => !activeSetting || r.collection === activeSetting)
         .filter(r => !activeMetal || r.metals?.includes(activeMetal))
         .map((r, i) => ({
           id: r.id,
           name: r.name,
           price: r.base_price_gbp ? `From £${Number(r.base_price_gbp).toLocaleString('en-GB')}` : 'Price on request',
           image: PLACEHOLDER_RINGS[i % PLACEHOLDER_RINGS.length].image,
-          setting: r.setting_style ?? '',
+          setting: r.collection ?? '',
           slug: r.slug,
         }))
     : PLACEHOLDER_RINGS.filter(r => !activeSetting || r.setting === activeSetting);
