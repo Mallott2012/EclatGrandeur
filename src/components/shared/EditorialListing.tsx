@@ -23,7 +23,8 @@ export interface EditorialItem {
   name:     string;
   subtitle: string;       // e.g. collection name or style
   price:    string;
-  image:    string;       // URL — primary still product image
+  image:    string;       // URL — primary still product image (product box)
+  mediaImage?: string;    // URL — editorial/lifestyle image for the media box
   video?:   string;       // URL — optional hero video for this piece
   metal?:   string;       // optional — for ring metal filtering
   style?:   string;       // optional — for jewellery style filtering
@@ -218,9 +219,9 @@ export function EditorialListing({
                       autoPlay muted loop playsInline
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.03]"
                     />
-                  ) : item.image ? (
+                  ) : (item.mediaImage || item.image) ? (
                     <Image
-                      src={item.image}
+                      src={item.mediaImage || item.image}
                       alt={item.name}
                       fill
                       className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.03]"

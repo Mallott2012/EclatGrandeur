@@ -33,7 +33,8 @@ export default async function Page() {
     price:    p.base_price_gbp ? `Starting from £${Number(p.base_price_gbp).toLocaleString('en-GB')}` : 'Price on application',
     metals:   p.metals.length,
     style:    '',
-    image:    p.media?.find((m: any) => m.media_type === 'image')?.storage_path ?? p.media?.[0]?.storage_path ?? '',
+    image:    p.media?.find((m: any) => m.media_type === 'image' && m.is_primary)?.storage_path ?? p.media?.find((m: any) => m.media_type === 'image')?.storage_path ?? '',
+    mediaImage: p.media?.find((m: any) => m.media_type === 'image' && !m.is_primary)?.storage_path,
     video:    p.media?.find((m: any) => m.media_type === 'video' || m.media_type === 'video_360')?.storage_path,
   }));
   return <JewelleryListingPage config={{ ...CONFIG_BASE, products }} />;
