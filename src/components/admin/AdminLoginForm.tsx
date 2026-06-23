@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { loginAction } from '@/app/admin/login/actions';
 
@@ -18,6 +19,14 @@ function SubmitButton() {
 
 export function AdminLoginForm() {
   const [state, formAction] = useFormState(loginAction, null);
+
+  // When the server action returns a redirectTo, do a hard page reload so the
+  // browser sends the newly-set session cookies with the next request.
+  useEffect(() => {
+    if (state?.redirectTo) {
+      window.location.href = state.redirectTo;
+    }
+  }, [state]);
 
   return (
     <form action={formAction} className="space-y-5">

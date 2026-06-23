@@ -1,16 +1,18 @@
 'use server';
 
-import { redirect } from 'next/navigation';
+import { redirect } from 'next/navigation'; // used by logoutAction
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { writeAuditLog } from '@/lib/audit';
 
+export type LoginState = { error: string; redirectTo?: never } | { redirectTo: string; error?: never } | null;
+
 export async function loginAction(
-  _prevState: { error?: string } | null,
+  _prevState: LoginState,
   formData: FormData,
-): Promise<{ error: string }> {
+): Promise<LoginState> {
   const email    = (formData.get('email')    as string | null)?.trim() ?? '';
   const password = (formData.get('password') as string | null) ?? '';
 
@@ -61,7 +63,9 @@ export async function loginAction(
     metadata: { roles: roleRows.map((r: { role: string }) => r.role) },
   });
 
-  redirect('/admin');
+  // Return redirect signal — the client does window.location.href for a hard
+  // reload so the newly-set session cookies are included in the next request.
+  return { redirectTo: '/admin' };
 }
 
 export async function logoutAction(): Promise<void> {
