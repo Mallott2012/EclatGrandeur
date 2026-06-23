@@ -104,6 +104,8 @@ export default async function AdminRingEditPage({ params }: Props) {
         'use server';
         await deleteDiamondAction(diamondId);
       }}
+      categoryLabel="Engagement Rings"
+      categoryHref="/engagement-rings"
       backHref="/admin/rings"
       backLabel="All Rings"
     />

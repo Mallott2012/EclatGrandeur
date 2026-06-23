@@ -72,6 +72,8 @@ export default async function AdminEARRINGEditPage({ params }: Props) {
       }}
       onUpdateDiamond={async (dId, data) => { 'use server'; await updateDiamondAction(dId, data); }}
       onDeleteDiamond={async (dId) => { 'use server'; await deleteDiamondAction(dId); }}
+      categoryLabel="Earrings"
+      categoryHref="/earrings"
       backHref="/admin/earrings"
       backLabel="All Earrings"
     />

@@ -72,6 +72,8 @@ export default async function AdminNecklaceEditPage({ params }: Props) {
       }}
       onUpdateDiamond={async (dId, data) => { 'use server'; await updateDiamondAction(dId, data); }}
       onDeleteDiamond={async (dId) => { 'use server'; await deleteDiamondAction(dId); }}
+      categoryLabel="Necklaces"
+      categoryHref="/necklaces"
       backHref="/admin/necklaces"
       backLabel="All Necklaces"
     />
