@@ -42,11 +42,6 @@ type SortDir = 'asc' | 'desc';
 const clarityRank: Record<string, number> = { VS2: 0, VS1: 1, VVS2: 2, VVS1: 3, IF: 4, FL: 5 };
 const colorRank:   Record<string, number> = { D: 0, E: 1, F: 2, G: 3, H: 4, I: 5 };
 
-// ─── "Best value" score: cut is always Excellent — quality driven by colour/clarity/carat vs price
-function valueScore(d: Diamond): number {
-  const qualScore = (clarityRank[d.clarity] ?? 0) + (5 - (colorRank[d.color] ?? 5));
-  return qualScore / (d.price / 1000);
-}
 
 // ─── Dual range slider ────────────────────────────────────────────────────────
 function RangeSlider({ label, min, max, value, onChange, format }: {
@@ -135,12 +130,6 @@ export function DiamondSelector({
     return sortDir === 'asc' ? diff : -diff;
   }), [rows, sortKey, sortDir]);
 
-  // ── Recommended: highest value-score stone in current filtered set ───────
-  const recommendedId = useMemo(() => {
-    if (totalCaratMode || sorted.length === 0) return null;
-    return sorted.reduce((best, d) => valueScore(d) > valueScore(best) ? d : best, sorted[0]).id;
-  }, [sorted, totalCaratMode]);
-
   const pendingDiamond = sorted.find(x => x.id === pendingId)
     ?? DIAMONDS.find(x => x.id === pendingId)
     ?? (totalCaratMode ? CARAT_TIERS.map(ct => caratTierToDiamond(ct, pricePerCarat)).find(x => x.id === pendingId) : undefined);
@@ -210,12 +199,7 @@ export function DiamondSelector({
               <p className="font-sans" style={{ fontSize: 13, color: '#555', lineHeight: 1.8, fontWeight: 300 }}>{item.desc}</p>
             </div>
           ))}
-          <div className="pt-6">
-            <p className="font-sans uppercase mb-2" style={{ fontSize: 9, letterSpacing: '0.28em', color: '#bbb' }}>Éclat Recommended</p>
-            <p className="font-sans" style={{ fontSize: 13, color: '#555', lineHeight: 1.8, fontWeight: 300 }}>
-              Our recommendation badge highlights the stone in the current filtered selection that offers the finest combination of colour, clarity, and carat weight for the price. Since every Éclat stone is Excellent cut as standard, the recommendation is based purely on quality versus value.
-            </p>
-          </div>
+
         </div>
       )}
 
@@ -320,10 +304,9 @@ export function DiamondSelector({
                 <p className="font-sans" style={{ fontSize: 13, color: '#ccc' }}>No diamonds match your filters.</p>
               </div>
             ) : sorted.map(d => {
-              const isPending    = pendingId === d.id;
-              const isHovered    = hoveredId === d.id;
-              const isRecommended = d.id === recommendedId;
-              const ppc          = Math.round(d.price / d.carat);
+              const isPending = pendingId === d.id;
+              const isHovered = hoveredId === d.id;
+              const ppc       = Math.round(d.price / d.carat);
               const displayPrice = pairMode && totalCaratMode
                 ? `£${d.price.toLocaleString('en-GB')} total`
                 : `£${d.price.toLocaleString('en-GB')}`;
@@ -343,26 +326,9 @@ export function DiamondSelector({
                     transition: 'background-color 0.12s',
                   }}
                 >
-                  {/* Éclat Recommended badge */}
-                  {isRecommended && (
-                    <span
-                      className="absolute left-0 top-0 bottom-0 font-sans"
-                      style={{ width: 3, backgroundColor: G }}
-                      aria-label="Éclat Recommended"
-                    />
-                  )}
-
                   {/* Carat */}
-                  <span className="font-sans flex items-center gap-2" style={{ fontSize: 12, color: G, paddingLeft: isRecommended ? 6 : 0 }}>
+                  <span className="font-sans flex items-center gap-2" style={{ fontSize: 12, color: G }}>
                     {d.carat % 1 === 0 ? `${d.carat}.0ct` : `${d.carat}ct`}
-                    {isRecommended && (
-                      <span
-                        className="font-sans uppercase"
-                        style={{ fontSize: 7, letterSpacing: '0.18em', color: '#fff', backgroundColor: G, padding: '1px 5px' }}
-                      >
-                        Best Value
-                      </span>
-                    )}
                     {pairMode && totalCaratMode && (
                       <span style={{ fontSize: 10, color: '#999' }}>(2×{d.carat / 2}ct)</span>
                     )}
