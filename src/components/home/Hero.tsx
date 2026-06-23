@@ -3,21 +3,22 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Pause, Play, VolumeX, Volume2 } from 'lucide-react';
+import type { HeroMediaRecord } from '@/lib/hero/service';
 
-/* ─── Panel definitions ───────────────────────────────────────────────── */
+/* ─── Static fallback panel definitions ──────────────────────────────── */
 
-const MODEL_PANEL = {
+const STATIC_MODEL_PANEL = {
   num: '01',
   label: 'The Éclat Collection',
   sublabel: 'A woman in full',
   image: '/images/hero/model.png',
 };
 
-const PRODUCT_PANELS = [
-  { num: '02', label: 'The Promise',    sublabel: 'Engagement', image: '/images/hero/ring.png' },
-  { num: '03', label: 'Lumière',        sublabel: 'Necklaces',  image: '/images/hero/necklace.png' },
-  { num: '04', label: 'Éternité',       sublabel: 'Bracelets',  image: '/images/hero/bracelet.png' },
-  { num: '05', label: 'Aura',           sublabel: 'Earrings',   image: '/images/hero/earrings.png' },
+const STATIC_PRODUCT_PANELS = [
+  { num: '02', label: 'The Promise',    sublabel: 'Engagement', image: '/images/hero/ring.png',     key: 'engagement' },
+  { num: '03', label: 'Lumière',        sublabel: 'Necklaces',  image: '/images/hero/necklace.png', key: 'necklaces'  },
+  { num: '04', label: 'Éternité',       sublabel: 'Bracelets',  image: '/images/hero/bracelet.png', key: 'bracelets'  },
+  { num: '05', label: 'Aura',           sublabel: 'Earrings',   image: '/images/hero/earrings.png', key: 'earrings'   },
 ];
 
 /* ─── Shared controls ─────────────────────────────────────────────────── */
@@ -75,15 +76,19 @@ function Vignette() {
 
 /* ─── Large model panel (left, 45%) ──────────────────────────────────── */
 
-function ModelPanel() {
+function ModelPanel({ hero }: { hero?: HeroMediaRecord | null }) {
   const [paused, setPaused] = useState(false);
   const [muted,  setMuted]  = useState(true);
+
+  const image    = hero?.storage_path ?? STATIC_MODEL_PANEL.image;
+  const label    = hero?.headline     ?? STATIC_MODEL_PANEL.label;
+  const sublabel = hero?.subheadline  ?? STATIC_MODEL_PANEL.sublabel;
 
   return (
     <div className="group relative overflow-hidden" style={{ flex: '0 0 45%' }}>
       <Image
-        src={MODEL_PANEL.image}
-        alt={MODEL_PANEL.label}
+        src={image}
+        alt={label}
         fill
         sizes="45vw"
         className="object-cover object-top transition-transform duration-1000 ease-out group-hover:scale-[1.03]"
@@ -94,7 +99,7 @@ function ModelPanel() {
       {/* number */}
       <div className="absolute left-5 top-5">
         <span className="font-sans text-white/50" style={{ fontSize: '9px', fontWeight: 300, letterSpacing: '0.3em' }}>
-          {MODEL_PANEL.num}
+          {STATIC_MODEL_PANEL.num}
         </span>
       </div>
 
@@ -109,7 +114,7 @@ function ModelPanel() {
           className="font-sans uppercase text-white/45 mb-2"
           style={{ fontSize: '9px', fontWeight: 300, letterSpacing: '0.4em' }}
         >
-          {MODEL_PANEL.sublabel}
+          {sublabel}
         </p>
         {/* thin gold hairline */}
         <div style={{ width: 32, height: '1px', backgroundColor: 'rgba(212,168,71,0.6)', marginBottom: '14px' }} />
@@ -117,7 +122,7 @@ function ModelPanel() {
           className="font-display italic text-white"
           style={{ fontSize: 'clamp(32px, 3.8vw, 56px)', fontWeight: 300, lineHeight: 1.05, letterSpacing: '0.02em' }}
         >
-          {MODEL_PANEL.label}
+          {label}
         </h2>
       </div>
     </div>
@@ -126,15 +131,29 @@ function ModelPanel() {
 
 /* ─── Small product panel (2×2 grid, right 55%) ──────────────────────── */
 
-function ProductPanel({ panel, priority }: { panel: (typeof PRODUCT_PANELS)[number]; priority: boolean }) {
+type StaticPanel = (typeof STATIC_PRODUCT_PANELS)[number];
+
+function ProductPanel({
+  panel,
+  hero,
+  priority,
+}: {
+  panel:    StaticPanel;
+  hero?:    HeroMediaRecord | null;
+  priority: boolean;
+}) {
   const [paused, setPaused] = useState(false);
   const [muted,  setMuted]  = useState(true);
+
+  const image    = hero?.storage_path ?? panel.image;
+  const label    = hero?.headline     ?? panel.label;
+  const sublabel = hero?.subheadline  ?? panel.sublabel;
 
   return (
     <div className="group relative overflow-hidden">
       <Image
-        src={panel.image}
-        alt={panel.label}
+        src={image}
+        alt={label}
         fill
         sizes="27vw"
         className="object-cover transition-transform duration-1000 ease-out group-hover:scale-[1.05]"
@@ -160,13 +179,13 @@ function ProductPanel({ panel, priority }: { panel: (typeof PRODUCT_PANELS)[numb
           className="font-sans uppercase text-white/50 mb-1"
           style={{ fontSize: '8px', fontWeight: 300, letterSpacing: '0.32em' }}
         >
-          {panel.sublabel}
+          {sublabel}
         </p>
         <span
           className="font-display italic text-white"
           style={{ fontSize: 'clamp(14px, 1.4vw, 20px)', fontWeight: 300, letterSpacing: '0.03em', lineHeight: 1.1 }}
         >
-          {panel.label}
+          {label}
         </span>
       </div>
     </div>
@@ -175,20 +194,46 @@ function ProductPanel({ panel, priority }: { panel: (typeof PRODUCT_PANELS)[numb
 
 /* ─── Main export ─────────────────────────────────────────────────────── */
 
-export function Hero() {
+interface HeroProps {
+  heroHome?:        HeroMediaRecord | null;
+  heroEngagement?:  HeroMediaRecord | null;
+  heroEarrings?:    HeroMediaRecord | null;
+  heroNecklaces?:   HeroMediaRecord | null;
+  heroBracelets?:   HeroMediaRecord | null;
+}
+
+export function Hero({
+  heroHome,
+  heroEngagement,
+  heroEarrings,
+  heroNecklaces,
+  heroBracelets,
+}: HeroProps = {}) {
+  const panelHeroes: Record<string, HeroMediaRecord | null | undefined> = {
+    engagement: heroEngagement,
+    necklaces:  heroNecklaces,
+    bracelets:  heroBracelets,
+    earrings:   heroEarrings,
+  };
+
   return (
     <div className="flex flex-1" style={{ minHeight: 0, height: 'calc(100dvh - 81px)' }}>
 
       {/* Left — model hero (45%) */}
-      <ModelPanel />
+      <ModelPanel hero={heroHome} />
 
       {/* Hairline divider */}
       <div style={{ width: '1px', flexShrink: 0, background: 'rgba(255,255,255,0.08)' }} />
 
       {/* Right — 2×2 product grid (55%) */}
       <div className="grid flex-1 grid-cols-2 grid-rows-2">
-        {PRODUCT_PANELS.map((panel, i) => (
-          <ProductPanel key={panel.num} panel={panel} priority={i < 2} />
+        {STATIC_PRODUCT_PANELS.map((panel, i) => (
+          <ProductPanel
+            key={panel.num}
+            panel={panel}
+            hero={panelHeroes[panel.key]}
+            priority={i < 2}
+          />
         ))}
       </div>
 

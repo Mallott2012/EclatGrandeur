@@ -27,7 +27,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Jewellery',     href: '/admin/jewellery',     live: true  },
   { label: 'Enquiries',     href: '/admin/enquiries',     live: false },
   { label: 'Orders',        href: '/admin/orders',        live: false },
-  { label: 'Content',       href: '/admin/content',       live: false },
+  { label: 'Hero Media',     href: '/admin/hero',           live: true  },
   { label: 'Team',          href: '/admin/team',          live: false },
 ];
 
