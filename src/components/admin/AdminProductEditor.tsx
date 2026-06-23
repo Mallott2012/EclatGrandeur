@@ -554,36 +554,62 @@ export function AdminProductEditor(props: AdminProductData) {
             ))}
           </div>
 
-          {/* ── DIAMOND MANAGEMENT PANEL — collapsible, inline ──────────────── */}
-          {diamondPanelOpen && (
-            <div
-              className="mt-10"
-              style={{ borderTop: `2px solid ${G}`, paddingTop: 24 }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <p className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.24em', color: G }}>
-                  Diamond Management
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setDiamondPanelOpen(false)}
-                  className="font-sans uppercase flex items-center gap-1"
-                  style={{ fontSize: 9, letterSpacing: '0.15em', color: '#bbb' }}
-                >
-                  <X className="w-3 h-3" strokeWidth={2} /> Close
-                </button>
-              </div>
-              <DiamondPanel
-                diamonds={props.allDiamonds}
-                assignedIds={props.assignedDiamondIds}
-                onAssign={props.onAssignDiamond}
-                onUnassign={props.onUnassignDiamond}
-                onCreate={props.onCreateDiamond}
-                onUpdate={props.onUpdateDiamond}
-                onDelete={props.onDeleteDiamond}
-              />
-            </div>
-          )}
+        </div>
+      </div>
+
+      {/* ── DIAMOND DRAWER — fixed slide-over, opens immediately on button click ── */}
+      {/* Backdrop */}
+      {diamondPanelOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          style={{ background: 'rgba(0,0,0,0.18)' }}
+          onClick={() => setDiamondPanelOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Drawer panel */}
+      <div
+        className="fixed top-0 right-0 h-full z-50 flex flex-col bg-white overflow-hidden"
+        style={{
+          width: 'min(560px, 96vw)',
+          borderLeft: `1px solid ${BORDER}`,
+          transform: diamondPanelOpen ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.28s cubic-bezier(0.32,0,0.12,1)',
+          boxShadow: diamondPanelOpen ? '-8px 0 32px rgba(0,0,0,0.08)' : 'none',
+        }}
+        aria-label="Diamond management"
+      >
+        {/* Drawer header */}
+        <div
+          className="flex items-center justify-between px-7 py-5 flex-shrink-0"
+          style={{ borderBottom: `1px solid ${BORDER}` }}
+        >
+          <p className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.26em', color: G }}>
+            Diamond Management
+          </p>
+          <button
+            type="button"
+            onClick={() => setDiamondPanelOpen(false)}
+            className="flex items-center gap-1.5 font-sans uppercase"
+            style={{ fontSize: 9, letterSpacing: '0.15em', color: '#aaa' }}
+            aria-label="Close diamond panel"
+          >
+            <X className="w-3.5 h-3.5" strokeWidth={2} /> Close
+          </button>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-7 py-6">
+          <DiamondPanel
+            diamonds={props.allDiamonds}
+            assignedIds={props.assignedDiamondIds}
+            onAssign={props.onAssignDiamond}
+            onUnassign={props.onUnassignDiamond}
+            onCreate={props.onCreateDiamond}
+            onUpdate={props.onUpdateDiamond}
+            onDelete={props.onDeleteDiamond}
+          />
         </div>
       </div>
     </div>
