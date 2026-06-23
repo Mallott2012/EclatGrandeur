@@ -8,7 +8,8 @@ import type { StaffUser } from '@/lib/staff-shared';
 const G      = '#1a2b1a';
 const BORDER = '#e8e8e8';
 
-const NAV: { label: string; href: string }[] = [
+const NAV: { label: string; href: string; exact?: boolean }[] = [
+  { label: 'Dashboard',  href: '/admin',           exact: true },
   { label: 'Rings',      href: '/admin/rings'     },
   { label: 'Necklaces',  href: '/admin/necklaces' },
   { label: 'Bracelets',  href: '/admin/bracelets' },
@@ -42,7 +43,7 @@ export function AdminNav({ user }: { user: StaffUser }) {
       {/* Category nav — centre */}
       <nav className="flex items-center gap-1 flex-1">
         {NAV.map(item => {
-          const isActive = pathname.startsWith(item.href);
+          const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}

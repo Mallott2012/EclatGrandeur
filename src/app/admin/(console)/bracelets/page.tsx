@@ -1,8 +1,13 @@
 import { listJewelleryProducts } from '@/lib/jewellery/service';
+import { getPublishedHero } from '@/lib/hero/service';
 import { AdminProductGrid, type AdminProduct } from '@/components/admin/AdminProductGrid';
+import { saveHeroAction, deleteHeroAction } from '@/app/admin/(console)/hero/actions';
 
 export default async function AdminBraceletsPage() {
-  const products_db = await listJewelleryProducts('bracelets').catch(() => []);
+  const [products_db, heroRecord] = await Promise.all([
+    listJewelleryProducts('bracelets').catch(() => []),
+    getPublishedHero('bracelets').catch(() => null),
+  ]);
 
   const products: AdminProduct[] = products_db.map((p) => ({
     id:        p.id,
@@ -22,6 +27,9 @@ export default async function AdminBraceletsPage() {
       heroImage="/images/heroes/hero-bracelets.png"
       addHref="/admin/bracelets/new"
       products={products}
+      heroPlacement="bracelets"
+      heroRecord={heroRecord}
+      heroCallbacks={{ onSave: saveHeroAction, onDelete: deleteHeroAction }}
     />
   );
 }

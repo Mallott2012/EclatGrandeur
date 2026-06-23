@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Pencil, Eye, EyeOff, Plus } from 'lucide-react';
+import { HeroEditButton, type HeroEditCallbacks } from '@/components/admin/HeroEditModal';
+import type { HeroMediaRecord, HeroPlacement } from '@/lib/hero/service';
 
 const G      = '#1a2b1a';
 const BORDER = '#e8e8e8';
@@ -19,21 +21,26 @@ export interface AdminProduct {
 }
 
 interface Props {
-  title:      string;
-  heroCopy:   string;
-  heroImage:  string;
-  addHref:    string;
-  products:   AdminProduct[];
+  title:          string;
+  heroCopy:       string;
+  heroImage:      string;
+  addHref:        string;
+  products:       AdminProduct[];
+  heroPlacement:  HeroPlacement;
+  heroRecord:     HeroMediaRecord | null;
+  heroCallbacks:  HeroEditCallbacks;
 }
 
-export function AdminProductGrid({ title, heroCopy, heroImage, addHref, products }: Props) {
+export function AdminProductGrid({ title, heroCopy, heroImage, addHref, products, heroPlacement, heroRecord, heroCallbacks }: Props) {
+  // Use the live hero image if one is set, otherwise fall back to static
+  const displayHeroImage = heroRecord?.storage_path ?? heroImage;
   return (
     <div className="min-h-screen bg-white" style={{ color: G }}>
 
       {/* ── HERO — identical to frontend, click overlay to change ──────── */}
       <div className="relative w-full overflow-hidden" style={{ height: 'min(500px, 58vh)' }}>
         <Image
-          src={heroImage}
+          src={displayHeroImage}
           alt={title}
           fill
           priority
@@ -46,13 +53,13 @@ export function AdminProductGrid({ title, heroCopy, heroImage, addHref, products
             className="font-display text-white text-balance"
             style={{ fontSize: 'clamp(32px, 5vw, 58px)', fontWeight: 300, letterSpacing: '0.08em', lineHeight: 1.1 }}
           >
-            {title}
+            {heroRecord?.headline ?? title}
           </h1>
           <p
             className="font-sans text-white mt-4"
             style={{ fontSize: 12, letterSpacing: '0.2em', fontWeight: 300, opacity: 0.8, textTransform: 'uppercase' }}
           >
-            {heroCopy}
+            {heroRecord?.subheadline ?? heroCopy}
           </p>
         </div>
 
@@ -62,6 +69,15 @@ export function AdminProductGrid({ title, heroCopy, heroImage, addHref, products
           style={{ fontSize: 9, letterSpacing: '0.3em', color: '#fff', background: 'rgba(0,0,0,0.35)', padding: '4px 10px', backdropFilter: 'blur(4px)' }}
         >
           Admin
+        </div>
+
+        {/* Hero edit button — bottom right */}
+        <div className="absolute bottom-5 right-6">
+          <HeroEditButton
+            current={heroRecord}
+            placement={heroPlacement}
+            callbacks={heroCallbacks}
+          />
         </div>
       </div>
 
