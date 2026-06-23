@@ -16,6 +16,7 @@ export interface AdminProduct {
   subtitle:  string;
   price:     string;
   image:     string;
+  video?:    string;   // optional hero video for this piece
   published: boolean;
   editHref:  string;
 }
@@ -92,59 +93,76 @@ export function AdminProductGrid({ title, lede, addHref, products, itemLabel }: 
                 className="group relative flex flex-col md:flex-row"
                 style={{ border: `1px solid ${BORDER}`, height: 'clamp(260px, 30vw, 400px)' }}
               >
-                {/* ── IMAGE HALF ── */}
+                {/* ── VIDEO PANEL (35%) ── */}
                 <div
-                  className={`relative flex-shrink-0 w-full md:w-[52%] overflow-hidden ${imageLeft ? 'md:order-1' : 'md:order-2'}`}
-                  style={{ minHeight: 180, backgroundColor: STONE }}
+                  className={`relative flex-shrink-0 w-full md:w-[35%] overflow-hidden ${imageLeft ? 'md:order-1' : 'md:order-3'}`}
+                  style={{ minHeight: 160, backgroundColor: STONE, borderRight: imageLeft ? `1px solid ${BORDER}` : 'none', borderLeft: imageLeft ? 'none' : `1px solid ${BORDER}` }}
                 >
-                  {product.image ? (
+                  {product.video ? (
+                    <video
+                      src={product.video}
+                      autoPlay muted loop playsInline
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
+                    />
+                  ) : product.image ? (
                     <Image
                       src={product.image}
                       alt={product.name}
                       fill
                       className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.03]"
-                      sizes="(max-width: 768px) 100vw, 55vw"
+                      sizes="35vw"
                       priority={index < 2}
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <p className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.3em', color: '#c8c8c8' }}>
-                        No image
-                      </p>
+                      <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#c8c8c8' }}>No media</p>
                     </div>
                   )}
-
                   {/* Draft badge */}
                   {!product.published && (
-                    <div
-                      className="absolute top-4 left-4 flex items-center gap-1.5 font-sans uppercase"
-                      style={{ fontSize: 9, letterSpacing: '0.2em', color: '#fff', background: 'rgba(0,0,0,0.55)', padding: '4px 10px' }}
-                    >
+                    <div className="absolute top-3 left-3 flex items-center gap-1.5 font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#fff', background: 'rgba(0,0,0,0.55)', padding: '3px 8px' }}>
                       <EyeOff className="w-2.5 h-2.5" strokeWidth={2} />
                       Draft
                     </div>
                   )}
-
-                  {/* Edit image overlay on hover */}
+                  {/* Edit overlay */}
                   <Link
                     href={product.editHref}
                     className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     style={{ background: 'rgba(26,43,26,0.14)', backdropFilter: 'blur(2px)' }}
                     aria-label={`Edit ${product.name}`}
                   >
-                    <span
-                      className="flex items-center gap-2 font-sans uppercase"
-                      style={{ fontSize: 10, letterSpacing: '0.22em', color: '#fff', background: 'rgba(26,43,26,0.88)', padding: '11px 22px' }}
-                    >
+                    <span className="flex items-center gap-2 font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.22em', color: '#fff', background: 'rgba(26,43,26,0.88)', padding: '10px 20px' }}>
                       <Pencil className="w-3 h-3" strokeWidth={2} />
                       Edit
                     </span>
                   </Link>
                 </div>
 
+                {/* ── STILL PHOTO PANEL (25%) ── */}
+                <div
+                  className={`relative flex-shrink-0 w-full md:w-[25%] overflow-hidden md:order-2`}
+                  style={{ minHeight: 160, backgroundColor: '#faf9f7', borderRight: `1px solid ${BORDER}` }}
+                >
+                  {product.image ? (
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      className="object-contain p-5 transition-transform duration-[1200ms] ease-out group-hover:scale-[1.03]"
+                      sizes="25vw"
+                      priority={index < 2}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#c8c8c8' }}>No image</p>
+                    </div>
+                  )}
+                </div>
+
                 {/* ── TEXT HALF — exact mirror of EditorialListing ── */}
                 <div
-                  className={`flex-1 flex flex-col justify-center ${imageLeft ? 'md:order-2' : 'md:order-1'}`}
+                  className={`flex-1 flex flex-col justify-center ${imageLeft ? 'md:order-3' : 'md:order-1'}`}
                   style={{ padding: 'clamp(24px, 3vw, 48px) clamp(20px, 3vw, 52px)', backgroundColor: '#fff' }}
                 >
                   {/* Index */}

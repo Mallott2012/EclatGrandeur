@@ -8,7 +8,9 @@ interface Props {
 export function EngagementRingPage({ settings }: Props) {
   const items: EditorialItem[] = settings.map(ring => {
     const media    = (ring as any).media ?? [];
-    const image    = media[0]?.storage_path ?? '';
+    const image    = media.find((m: any) => m.media_type === 'image')?.storage_path
+                  ?? media[0]?.storage_path ?? '';
+    const video    = media.find((m: any) => m.media_type === 'video' || m.media_type === 'video_360')?.storage_path;
     const priceNum = parseFloat(ring.base_price_gbp ?? '');
     const price    = !isNaN(priceNum) && priceNum > 0
       ? `Starting from £${priceNum.toLocaleString('en-GB')}`
@@ -21,6 +23,7 @@ export function EngagementRingPage({ settings }: Props) {
       subtitle: ring.collection ?? '',
       price,
       image,
+      video,
       metal:    (ring.metals as string[])[0] ?? '',
     };
   });

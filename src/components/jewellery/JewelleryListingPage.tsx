@@ -9,6 +9,7 @@ export interface JewelleryProduct {
   metals:   number;
   style:    string;
   image:    string;
+  video?:   string;
 }
 
 export interface JewelleryConfig {
@@ -34,6 +35,7 @@ export function JewelleryListingPage({ config }: Props) {
     subtitle: p.subtitle,
     price:    p.price,
     image:    p.image,
+    video:    p.video,
     style:    p.style,
   }));
 

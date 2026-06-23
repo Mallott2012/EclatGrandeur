@@ -10,7 +10,8 @@ export default async function AdminEarringsPage() {
     name:      p.name,
     subtitle:  p.subtitle ?? 'Earring',
     price:     p.base_price_gbp ? `Starting from £${Number(p.base_price_gbp).toLocaleString('en-GB')}` : 'Price on application',
-    image:     p.media?.[0]?.storage_path ?? '',
+    image:     p.media?.find((m: any) => m.media_type === 'image')?.storage_path ?? p.media?.[0]?.storage_path ?? '',
+    video:     p.media?.find((m: any) => m.media_type === 'video' || m.media_type === 'video_360')?.storage_path,
     published: p.is_published,
     editHref:  `/admin/earrings/${p.id}`,
   }));

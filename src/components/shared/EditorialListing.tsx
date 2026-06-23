@@ -23,7 +23,8 @@ export interface EditorialItem {
   name:     string;
   subtitle: string;       // e.g. collection name or style
   price:    string;
-  image:    string;       // URL — primary product image
+  image:    string;       // URL — primary still product image
+  video?:   string;       // URL — optional hero video for this piece
   metal?:   string;       // optional — for ring metal filtering
   style?:   string;       // optional — for jewellery style filtering
 }
@@ -211,37 +212,65 @@ export function EditorialListing({
                   className="flex flex-col md:flex-row"
                   style={{ height: 'clamp(280px, 32vw, 420px)' }}
                 >
-                  {/* ── IMAGE HALF ── */}
+                  {/* ── VIDEO PANEL (35%) ── */}
                   <div
-                    className={`relative flex-shrink-0 w-full md:w-[52%] overflow-hidden
-                      ${imageLeft ? 'md:order-1' : 'md:order-2'}`}
-                    style={{ minHeight: 200, backgroundColor: STONE }}
+                    className={`relative flex-shrink-0 w-full md:w-[35%] overflow-hidden
+                      ${imageLeft ? 'md:order-1' : 'md:order-3'}`}
+                    style={{ minHeight: 180, backgroundColor: STONE, borderRight: imageLeft ? `1px solid ${BORDER}` : 'none', borderLeft: imageLeft ? 'none' : `1px solid ${BORDER}` }}
+                  >
+                    {item.video ? (
+                      <video
+                        src={item.video}
+                        autoPlay muted loop playsInline
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
+                      />
+                    ) : item.image ? (
+                      /* Fallback: show image in video slot if no video yet */
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
+                        sizes="35vw"
+                        priority={index < 2}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                        <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#d0d0d0' }}>
+                          No media
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ── STILL PHOTO PANEL (25%) ── */}
+                  <div
+                    className={`relative flex-shrink-0 w-full md:w-[25%] overflow-hidden
+                      ${imageLeft ? 'md:order-2' : 'md:order-2'}`}
+                    style={{ minHeight: 180, backgroundColor: '#faf9f7', borderRight: `1px solid ${BORDER}` }}
                   >
                     {item.image ? (
                       <Image
                         src={item.image}
                         alt={item.name}
                         fill
-                        className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
-                        sizes="(max-width: 768px) 100vw, 52vw"
+                        className="object-contain p-6 transition-transform duration-[1200ms] ease-out group-hover:scale-[1.03]"
+                        sizes="25vw"
                         priority={index < 2}
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <p
-                          className="font-sans uppercase"
-                          style={{ fontSize: 10, letterSpacing: '0.3em', color: '#c8c8c8' }}
-                        >
+                        <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#d0d0d0' }}>
                           No image
                         </p>
                       </div>
                     )}
                   </div>
 
-                  {/* ── TEXT HALF ── */}
+                  {/* ── TEXT PANEL (40%) ── */}
                   <div
                     className={`flex-1 flex flex-col justify-center
-                      ${imageLeft ? 'md:order-2' : 'md:order-1'}`}
+                      ${imageLeft ? 'md:order-3' : 'md:order-1'}`}
                     style={{
                       padding: 'clamp(28px, 3.5vw, 56px) clamp(24px, 3.5vw, 56px)',
                       backgroundColor: '#fff',
@@ -297,31 +326,18 @@ export function EditorialListing({
                     </p>
 
                     {/* CTA */}
-                    <div
-                      className="flex items-center gap-3 mt-7"
-                      style={{ color: G }}
-                    >
-                      <span
-                        className="font-sans uppercase"
-                        style={{ fontSize: 10, letterSpacing: '0.3em', fontWeight: 400 }}
-                      >
+                    <div className="flex items-center gap-3 mt-7" style={{ color: G }}>
+                      <span className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.3em', fontWeight: 400 }}>
                         Discover
                       </span>
                       <div
-                        style={{
-                          width: 40, height: 1,
-                          backgroundColor: G,
-                          transition: 'width 0.4s ease',
-                        }}
+                        style={{ width: 40, height: 1, backgroundColor: G, transition: 'width 0.4s ease' }}
                         className="group-hover:w-[64px]"
                       />
-                      <ArrowRight
-                        className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1"
-                        strokeWidth={1.5}
-                      />
+                      <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" strokeWidth={1.5} />
                     </div>
-                  </div>
-                </div>
+                  </div>{/* end text panel */}
+                </div>{/* end row */}
               </Link>
             );
           })}

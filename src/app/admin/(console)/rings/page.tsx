@@ -11,7 +11,8 @@ export default async function AdminRingsPage() {
     name:      r.name,
     subtitle:  r.metals.map((m) => METAL_LABELS[m]).join(' · ') || 'Engagement Ring',
     price:     r.base_price_gbp ? `Starting from £${parseFloat(String(r.base_price_gbp)).toLocaleString('en-GB')}` : 'Price on request',
-    image:     (r as any).media?.[0]?.storage_path ?? '',
+    image:     (r as any).media?.find((m: any) => m.media_type === 'image')?.storage_path ?? (r as any).media?.[0]?.storage_path ?? '',
+    video:     (r as any).media?.find((m: any) => m.media_type === 'video' || m.media_type === 'video_360')?.storage_path,
     published: r.is_published,
     editHref:  `/admin/rings/${r.id}`,
   }));
