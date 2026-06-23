@@ -10,8 +10,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
   }
 
-  // Build a response object first so we can write cookies onto it.
-  const response = NextResponse.json({ ok: true });
+  // Build the success redirect response first so we can write cookies onto it.
+  const response = NextResponse.redirect(new URL('/admin', request.url));
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -22,18 +22,19 @@ export function AdminLoginForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        redirect: 'manual', // we handle the redirect ourselves
       });
 
-      const json = await res.json();
-
-      if (!res.ok) {
-        setError(json.error ?? 'Login failed. Please try again.');
+      // The route handler returns a redirect on success, or JSON error on failure.
+      if (res.type === 'opaqueredirect' || res.status === 200 || res.redirected) {
+        // Hard navigate so the browser sends the new session cookies.
+        window.location.href = '/admin';
         return;
       }
 
-      // Cookies are now set on the browser by the Route Handler response.
-      // A full page navigation (not client-side push) ensures middleware sees them.
-      window.location.href = '/admin';
+      // Error response — parse JSON for message.
+      const json = await res.json().catch(() => ({}));
+      setError(json.error ?? 'Login failed. Please try again.');
     } catch {
       setError('Network error. Please try again.');
     } finally {
