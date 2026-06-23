@@ -39,13 +39,13 @@ export function AdminSidebar({ user }: Props) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-neutral-800 bg-neutral-950">
+    <aside className="flex w-56 shrink-0 flex-col border-r border-stone-200 bg-white">
       {/* Wordmark */}
-      <div className="border-b border-neutral-800 px-6 py-5">
-        <span className="font-display text-sm font-light tracking-[0.2em] text-white">
+      <div className="border-b border-stone-200 px-6 py-5">
+        <span className="font-display text-sm font-light tracking-[0.2em] text-stone-900">
           ÉCLAT GRANDEUR
         </span>
-        <p className="mt-0.5 text-[10px] tracking-widest text-neutral-600">ADMIN</p>
+        <p className="mt-0.5 text-[10px] tracking-widest text-stone-400">ADMIN</p>
       </div>
 
       {/* Navigation */}
@@ -59,9 +59,9 @@ export function AdminSidebar({ user }: Props) {
             if (!item.live) {
               return (
                 <li key={item.href}>
-                  <span className="flex items-center justify-between rounded px-3 py-2 text-sm text-neutral-600 cursor-not-allowed">
+                  <span className="flex items-center justify-between rounded px-3 py-2 text-sm text-stone-400 cursor-not-allowed">
                     {item.label}
-                    <span className="text-[10px] tracking-wider text-neutral-700">SOON</span>
+                    <span className="text-[10px] tracking-wider text-stone-300">SOON</span>
                   </span>
                 </li>
               );
@@ -73,8 +73,8 @@ export function AdminSidebar({ user }: Props) {
                   href={item.href}
                   className={`flex rounded px-3 py-2 text-sm transition-colors ${
                     isActive
-                      ? 'bg-neutral-800 text-white'
-                      : 'text-neutral-400 hover:bg-neutral-900 hover:text-white'
+                      ? 'bg-stone-100 text-stone-900 font-medium'
+                      : 'text-stone-500 hover:bg-stone-50 hover:text-stone-900'
                   }`}
                 >
                   {item.label}
@@ -86,11 +86,11 @@ export function AdminSidebar({ user }: Props) {
       </nav>
 
       {/* User footer */}
-      <div className="border-t border-neutral-800 px-4 py-4">
-        <p className="truncate text-xs text-neutral-400">{user.fullName ?? user.email}</p>
+      <div className="border-t border-stone-200 px-4 py-4">
+        <p className="truncate text-xs text-stone-600">{user.fullName ?? user.email}</p>
         <div className="mt-1 flex flex-wrap gap-1">
           {user.roles.map((role) => (
-            <span key={role} className="text-[10px] tracking-wider text-amber-600">
+            <span key={role} className="text-[10px] tracking-wider text-amber-700">
               {STAFF_ROLE_LABELS[role]}
             </span>
           ))}
@@ -98,7 +98,7 @@ export function AdminSidebar({ user }: Props) {
         <form action={logoutAction} className="mt-3">
           <button
             type="submit"
-            className="text-xs text-neutral-600 transition-colors hover:text-neutral-300"
+            className="text-xs text-stone-400 transition-colors hover:text-stone-700"
           >
             Sign out
           </button>

@@ -18,7 +18,7 @@ export default async function AdminConsoleLayout({ children }: { children: React
   const user = await requireStaffRole([]);
 
   return (
-    <div className="flex min-h-screen bg-neutral-950 text-white">
+    <div className="flex min-h-screen bg-stone-50 text-stone-900">
       <AdminSidebar user={user} />
       <main className="flex-1 overflow-y-auto p-8">{children}</main>
     </div>

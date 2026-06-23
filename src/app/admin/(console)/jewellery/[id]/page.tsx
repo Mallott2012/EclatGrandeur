@@ -52,21 +52,21 @@ export default async function EditJewelleryPage({ params }: Props) {
     <div className="max-w-4xl">
       <Link
         href="/admin/jewellery"
-        className="mb-4 inline-block text-xs tracking-widest text-neutral-500 transition-colors hover:text-neutral-300"
+        className="mb-4 inline-block text-xs tracking-widest text-stone-400 transition-colors hover:text-stone-700"
       >
         ← JEWELLERY
       </Link>
 
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="font-display text-3xl font-light tracking-widest text-white">{product.name.toUpperCase()}</h1>
-          <p className="mt-1 font-mono text-xs text-neutral-600">{product.id}</p>
+          <h1 className="font-display text-3xl font-light tracking-widest text-stone-900">{product.name.toUpperCase()}</h1>
+          <p className="mt-1 font-mono text-xs text-stone-400">{product.id}</p>
           <div className="mt-1 flex items-center gap-3">
-            <span className="text-xs text-neutral-500 capitalize">{product.category}</span>
+            <span className="text-xs text-stone-500 capitalize">{product.category}</span>
             {product.is_published ? (
-              <span className="text-xs text-emerald-400">Published</span>
+              <span className="text-xs text-emerald-600">Published</span>
             ) : (
-              <span className="text-xs text-neutral-600">Draft</span>
+              <span className="text-xs text-stone-400">Draft</span>
             )}
           </div>
         </div>
@@ -75,8 +75,8 @@ export default async function EditJewelleryPage({ params }: Props) {
 
       <div className="space-y-6">
         {/* Product details form */}
-        <section className="rounded border border-neutral-800 bg-neutral-900/30 p-6">
-          <h2 className="mb-4 text-xs font-semibold tracking-widest text-neutral-400">PRODUCT DETAILS</h2>
+        <section className="rounded border border-stone-200 bg-white p-6">
+          <h2 className="mb-4 text-xs font-semibold tracking-widest text-stone-400">PRODUCT DETAILS</h2>
           <JewelleryForm
             action={boundUpdate}
             submitLabel="Save changes"
@@ -100,13 +100,13 @@ export default async function EditJewelleryPage({ params }: Props) {
 
         {/* Diamond assignment — only shown when show_diamond is enabled */}
         {product.show_diamond && (
-          <section className="rounded border border-neutral-800 bg-neutral-900/30 p-6">
-            <h2 className="mb-1 text-xs font-semibold tracking-widest text-neutral-400">AVAILABLE DIAMONDS</h2>
-            <p className="mb-4 text-xs text-neutral-600">
+          <section className="rounded border border-stone-200 bg-white p-6">
+            <h2 className="mb-1 text-xs font-semibold tracking-widest text-stone-400">AVAILABLE DIAMONDS</h2>
+            <p className="mb-4 text-xs text-stone-400">
               Tick the diamonds that can be set in this {product.category.replace(/s$/, '')}. Only these will appear on the product page.
             </p>
             {product.metals.length > 0 && (
-              <p className="mb-4 text-xs text-neutral-500">
+              <p className="mb-4 text-xs text-stone-500">
                 Metals available: {product.metals.map((m) => METAL_LABELS[m]).join(', ')}
               </p>
             )}
@@ -120,9 +120,9 @@ export default async function EditJewelleryPage({ params }: Props) {
         )}
 
         {!product.show_diamond && (
-          <section className="rounded border border-neutral-800 bg-neutral-900/30 p-6">
-            <h2 className="mb-2 text-xs font-semibold tracking-widest text-neutral-400">AVAILABLE DIAMONDS</h2>
-            <p className="text-sm text-neutral-600">
+          <section className="rounded border border-stone-200 bg-white p-6">
+            <h2 className="mb-2 text-xs font-semibold tracking-widest text-stone-400">AVAILABLE DIAMONDS</h2>
+            <p className="text-sm text-stone-400">
               Diamond selection is disabled for this product. Enable &quot;Show diamond selector&quot; in the product details above to assign diamonds.
             </p>
           </section>

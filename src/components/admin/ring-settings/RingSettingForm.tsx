@@ -47,7 +47,7 @@ export function RingSettingForm({ action, defaultValues }: Props) {
   return (
     <form action={formAction} className="space-y-6">
       {!state.success && state.message && (
-        <div className="rounded border border-red-800/60 bg-red-950/30 px-4 py-3 text-sm text-red-400">
+        <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {state.message}
         </div>
       )}
@@ -75,7 +75,7 @@ export function RingSettingForm({ action, defaultValues }: Props) {
           className={inputCls(!!fieldErrors['slug'])}
           placeholder="e.g. eclat-solitaire"
         />
-        <p className="mt-1 text-xs text-neutral-600">Lowercase letters, numbers, and hyphens only. Auto-filled from name.</p>
+        <p className="mt-1 text-xs text-stone-400">Lowercase letters, numbers, and hyphens only. Auto-filled from name.</p>
       </Field>
 
       {/* Collection */}
@@ -101,7 +101,7 @@ export function RingSettingForm({ action, defaultValues }: Props) {
                 defaultChecked={values.metals.includes(metal)}
                 className="accent-amber-600"
               />
-              <span className="text-sm text-neutral-300">{METAL_LABELS[metal]}</span>
+              <span className="text-sm text-stone-700">{METAL_LABELS[metal]}</span>
             </label>
           ))}
         </div>
@@ -110,7 +110,7 @@ export function RingSettingForm({ action, defaultValues }: Props) {
       {/* Base price */}
       <Field label="Base price (GBP)" error={fieldErrors['base_price_gbp']}>
         <div className="flex items-center gap-1">
-          <span className="text-neutral-400">£</span>
+          <span className="text-stone-500">£</span>
           <input
             type="number"
             name="base_price_gbp"
@@ -121,7 +121,7 @@ export function RingSettingForm({ action, defaultValues }: Props) {
             placeholder="e.g. 2400"
           />
         </div>
-        <p className="mt-1 text-xs text-neutral-600">Starting price for this ring setting without a diamond.</p>
+        <p className="mt-1 text-xs text-stone-400">Starting price for this ring setting without a diamond.</p>
       </Field>
 
       {/* Description */}
@@ -144,7 +144,7 @@ export function RingSettingForm({ action, defaultValues }: Props) {
           min="0"
           className={`${inputCls(!!fieldErrors['sort_order'])} w-24`}
         />
-        <p className="mt-1 text-xs text-neutral-600">Lower numbers appear first on the storefront.</p>
+        <p className="mt-1 text-xs text-stone-400">Lower numbers appear first on the storefront.</p>
       </Field>
 
       {/* Published */}
@@ -162,7 +162,7 @@ export function RingSettingForm({ action, defaultValues }: Props) {
             defaultChecked={values.is_published}
             className="accent-amber-600"
           />
-          <span className="text-sm text-neutral-300">Publish to storefront</span>
+          <span className="text-sm text-stone-700">Publish to storefront</span>
         </label>
       </Field>
 
@@ -179,7 +179,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded bg-amber-700 px-6 py-2.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+      className="rounded bg-stone-900 px-6 py-2.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-stone-700 disabled:opacity-50"
     >
       {pending ? 'Saving…' : 'Save ring setting'}
     </button>
@@ -199,18 +199,18 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium tracking-wider text-neutral-400">
+      <label className="mb-1.5 block text-xs font-medium tracking-wider text-stone-500">
         {label.toUpperCase()}
-        {required && <span className="ml-1 text-amber-600">*</span>}
+        {required && <span className="ml-1 text-stone-900">*</span>}
       </label>
       {children}
-      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   )
 }
 
 function inputCls(hasError: boolean) {
   return `w-full rounded border ${
-    hasError ? 'border-red-700 bg-red-950/20' : 'border-neutral-700 bg-neutral-900'
-  } px-3 py-2 text-sm text-white placeholder-neutral-600 focus:border-amber-700 focus:outline-none`
+    hasError ? 'border-red-300 bg-red-50' : 'border-stone-300 bg-white'
+  } px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:border-stone-500 focus:outline-none`
 }

@@ -40,7 +40,7 @@ export function DiamondAssignmentPanel({
 
   if (diamonds.length === 0) {
     return (
-      <p className="text-sm text-neutral-600">
+      <p className="text-sm text-stone-400">
         No diamonds in inventory yet. Add diamonds first.
       </p>
     )
@@ -48,7 +48,7 @@ export function DiamondAssignmentPanel({
 
   return (
     <div className={pending ? 'opacity-60 pointer-events-none' : ''}>
-      <div className="mb-3 grid grid-cols-[auto_1fr_1fr_1fr_1fr_auto] gap-x-4 border-b border-neutral-800 pb-2 text-xs font-medium tracking-widest text-neutral-500">
+      <div className="mb-3 grid grid-cols-[auto_1fr_1fr_1fr_1fr_auto] gap-x-4 border-b border-stone-200 pb-2 text-xs font-medium tracking-widest text-stone-400">
         <span></span>
         <span>SKU</span>
         <span>CUT / CARAT</span>
@@ -64,34 +64,34 @@ export function DiamondAssignmentPanel({
               key={d.id}
               className={`grid grid-cols-[auto_1fr_1fr_1fr_1fr_auto] cursor-pointer items-center gap-x-4 rounded px-3 py-2.5 text-sm transition-colors ${
                 assigned
-                  ? 'bg-emerald-950/30 border border-emerald-900/40'
-                  : 'border border-transparent hover:bg-neutral-900'
+                  ? 'bg-emerald-50 border border-emerald-200'
+                  : 'border border-transparent hover:bg-stone-50'
               }`}
             >
               <input
                 type="checkbox"
                 checked={assigned}
                 onChange={() => toggle(d.id, assigned)}
-                className="h-4 w-4 accent-emerald-500"
+                className="h-4 w-4 accent-emerald-600"
               />
-              <span className="font-mono text-xs text-neutral-400">{d.sku}</span>
-              <span className="text-neutral-300">
+              <span className="font-mono text-xs text-stone-500">{d.sku}</span>
+              <span className="text-stone-700">
                 {d.cut.charAt(0).toUpperCase() + d.cut.slice(1)} · {d.carat}ct
               </span>
-              <span className="text-neutral-300">
+              <span className="text-stone-700">
                 {d.colour} · {d.clarity}
               </span>
-              <span className="text-neutral-200">
+              <span className="text-stone-900">
                 £{Number(d.price_gbp).toLocaleString('en-GB')}
               </span>
-              <span className={`text-xs font-medium ${assigned ? 'text-emerald-400' : 'text-neutral-700'}`}>
+              <span className={`text-xs font-medium ${assigned ? 'text-emerald-600' : 'text-stone-300'}`}>
                 {assigned ? 'Assigned' : ''}
               </span>
             </label>
           )
         })}
       </div>
-      <p className="mt-3 text-xs text-neutral-600">
+      <p className="mt-3 text-xs text-stone-400">
         {assignedIds.length} diamond{assignedIds.length !== 1 ? 's' : ''} assigned
       </p>
     </div>

@@ -37,7 +37,6 @@ export default async function RingSettingDetailPage({ params }: Props) {
 
   const deleteWithId = deleteRingSettingAction.bind(null, id)
 
-  // Shape diamonds into summary rows
   const diamondSummaries: DiamondSummary[] = allDiamonds
     .filter((d) => d.status === 'available')
     .map((d) => ({
@@ -54,27 +53,27 @@ export default async function RingSettingDetailPage({ params }: Props) {
     <div className="max-w-4xl">
       <Link
         href="/admin/ring-settings"
-        className="mb-4 inline-block text-xs tracking-widest text-neutral-500 transition-colors hover:text-neutral-300"
+        className="mb-4 inline-block text-xs tracking-widest text-stone-400 transition-colors hover:text-stone-700"
       >
         ← RING SETTINGS
       </Link>
 
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="font-display text-3xl font-light tracking-widest text-white">{setting.name}</h1>
-          <p className="mt-1 font-mono text-xs text-neutral-500">{setting.slug}</p>
+          <h1 className="font-display text-3xl font-light tracking-widest text-stone-900">{setting.name}</h1>
+          <p className="mt-1 font-mono text-xs text-stone-400">{setting.slug}</p>
           <div className="mt-2">
             {setting.is_published ? (
-              <span className="text-xs text-emerald-400">Published</span>
+              <span className="text-xs text-emerald-600">Published</span>
             ) : (
-              <span className="text-xs text-neutral-600">Draft</span>
+              <span className="text-xs text-stone-400">Draft</span>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href={`/admin/ring-settings/${id}/edit`}
-            className="rounded border border-neutral-700 px-4 py-2 text-sm text-neutral-300 transition-colors hover:border-neutral-500 hover:text-white"
+            className="rounded border border-stone-200 px-4 py-2 text-sm text-stone-600 transition-colors hover:border-stone-400 hover:text-stone-900"
           >
             Edit Details
           </Link>
@@ -84,8 +83,8 @@ export default async function RingSettingDetailPage({ params }: Props) {
 
       <div className="space-y-6">
         {/* Details */}
-        <section className="rounded border border-neutral-800 bg-neutral-900/30 p-6">
-          <h2 className="mb-4 text-xs font-semibold tracking-widest text-neutral-400">DETAILS</h2>
+        <section className="rounded border border-stone-200 bg-white p-6">
+          <h2 className="mb-4 text-xs font-semibold tracking-widest text-stone-400">DETAILS</h2>
           <dl className="space-y-0.5">
             <Row label="Collection"  value={setting.collection ?? '—'} />
             <Row label="Base price"  value={setting.base_price_gbp ? `£${Number(setting.base_price_gbp).toLocaleString()}` : '—'} />
@@ -95,14 +94,14 @@ export default async function RingSettingDetailPage({ params }: Props) {
         </section>
 
         {/* Per-metal diamond assignment */}
-        <section className="rounded border border-neutral-800 bg-neutral-900/30 p-6">
-          <h2 className="mb-1 text-xs font-semibold tracking-widest text-neutral-400">AVAILABLE DIAMONDS BY METAL</h2>
-          <p className="mb-6 text-xs text-neutral-600">
+        <section className="rounded border border-stone-200 bg-white p-6">
+          <h2 className="mb-1 text-xs font-semibold tracking-widest text-stone-400">AVAILABLE DIAMONDS BY METAL</h2>
+          <p className="mb-6 text-xs text-stone-400">
             Tick the diamonds available for each metal option. Only ticked diamonds will appear on the product page for that metal.
           </p>
 
           {setting.metals.length === 0 ? (
-            <p className="text-sm text-neutral-600">No metals configured. Edit the ring setting to add metals first.</p>
+            <p className="text-sm text-stone-400">No metals configured. Edit the ring setting to add metals first.</p>
           ) : (
             <div className="space-y-8">
               {setting.metals.map((metal) => {
@@ -111,9 +110,9 @@ export default async function RingSettingDetailPage({ params }: Props) {
                 const unassignFn = unassignRingDiamondAction.bind(null, id, metal)
                 return (
                   <div key={metal}>
-                    <h3 className="mb-3 text-sm font-semibold text-neutral-200">
+                    <h3 className="mb-3 text-sm font-semibold text-stone-800">
                       {METAL_LABELS[metal]}
-                      <span className="ml-2 text-xs font-normal text-neutral-500">
+                      <span className="ml-2 text-xs font-normal text-stone-400">
                         ({assigned.length} assigned)
                       </span>
                     </h3>
@@ -132,19 +131,19 @@ export default async function RingSettingDetailPage({ params }: Props) {
 
         {/* Description */}
         {setting.description && (
-          <section className="rounded border border-neutral-800 bg-neutral-900/30 p-6">
-            <h2 className="mb-4 text-xs font-semibold tracking-widest text-neutral-400">DESCRIPTION</h2>
-            <p className="text-sm leading-relaxed text-neutral-300">{setting.description}</p>
+          <section className="rounded border border-stone-200 bg-white p-6">
+            <h2 className="mb-4 text-xs font-semibold tracking-widest text-stone-400">DESCRIPTION</h2>
+            <p className="text-sm leading-relaxed text-stone-700">{setting.description}</p>
           </section>
         )}
 
         {/* Media */}
-        <section className="rounded border border-neutral-800 bg-neutral-900/30 p-6">
-          <h2 className="mb-4 text-xs font-semibold tracking-widest text-neutral-400">MEDIA</h2>
+        <section className="rounded border border-stone-200 bg-white p-6">
+          <h2 className="mb-4 text-xs font-semibold tracking-widest text-stone-400">MEDIA</h2>
           {setting.media.length === 0 ? (
-            <p className="text-sm text-neutral-600">No media uploaded yet.</p>
+            <p className="text-sm text-stone-400">No media uploaded yet.</p>
           ) : (
-            <p className="text-sm text-neutral-400">{setting.media.length} file{setting.media.length !== 1 ? 's' : ''} attached.</p>
+            <p className="text-sm text-stone-600">{setting.media.length} file{setting.media.length !== 1 ? 's' : ''} attached.</p>
           )}
         </section>
       </div>
@@ -155,8 +154,8 @@ export default async function RingSettingDetailPage({ params }: Props) {
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-baseline gap-3 py-1.5">
-      <dt className="w-28 shrink-0 text-xs font-medium tracking-wider text-neutral-500">{label.toUpperCase()}</dt>
-      <dd className="flex-1 text-sm text-neutral-200">{value}</dd>
+      <dt className="w-28 shrink-0 text-xs font-medium tracking-wider text-stone-400">{label.toUpperCase()}</dt>
+      <dd className="flex-1 text-sm text-stone-800">{value}</dd>
     </div>
   )
 }
