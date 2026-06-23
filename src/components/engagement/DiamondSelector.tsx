@@ -6,47 +6,45 @@ import { X, ChevronUp, ChevronDown } from 'lucide-react';
 const G      = '#1a2b1a';
 const BORDER = '#e8e8e8';
 
-const COLORS     = ['D', 'E', 'F', 'G', 'H', 'I'] as const;
-const CLARITIES  = ['VS2', 'VS1', 'VVS2', 'VVS1', 'IF', 'FL'] as const;
-const CUT_GRADES = ['Excellent', 'Very Good', 'Good'] as const;
+const COLORS    = ['D', 'E', 'F', 'G', 'H', 'I'] as const;
+const CLARITIES = ['VS2', 'VS1', 'VVS2', 'VVS1', 'IF', 'FL'] as const;
 
-// ─── Individual stones ────────────────────────────────────────────────────────
+// All Éclat diamonds are Excellent cut, Excellent symmetry, Excellent polish, No fluorescence — as standard.
 const DIAMONDS = [
-  { id: 'd1',  carat: 1.00, color: 'D', clarity: 'VVS1', cut: 'Excellent',  price: 8500  },
-  { id: 'd2',  carat: 1.01, color: 'E', clarity: 'VS1',  cut: 'Excellent',  price: 7200  },
-  { id: 'd3',  carat: 1.05, color: 'F', clarity: 'VVS2', cut: 'Very Good',  price: 7800  },
-  { id: 'd4',  carat: 1.10, color: 'D', clarity: 'VS2',  cut: 'Excellent',  price: 8100  },
-  { id: 'd5',  carat: 1.15, color: 'G', clarity: 'VS1',  cut: 'Very Good',  price: 6900  },
-  { id: 'd6',  carat: 1.20, color: 'E', clarity: 'VVS1', cut: 'Excellent',  price: 9400  },
-  { id: 'd7',  carat: 1.25, color: 'F', clarity: 'IF',   cut: 'Excellent',  price: 11200 },
-  { id: 'd8',  carat: 1.30, color: 'D', clarity: 'FL',   cut: 'Excellent',  price: 14800 },
-  { id: 'd9',  carat: 1.50, color: 'E', clarity: 'VVS2', cut: 'Very Good',  price: 12600 },
-  { id: 'd10', carat: 1.51, color: 'G', clarity: 'VS2',  cut: 'Good',       price: 9200  },
-  { id: 'd11', carat: 1.75, color: 'F', clarity: 'VS1',  cut: 'Excellent',  price: 14100 },
-  { id: 'd12', carat: 2.00, color: 'D', clarity: 'VVS2', cut: 'Excellent',  price: 22000 },
-  { id: 'd13', carat: 2.01, color: 'E', clarity: 'VS1',  cut: 'Very Good',  price: 18400 },
-  { id: 'd14', carat: 2.05, color: 'F', clarity: 'VVS1', cut: 'Excellent',  price: 21500 },
-  { id: 'd15', carat: 2.10, color: 'G', clarity: 'VS2',  cut: 'Good',       price: 16800 },
+  { id: 'd1',  carat: 1.00, color: 'D', clarity: 'VVS1', price: 8500  },
+  { id: 'd2',  carat: 1.01, color: 'E', clarity: 'VS1',  price: 7200  },
+  { id: 'd3',  carat: 1.05, color: 'F', clarity: 'VVS2', price: 7800  },
+  { id: 'd4',  carat: 1.10, color: 'D', clarity: 'VS2',  price: 8100  },
+  { id: 'd5',  carat: 1.15, color: 'G', clarity: 'VS1',  price: 6900  },
+  { id: 'd6',  carat: 1.20, color: 'E', clarity: 'VVS1', price: 9400  },
+  { id: 'd7',  carat: 1.25, color: 'F', clarity: 'IF',   price: 11200 },
+  { id: 'd8',  carat: 1.30, color: 'D', clarity: 'FL',   price: 14800 },
+  { id: 'd9',  carat: 1.50, color: 'E', clarity: 'VVS2', price: 12600 },
+  { id: 'd10', carat: 1.51, color: 'G', clarity: 'VS2',  price: 9200  },
+  { id: 'd11', carat: 1.75, color: 'F', clarity: 'VS1',  price: 14100 },
+  { id: 'd12', carat: 2.00, color: 'D', clarity: 'VVS2', price: 22000 },
+  { id: 'd13', carat: 2.01, color: 'E', clarity: 'VS1',  price: 18400 },
+  { id: 'd14', carat: 2.05, color: 'F', clarity: 'VVS1', price: 21500 },
+  { id: 'd15', carat: 2.10, color: 'G', clarity: 'VS2',  price: 16800 },
 ];
 
 // ─── Total carat tiers ────────────────────────────────────────────────────────
 const CARAT_TIERS = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
 
 function caratTierToDiamond(carat: number, pricePerCarat: number) {
-  return { id: `tier_${carat}`, carat, color: '—', clarity: '—', cut: '—', price: Math.round(carat * pricePerCarat) };
+  return { id: `tier_${carat}`, carat, color: '—', clarity: '—', price: Math.round(carat * pricePerCarat) };
 }
 
 export type Diamond = (typeof DIAMONDS)[0];
-type SortKey = 'carat' | 'color' | 'clarity' | 'cut' | 'price' | 'ppc';
+type SortKey = 'carat' | 'color' | 'clarity' | 'price' | 'ppc';
 type SortDir = 'asc' | 'desc';
 
 const clarityRank: Record<string, number> = { VS2: 0, VS1: 1, VVS2: 2, VVS1: 3, IF: 4, FL: 5 };
 const colorRank:   Record<string, number> = { D: 0, E: 1, F: 2, G: 3, H: 4, I: 5 };
-const cutRank:     Record<string, number> = { Good: 0, 'Very Good': 1, Excellent: 2 };
 
-// ─── "Best value" score: high quality / price ratio ──────────────────────────
+// ─── "Best value" score: cut is always Excellent — quality driven by colour/clarity/carat vs price
 function valueScore(d: Diamond): number {
-  const qualScore = (clarityRank[d.clarity] ?? 0) + (5 - (colorRank[d.color] ?? 5)) + (cutRank[d.cut] ?? 0) * 1.5;
+  const qualScore = (clarityRank[d.clarity] ?? 0) + (5 - (colorRank[d.color] ?? 5));
   return qualScore / (d.price / 1000);
 }
 
@@ -99,7 +97,6 @@ export function DiamondSelector({
   const [priceRange,      setPriceRange]      = useState<[number, number]>([2000, 30000]);
   const [activeColors,    setActiveColors]    = useState<string[]>([]);
   const [activeClarities, setActiveClarities] = useState<string[]>([]);
-  const [activeCuts,      setActiveCuts]      = useState<string[]>([]);
   const [sortKey,         setSortKey]         = useState<SortKey>('carat');
   const [sortDir,         setSortDir]         = useState<SortDir>('asc');
   const [hoveredId,       setHoveredId]       = useState<string | null>(null);
@@ -107,7 +104,6 @@ export function DiamondSelector({
 
   const toggleColor   = (c: string) => setActiveColors(p   => p.includes(c) ? p.filter(x => x !== c) : [...p, c]);
   const toggleClarity = (c: string) => setActiveClarities(p => p.includes(c) ? p.filter(x => x !== c) : [...p, c]);
-  const toggleCut     = (c: string) => setActiveCuts(p      => p.includes(c) ? p.filter(x => x !== c) : [...p, c]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -126,8 +122,7 @@ export function DiamondSelector({
       .filter(d => d.carat >= caratRange[0] && d.carat <= caratRange[1])
       .filter(d => d.price >= priceRange[0]  && d.price <= priceRange[1])
       .filter(d => activeColors.length    === 0 || activeColors.includes(d.color))
-      .filter(d => activeClarities.length === 0 || activeClarities.includes(d.clarity))
-      .filter(d => activeCuts.length      === 0 || activeCuts.includes(d.cut));
+      .filter(d => activeClarities.length === 0 || activeClarities.includes(d.clarity));
   }, [totalCaratMode, caratRange, priceRange, activeColors, activeClarities, activeCuts, pricePerCarat]);
 
   const sorted = useMemo(() => [...rows].sort((a, b) => {
@@ -135,7 +130,6 @@ export function DiamondSelector({
     if (sortKey === 'carat')   diff = a.carat - b.carat;
     if (sortKey === 'color')   diff = (colorRank[a.color]     ?? 0) - (colorRank[b.color]   ?? 0);
     if (sortKey === 'clarity') diff = (clarityRank[a.clarity] ?? 0) - (clarityRank[b.clarity] ?? 0);
-    if (sortKey === 'cut')     diff = (cutRank[a.cut]         ?? 0) - (cutRank[b.cut]        ?? 0);
     if (sortKey === 'price')   diff = a.price - b.price;
     if (sortKey === 'ppc')     diff = (a.price / a.carat) - (b.price / b.carat);
     return sortDir === 'asc' ? diff : -diff;
@@ -158,10 +152,10 @@ export function DiamondSelector({
       : <ChevronDown className="inline-block ml-0.5 w-2.5 h-2.5" strokeWidth={2} />;
   }
 
-  // table column layout: individual vs tier
+  // table column layout: carat | color | clarity | price | £/ct | radio
   const colTemplate = totalCaratMode
     ? '1fr 0.7fr 0.9fr 1fr 28px'
-    : '1.1fr 0.55fr 0.7fr 0.55fr 1fr 28px';   // carat | color | clarity | cut | price | radio
+    : '1.1fr 0.55fr 0.7fr 1fr 0.9fr 28px';
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -206,9 +200,9 @@ export function DiamondSelector({
         <div className="flex-1 overflow-y-auto px-7 py-8">
           <h3 className="font-display mb-6" style={{ fontSize: 24, fontWeight: 300, color: G }}>The Four Cs</h3>
           {[
-            { title: 'Cut',     desc: "The most important factor in a diamond's beauty. An Excellent cut maximises brilliance, fire, and scintillation — even a smaller stone will outshine a larger one with a lesser cut." },
-            { title: 'Colour',  desc: 'Graded D (colourless) to Z. D–F are colourless and most rare; G–H appear near-colourless to the naked eye and offer exceptional value.' },
-            { title: 'Clarity', desc: 'Measures inclusions and blemishes. FL (flawless) to VS1 are eye-clean — inclusions invisible without magnification. VVS grades are considered premium.' },
+            { title: 'Cut',     desc: "Every Éclat diamond is Excellent cut — the highest grade awarded by the GIA. Excellent cut maximises brilliance, fire, and scintillation, ensuring your stone returns the maximum light possible. We do not offer anything less." },
+            { title: 'Colour',  desc: 'Graded D (colourless) to Z. D–F are colourless and most rare; G–H appear near-colourless to the naked eye and offer exceptional value. All Éclat stones are graded D–I.' },
+            { title: 'Clarity', desc: 'Measures inclusions and blemishes. FL (flawless) to VS1 are eye-clean — inclusions invisible without magnification. VVS grades are considered premium. All Éclat stones are VS2 or above.' },
             { title: 'Carat',   desc: 'The weight of the diamond. One carat = 0.2 grams. Larger diamonds are rarer and exponentially more valuable per carat.' },
           ].map(item => (
             <div key={item.title} className="py-6" style={{ borderBottom: `1px solid ${BORDER}` }}>
@@ -219,7 +213,7 @@ export function DiamondSelector({
           <div className="pt-6">
             <p className="font-sans uppercase mb-2" style={{ fontSize: 9, letterSpacing: '0.28em', color: '#bbb' }}>Éclat Recommended</p>
             <p className="font-sans" style={{ fontSize: 13, color: '#555', lineHeight: 1.8, fontWeight: 300 }}>
-              Our recommendation badge highlights the stone in the current filtered selection that offers the best combination of cut, colour, clarity, and carat for the price — your advisor will always agree.
+              Our recommendation badge highlights the stone in the current filtered selection that offers the finest combination of colour, clarity, and carat weight for the price. Since every Éclat stone is Excellent cut as standard, the recommendation is based purely on quality versus value.
             </p>
           </div>
         </div>
@@ -277,23 +271,7 @@ export function DiamondSelector({
               </div>
             </div>
 
-            {/* Cut — only for individual stones */}
-            {!totalCaratMode && (
-              <div>
-                <p className="font-sans uppercase mb-3" style={{ fontSize: 9, letterSpacing: '0.28em', color: '#bbb' }}>Cut</p>
-                <div className="flex flex-wrap gap-2">
-                  {CUT_GRADES.map(c => {
-                    const on = activeCuts.includes(c);
-                    return (
-                      <button key={c} type="button" onClick={() => toggleCut(c)}
-                        className="font-sans px-3 py-1.5"
-                        style={{ fontSize: 10, letterSpacing: '0.08em', border: `1px solid ${on ? G : '#ddd'}`, backgroundColor: on ? G : '#fff', color: on ? '#fff' : '#555', transition: 'all 0.15s' }}
-                      >{c}</button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+
           </div>
 
           {/* Results header */}
@@ -303,7 +281,7 @@ export function DiamondSelector({
             </span>
             <button
               type="button"
-              onClick={() => { setActiveColors([]); setActiveClarities([]); setActiveCuts([]); setCaratRange(totalCaratMode ? [0.5, 5] : [0.5, 3.0]); setPriceRange([2000, 30000]); }}
+              onClick={() => { setActiveColors([]); setActiveClarities([]); setCaratRange(totalCaratMode ? [0.5, 5] : [0.5, 3.0]); setPriceRange([2000, 30000]); }}
               className="font-sans"
               style={{ fontSize: 10, color: '#bbb', letterSpacing: '0.1em', textDecoration: 'underline', textUnderlineOffset: 3 }}
             >Reset Filters</button>
@@ -311,10 +289,7 @@ export function DiamondSelector({
 
           {/* Table header */}
           <div className="grid px-7 py-2" style={{ gridTemplateColumns: colTemplate, borderBottom: `1px solid ${BORDER}` }}>
-            {(totalCaratMode
-              ? (['carat', 'color', 'clarity', 'price'] as SortKey[])
-              : (['carat', 'color', 'clarity', 'cut', 'price'] as SortKey[])
-            ).map(col => (
+            {(['carat', 'color', 'clarity', 'price'] as SortKey[]).map(col => (
               <button key={col} type="button" onClick={() => toggleSort(col)}
                 className="font-sans uppercase text-left"
                 style={{ fontSize: 9, letterSpacing: '0.18em', color: sortKey === col ? G : '#bbb', fontWeight: sortKey === col ? 500 : 400 }}
@@ -322,13 +297,11 @@ export function DiamondSelector({
                 {col === 'carat'   ? (totalCaratMode ? 'Total Ct' : 'Carat')
                   : col === 'color'   ? 'Colour'
                   : col === 'clarity' ? 'Clarity'
-                  : col === 'cut'     ? 'Cut'
-                  : col === 'price'   ? 'Price'
-                  : '£/ct'}
+                  : 'Price'}
                 <SortArrow col={col} />
               </button>
             ))}
-            {/* £/ct column header — individual stones only */}
+            {/* £/ct — individual stones only */}
             {!totalCaratMode && (
               <button type="button" onClick={() => toggleSort('ppc')}
                 className="font-sans uppercase text-left"
@@ -408,13 +381,6 @@ export function DiamondSelector({
                       ? (activeClarities.length === 1 ? activeClarities[0] : activeClarities.length > 1 ? activeClarities.join('/') : 'Any')
                       : d.clarity}
                   </span>
-
-                  {/* Cut — individual stones only */}
-                  {!totalCaratMode && (
-                    <span className="font-sans" style={{ fontSize: 11, color: d.cut === 'Excellent' ? G : '#555', fontWeight: d.cut === 'Excellent' ? 500 : 300 }}>
-                      {d.cut === 'Excellent' ? 'EX' : d.cut === 'Very Good' ? 'VG' : 'GD'}
-                    </span>
-                  )}
 
                   {/* Price */}
                   <span className="font-sans" style={{ fontSize: 12, color: '#555' }}>{displayPrice}</span>

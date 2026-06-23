@@ -23,7 +23,6 @@ interface Diamond {
   carat: number;
   color: string;
   clarity: string;
-  cut: string;
   price: number;
 }
 
@@ -72,7 +71,6 @@ export function RingDetailPage({ slug }: Props) {
       diamondCarat:   selectedDiamond?.carat,
       diamondColor:   selectedDiamond?.color,
       diamondClarity: selectedDiamond?.clarity,
-      diamondCut:     selectedDiamond?.cut,
       diamondPrice:   selectedDiamond?.price,
       totalPrice,
       savedAt:        Date.now(),

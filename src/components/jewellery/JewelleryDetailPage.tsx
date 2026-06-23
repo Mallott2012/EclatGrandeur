@@ -49,7 +49,7 @@ export function JewelleryDetailPage({ product, config }: Props) {
   const [activeImage,     setActiveImage]     = useState(0);
   const [metalOpen,       setMetalOpen]       = useState(false);
   const [diamondOpen,     setDiamondOpen]     = useState(false);
-  const [selectedDiamond, setSelectedDiamond] = useState<{ id: string; carat: number; color: string; clarity: string; cut: string; price: number } | null>(null);
+  const [selectedDiamond, setSelectedDiamond] = useState<{ id: string; carat: number; color: string; clarity: string; price: number } | null>(null);
   const [selectedCarat,   setSelectedCarat]   = useState<number | null>(null);
 
   const diamondMode  = product.diamondMode ?? 'single';
@@ -85,7 +85,6 @@ export function JewelleryDetailPage({ product, config }: Props) {
       diamondCarat: isTotalCarat ? (selectedCarat ?? undefined) : (selectedDiamond?.carat),
       diamondColor:   selectedDiamond?.color,
       diamondClarity: selectedDiamond?.clarity,
-      diamondCut:     selectedDiamond?.cut,
       diamondPrice:   selectedDiamond?.price,
       totalPrice,
       savedAt:      Date.now(),

@@ -15,7 +15,6 @@ export interface ShortlistItem {
   diamondCarat?: number;
   diamondColor?: string;
   diamondClarity?: string;
-  diamondCut?: string;
   diamondPrice?: number;
   totalPrice: number;
   savedAt: number;      // Date.now()
