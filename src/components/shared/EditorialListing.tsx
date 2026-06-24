@@ -370,13 +370,15 @@ export function EditorialListing({
           </p>
         </div>
       ) : (
-        <div
-          className="grid grid-cols-2 md:grid-cols-3"
-          style={{ borderTop: `1px solid ${BORDER}`, borderLeft: `1px solid ${BORDER}` }}
-        >
-          {filtered.map((item, index) => (
-            <ProductCard key={item.id} item={item} basePath={basePath} priority={index < 3} />
-          ))}
+        <div style={{ paddingTop: 'clamp(40px, 5vw, 72px)' }}>
+          <div
+            className="grid grid-cols-2 md:grid-cols-3"
+            style={{ borderTop: `1px solid ${BORDER}`, borderLeft: `1px solid ${BORDER}` }}
+          >
+            {filtered.map((item, index) => (
+              <ProductCard key={item.id} item={item} basePath={basePath} priority={index < 3} />
+            ))}
+          </div>
         </div>
       )}
 

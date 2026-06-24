@@ -217,13 +217,15 @@ export function AdminProductGrid({ title, lede, addHref, products, itemLabel, st
           </Link>
         </div>
       ) : (
-        <div
-          className="grid grid-cols-2 md:grid-cols-3"
-          style={{ borderTop: `1px solid ${BORDER}`, borderLeft: `1px solid ${BORDER}` }}
-        >
-          {filtered.map((product, index) => (
-            <AdminCard key={product.id} product={product} priority={index < 3} />
-          ))}
+        <div style={{ paddingTop: 'clamp(40px, 5vw, 72px)' }}>
+          <div
+            className="grid grid-cols-2 md:grid-cols-3"
+            style={{ borderTop: `1px solid ${BORDER}`, borderLeft: `1px solid ${BORDER}` }}
+          >
+            {filtered.map((product, index) => (
+              <AdminCard key={product.id} product={product} priority={index < 3} />
+            ))}
+          </div>
         </div>
       )}
     </div>
