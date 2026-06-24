@@ -75,7 +75,6 @@ function ProductCard({
     <Link
       href={`${basePath}/${item.slug}`}
       className="group flex flex-col"
-      style={{ borderRight: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}
       onMouseEnter={enter}
       onMouseLeave={leave}
     >
@@ -128,7 +127,7 @@ function ProductCard({
       </div>
 
       {/* Name + price */}
-      <div style={{ padding: '24px 28px 32px' }}>
+      <div style={{ paddingTop: 20 }}>
         <p
           className="font-display"
           style={{ fontSize: 'clamp(15px, 1.3vw, 19px)', fontWeight: 300, letterSpacing: '0.02em', color: G, lineHeight: 1.3 }}
@@ -370,15 +369,13 @@ export function EditorialListing({
           </p>
         </div>
       ) : (
-        <div style={{ paddingTop: 'clamp(40px, 5vw, 72px)' }}>
-          <div
-            className="grid grid-cols-2 md:grid-cols-3"
-            style={{ borderTop: `1px solid ${BORDER}`, borderLeft: `1px solid ${BORDER}` }}
-          >
-            {filtered.map((item, index) => (
-              <ProductCard key={item.id} item={item} basePath={basePath} priority={index < 3} />
-            ))}
-          </div>
+        <div
+          className="grid grid-cols-2 md:grid-cols-3"
+          style={{ padding: 'clamp(40px, 5vw, 72px) clamp(24px, 6vw, 96px) clamp(56px, 6vw, 96px)', columnGap: 'clamp(16px, 3vw, 48px)', rowGap: 'clamp(40px, 5vw, 72px)' }}
+        >
+          {filtered.map((item, index) => (
+            <ProductCard key={item.id} item={item} basePath={basePath} priority={index < 3} />
+          ))}
         </div>
       )}
 
