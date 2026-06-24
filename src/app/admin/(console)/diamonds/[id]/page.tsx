@@ -34,7 +34,7 @@ export default async function DiamondDetailPage({ params }: Props) {
       {/* Breadcrumb */}
       <Link
         href="/admin/diamonds"
-        className="mb-4 inline-block text-xs tracking-widest text-neutral-500 transition-colors hover:text-neutral-300"
+        className="mb-4 inline-block text-xs tracking-widest text-stone-400 transition-colors hover:text-stone-700"
       >
         ← DIAMONDS
       </Link>
@@ -42,18 +42,18 @@ export default async function DiamondDetailPage({ params }: Props) {
       {/* Header */}
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="font-display text-3xl font-light tracking-widest text-white">{diamond.sku}</h1>
+          <h1 className="font-display text-3xl font-light tracking-widest text-stone-900">{diamond.sku}</h1>
           <div className="mt-2 flex items-center gap-3">
             <StatusBadge status={diamond.status} />
             {diamond.is_published
-              ? <span className="text-xs text-emerald-500">Published</span>
-              : <span className="text-xs text-neutral-600">Draft</span>}
+              ? <span className="text-xs text-emerald-600">Published</span>
+              : <span className="text-xs text-stone-400">Draft</span>}
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href={`/admin/diamonds/${id}/edit`}
-            className="rounded border border-neutral-700 px-4 py-2 text-sm text-neutral-300 transition-colors hover:border-neutral-500 hover:text-white"
+            className="rounded border border-stone-200 px-4 py-2 text-sm text-stone-600 transition-colors hover:border-stone-400 hover:text-stone-900"
           >
             Edit
           </Link>
@@ -95,7 +95,7 @@ export default async function DiamondDetailPage({ params }: Props) {
                 {diamond.gia_report_url && (
                   <Row label="Report PDF" value={
                     <a href={diamond.gia_report_url} target="_blank" rel="noopener noreferrer"
-                      className="text-amber-500 hover:text-amber-400">
+                      className="text-stone-700 underline hover:text-stone-900">
                       View report
                     </a>
                   } />
@@ -121,7 +121,7 @@ export default async function DiamondDetailPage({ params }: Props) {
 
           {diamond.notes && (
             <Section title="Internal notes">
-              <p className="whitespace-pre-wrap text-sm text-neutral-300">{diamond.notes}</p>
+              <p className="whitespace-pre-wrap text-sm text-stone-700">{diamond.notes}</p>
             </Section>
           )}
         </div>
@@ -144,7 +144,7 @@ export default async function DiamondDetailPage({ params }: Props) {
                 <Row label="Setting ID" value={
                   <Link
                     href={`/admin/ring-settings/${diamond.ring_setting_id}`}
-                    className="font-mono text-xs text-amber-500 hover:text-amber-400"
+                    className="font-mono text-xs text-stone-700 underline hover:text-stone-900"
                   >
                     {diamond.ring_setting_id.slice(0, 8)}…
                   </Link>
@@ -173,16 +173,16 @@ function fmtDate(iso: string): string {
 
 function StatusBadge({ status }: { status: DiamondStatus }) {
   switch (status) {
-    case 'available': return <span className="text-xs text-emerald-400">Available</span>
-    case 'sold':      return <span className="text-xs text-neutral-500">Sold</span>
-    default:          return <span className="text-xs text-neutral-400">{status}</span>
+    case 'available': return <span className="text-xs text-emerald-600">Available</span>
+    case 'sold':      return <span className="text-xs text-stone-400">Sold</span>
+    default:          return <span className="text-xs text-stone-500">{status}</span>
   }
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-neutral-800 bg-neutral-900/30">
-      <p className="border-b border-neutral-800 px-4 py-2 text-xs font-semibold tracking-widest text-neutral-500">
+    <div className="rounded border border-stone-200 bg-white">
+      <p className="border-b border-stone-200 px-4 py-2 text-xs font-semibold tracking-widest text-stone-400">
         {title.toUpperCase()}
       </p>
       <div className="p-4">{children}</div>
@@ -191,16 +191,16 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Rows({ children }: { children: React.ReactNode }) {
-  return <dl className="divide-y divide-neutral-800/40">{children}</dl>
+  return <dl className="divide-y divide-stone-100">{children}</dl>
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-baseline gap-3 py-1.5">
-      <dt className="w-28 shrink-0 text-xs font-medium tracking-wider text-neutral-500">
+      <dt className="w-28 shrink-0 text-xs font-medium tracking-wider text-stone-400">
         {label.toUpperCase()}
       </dt>
-      <dd className="flex-1 text-sm text-neutral-200">{value}</dd>
+      <dd className="flex-1 text-sm text-stone-800">{value}</dd>
     </div>
   )
 }

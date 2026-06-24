@@ -14,7 +14,7 @@ export function DeleteDiamondForm({ deleteAction }: Props) {
   return (
     <form action={formAction}>
       {!state.success && state.message && (
-        <p className="mb-1 text-xs text-red-400">{state.message}</p>
+        <p className="mb-1 text-xs text-red-600">{state.message}</p>
       )}
       <DeleteSubmit />
     </form>
@@ -27,7 +27,7 @@ function DeleteSubmit() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded border border-red-900/60 px-4 py-2 text-sm text-red-500 transition-colors hover:border-red-700 hover:text-red-400 disabled:opacity-50"
+      className="rounded border border-red-200 px-4 py-2 text-sm text-red-600 transition-colors hover:border-red-400 hover:text-red-700 disabled:opacity-50"
       onClick={(e) => {
         if (!pending && !confirm('Delete this diamond? This cannot be undone.')) e.preventDefault()
       }}

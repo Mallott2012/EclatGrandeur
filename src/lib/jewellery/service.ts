@@ -71,7 +71,7 @@ export async function listPublishedJewelleryProducts(
     .from('jewellery_product_media')
     .select('*')
     .in('jewellery_product_id', ids)
-    .eq('is_primary', true)
+    .order('display_order', { ascending: true })
   const mediaByProduct = ((mediaData ?? []) as JewelleryProductMediaRecord[])
     .reduce<Record<string, JewelleryProductMediaRecord[]>>((acc, m) => {
       if (!acc[m.jewellery_product_id]) acc[m.jewellery_product_id] = []
@@ -158,4 +158,43 @@ export async function deleteJewelleryProduct(actor: StaffUser, id: string): Prom
   const { error } = await admin.from('jewellery_products').delete().eq('id', id)
   if (error) throw new Error(error.message)
   await writeAudit(actor.id, 'jewellery.delete', 'jewellery_product', id)
+}
+
+// ── Diamond assignments ───────────────────────────────────────────────────────
+
+/** Returns all diamond IDs assigned to a jewellery product */
+export async function getJewelleryDiamonds(jewelleryId: string): Promise<string[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('jewellery_diamonds')
+    .select('diamond_id')
+    .eq('jewellery_id', jewelleryId)
+  if (error) throw new Error('Failed to fetch jewellery diamonds')
+  return (data ?? []).map((r: { diamond_id: string }) => r.diamond_id)
+}
+
+/** Assign a diamond to a jewellery product */
+export async function assignDiamondToJewellery(
+  jewelleryId: string,
+  diamondId:   string,
+): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('jewellery_diamonds')
+    .insert({ jewellery_id: jewelleryId, diamond_id: diamondId })
+  if (error && error.code !== '23505') throw new Error('Failed to assign diamond')
+}
+
+/** Remove a diamond from a jewellery product */
+export async function unassignDiamondFromJewellery(
+  jewelleryId: string,
+  diamondId:   string,
+): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('jewellery_diamonds')
+    .delete()
+    .eq('jewellery_id', jewelleryId)
+    .eq('diamond_id', diamondId)
+  if (error) throw new Error('Failed to unassign diamond')
 }

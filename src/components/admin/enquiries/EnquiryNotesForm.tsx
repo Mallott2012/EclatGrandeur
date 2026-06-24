@@ -22,18 +22,18 @@ export function EnquiryNotesForm({ id, current }: Props) {
         defaultValue={current}
         rows={5}
         placeholder="Add internal notes visible only to staff…"
-        className="w-full resize-none rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder-neutral-700 focus:border-amber-700 focus:outline-none"
+        className="w-full resize-none rounded border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:border-stone-500 focus:outline-none"
       />
       {state.message && !state.success && (
-        <p className="text-xs text-red-400">{state.message}</p>
+        <p className="text-xs text-red-600">{state.message}</p>
       )}
       {state.success && (
-        <p className="text-xs text-emerald-500">Notes saved.</p>
+        <p className="text-xs text-emerald-600">Notes saved.</p>
       )}
       <button
         type="submit"
         disabled={pending}
-        className="rounded bg-neutral-800 px-4 py-1.5 text-xs text-white transition-colors hover:bg-neutral-700 disabled:opacity-50"
+        className="rounded bg-stone-900 px-4 py-1.5 text-xs text-white transition-colors hover:bg-stone-700 disabled:opacity-50"
       >
         {pending ? 'Saving…' : 'Save notes'}
       </button>

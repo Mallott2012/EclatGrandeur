@@ -20,15 +20,15 @@ const STATUS_LABELS: Record<EnquiryStatus, string> = {
 }
 
 const STATUS_COLOURS: Record<EnquiryStatus, string> = {
-  new:       'text-amber-400',
-  contacted: 'text-sky-400',
-  closed:    'text-neutral-600',
+  new:       'text-amber-700',
+  contacted: 'text-sky-700',
+  closed:    'text-stone-400',
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-neutral-800 bg-neutral-900/30 p-5">
-      <h2 className="mb-4 text-xs font-semibold tracking-widest text-neutral-500">{title}</h2>
+    <div className="rounded border border-stone-200 bg-white p-5">
+      <h2 className="mb-4 text-xs font-semibold tracking-widest text-stone-400">{title}</h2>
       {children}
     </div>
   )
@@ -37,8 +37,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-[11px] tracking-widest text-neutral-600">{label}</dt>
-      <dd className="text-sm text-neutral-200">{value ?? <span className="text-neutral-700">—</span>}</dd>
+      <dt className="text-[11px] tracking-widest text-stone-400">{label}</dt>
+      <dd className="text-sm text-stone-800">{value ?? <span className="text-stone-300">—</span>}</dd>
     </div>
   )
 }
@@ -53,12 +53,12 @@ export default async function EnquiryDetailPage({ params }: Props) {
     <div className="max-w-2xl">
       {/* Back + header */}
       <div className="mb-8">
-        <Link href="/admin/enquiries" className="text-xs text-neutral-500 hover:text-white">
+        <Link href="/admin/enquiries" className="text-xs text-stone-400 hover:text-stone-900">
           ← Enquiries
         </Link>
         <div className="mt-3 flex items-start justify-between">
           <div>
-            <h1 className="font-display text-3xl font-light tracking-widest text-white">
+            <h1 className="font-display text-3xl font-light tracking-widest text-stone-900">
               {enquiry.enquiry_number}
             </h1>
             <p className={`mt-1 text-sm ${STATUS_COLOURS[enquiry.status]}`}>
@@ -75,7 +75,7 @@ export default async function EnquiryDetailPage({ params }: Props) {
           <dl className="grid grid-cols-2 gap-4">
             <Field label="NAME" value={enquiry.customer_name} />
             <Field label="EMAIL" value={
-              <a href={`mailto:${enquiry.customer_email}`} className="text-amber-600 hover:text-amber-400">
+              <a href={`mailto:${enquiry.customer_email}`} className="text-stone-700 underline hover:text-stone-900">
                 {enquiry.customer_email}
               </a>
             } />
@@ -93,8 +93,8 @@ export default async function EnquiryDetailPage({ params }: Props) {
           <dl className="space-y-3">
             <Field label="SUBJECT" value={enquiry.subject} />
             <div className="flex flex-col gap-0.5">
-              <dt className="text-[11px] tracking-widest text-neutral-600">MESSAGE</dt>
-              <dd className="whitespace-pre-wrap rounded bg-neutral-900 p-3 text-sm text-neutral-200 leading-relaxed">
+              <dt className="text-[11px] tracking-widest text-stone-400">MESSAGE</dt>
+              <dd className="whitespace-pre-wrap rounded border border-stone-200 bg-stone-50 p-3 text-sm text-stone-800 leading-relaxed">
                 {enquiry.message}
               </dd>
             </div>
@@ -109,7 +109,7 @@ export default async function EnquiryDetailPage({ params }: Props) {
                 <Field
                   label="RING SETTING"
                   value={
-                    <Link href={`/admin/ring-settings/${enquiry.ring_setting_id}`} className="text-amber-600 hover:text-amber-400">
+                    <Link href={`/admin/ring-settings/${enquiry.ring_setting_id}`} className="text-stone-700 underline hover:text-stone-900">
                       View setting →
                     </Link>
                   }
@@ -119,7 +119,7 @@ export default async function EnquiryDetailPage({ params }: Props) {
                 <Field
                   label="DIAMOND"
                   value={
-                    <Link href={`/admin/diamonds/${enquiry.diamond_id}`} className="text-amber-600 hover:text-amber-400">
+                    <Link href={`/admin/diamonds/${enquiry.diamond_id}`} className="text-stone-700 underline hover:text-stone-900">
                       View diamond →
                     </Link>
                   }
@@ -129,7 +129,7 @@ export default async function EnquiryDetailPage({ params }: Props) {
                 <Field
                   label="JEWELLERY PRODUCT"
                   value={
-                    <Link href={`/admin/jewellery/${enquiry.jewellery_product_id}`} className="text-amber-600 hover:text-amber-400">
+                    <Link href={`/admin/jewellery/${enquiry.jewellery_product_id}`} className="text-stone-700 underline hover:text-stone-900">
                       View product →
                     </Link>
                   }

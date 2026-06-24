@@ -44,23 +44,33 @@ const RINGS: Record<string, {
 const FALLBACK = RINGS['eclat-solitaire'];
 
 interface RingData {
-  name:        string;
-  subtitle:    string;
-  basePrice:   number;
-  description: string;
-  images:      string[];
-  materials:   string[];
+  name:          string;
+  subtitle:      string;
+  basePrice:     number;
+  description:   string;
+  images:        string[];
+  materials:     string[];
 }
 
 interface Props {
-  slug:    string;
-  dbRing?: RingData | null;
+  slug:           string;
+  dbRing?:        RingData | null;
+  /** DB id of the ring_settings row — when present the diamond selector is scoped
+   *  to only the diamonds assigned to this ring + selected metal. */
+  ringSettingId?: string | null;
 }
 
-export function RingDetailPage({ slug, dbRing }: Props) {
+export function RingDetailPage({ slug, dbRing, ringSettingId }: Props) {
   const ring = dbRing ?? RINGS[slug] ?? FALLBACK;
 
   const [selectedMetal,   setSelectedMetal]   = useState(ring.materials[0]);
+
+  // Build diamond API URL: scoped when we have a DB ring setting id, otherwise all diamonds
+  // Look up the DB metal key (e.g. 'white_gold_18k') from the display label
+  const selectedMetalId = METALS.find(m => m.label === selectedMetal)?.id ?? selectedMetal
+  const diamondApiUrl = ringSettingId
+    ? `/api/diamonds?ring_setting_id=${ringSettingId}&metal=${encodeURIComponent(selectedMetalId)}`
+    : '/api/diamonds'
   const [activeImage,     setActiveImage]     = useState(0);
   const [metalOpen,       setMetalOpen]       = useState(false);
   const [diamondOpen,     setDiamondOpen]     = useState(false);
@@ -376,6 +386,7 @@ export function RingDetailPage({ slug, dbRing }: Props) {
               onClose={() => setDiamondOpen(false)}
               onSelect={(d) => { setSelectedDiamond(d); setDiamondOpen(false); }}
               selectedId={selectedDiamond?.id ?? null}
+              diamondApiUrl={diamondApiUrl}
             />
           </div>
         </div>

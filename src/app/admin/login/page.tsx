@@ -20,18 +20,18 @@ export default async function AdminLoginPage({ searchParams }: Props) {
   const errorMessage = error ? (ERROR_MESSAGES[error] ?? 'Access denied.') : undefined;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-950 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-stone-50 px-4">
       <div className="w-full max-w-sm">
         {/* Wordmark */}
         <div className="mb-10 text-center">
-          <span className="font-display text-2xl font-light tracking-[0.25em] text-white">
+          <span className="font-display text-2xl font-light tracking-[0.25em] text-stone-900">
             ÉCLAT GRANDEUR
           </span>
-          <p className="mt-1 text-xs tracking-widest text-neutral-500">STAFF ACCESS</p>
+          <p className="mt-1 text-xs tracking-widest text-stone-400">STAFF ACCESS</p>
         </div>
 
         {errorMessage && (
-          <div className="mb-6 rounded border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-300">
+          <div className="mb-6 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {errorMessage}
           </div>
         )}

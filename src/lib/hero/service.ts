@@ -54,6 +54,33 @@ export async function listHeroMedia(): Promise<HeroMediaRecord[]> {
   return (data ?? []) as HeroMediaRecord[]
 }
 
+/** Fetch all published media for a placement, sorted by sort_order. Used by the collage. */
+export async function listCollageMedia(placement: HeroPlacement): Promise<HeroMediaRecord[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('hero_media')
+    .select('*')
+    .eq('placement', placement)
+    .eq('is_published', true)
+    .order('sort_order', { ascending: true })
+    .limit(6)
+  if (error) return []
+  return (data ?? []) as HeroMediaRecord[]
+}
+
+/** Also fetch all (published + draft) for admin editing. */
+export async function listAllCollageMedia(placement: HeroPlacement): Promise<HeroMediaRecord[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('hero_media')
+    .select('*')
+    .eq('placement', placement)
+    .order('sort_order', { ascending: true })
+    .limit(6)
+  if (error) return []
+  return (data ?? []) as HeroMediaRecord[]
+}
+
 export async function getPublishedHero(placement: HeroPlacement): Promise<HeroMediaRecord | null> {
   const admin = createAdminClient()
   const { data, error } = await admin

@@ -27,14 +27,14 @@ export default async function DiamondEditPage({ params }: Props) {
     <div className="max-w-3xl">
       <Link
         href={`/admin/diamonds/${id}`}
-        className="mb-4 inline-block text-xs tracking-widest text-neutral-500 transition-colors hover:text-neutral-300"
+        className="mb-4 inline-block text-xs tracking-widest text-stone-400 transition-colors hover:text-stone-700"
       >
         ← {diamond.sku}
       </Link>
-      <h1 className="mb-1 font-display text-3xl font-light tracking-widest text-white">EDIT DIAMOND</h1>
-      <p className="mb-8 font-mono text-xs text-neutral-500">{diamond.sku}</p>
+      <h1 className="mb-1 font-display text-3xl font-light tracking-widest text-stone-900">EDIT DIAMOND</h1>
+      <p className="mb-8 font-mono text-xs text-stone-400">{diamond.sku}</p>
 
-      <div className="rounded border border-neutral-800 bg-neutral-900/30 p-6">
+      <div className="rounded border border-stone-200 bg-white p-6">
         <DiamondForm
           action={boundUpdate}
           defaultValues={{

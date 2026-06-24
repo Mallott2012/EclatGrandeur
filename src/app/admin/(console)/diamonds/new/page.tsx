@@ -16,12 +16,12 @@ export default async function NewDiamondPage() {
     <div className="max-w-3xl">
       <Link
         href="/admin/diamonds"
-        className="mb-4 inline-block text-xs tracking-widest text-neutral-500 transition-colors hover:text-neutral-300"
+        className="mb-4 inline-block text-xs tracking-widest text-stone-400 transition-colors hover:text-stone-700"
       >
         ← DIAMONDS
       </Link>
-      <h1 className="mb-8 font-display text-3xl font-light tracking-widest text-white">ADD DIAMOND</h1>
-      <div className="rounded border border-neutral-800 bg-neutral-900/30 p-6">
+      <h1 className="mb-8 font-display text-3xl font-light tracking-widest text-stone-900">ADD DIAMOND</h1>
+      <div className="rounded border border-stone-200 bg-white p-6">
         <DiamondForm
           action={createDiamondAction}
           submitLabel="Create diamond"

@@ -28,7 +28,7 @@ export function EnquiryStatusSelect({ id, current }: Props) {
       defaultValue={current}
       onChange={handleChange}
       disabled={pending}
-      className="rounded border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm text-white focus:border-amber-700 focus:outline-none disabled:opacity-50"
+      className="rounded border border-stone-300 bg-white px-3 py-1.5 text-sm text-stone-900 focus:border-stone-500 focus:outline-none disabled:opacity-50"
     >
       {OPTIONS.map((o) => (
         <option key={o.value} value={o.value}>{o.label}</option>

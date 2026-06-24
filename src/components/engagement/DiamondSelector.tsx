@@ -74,15 +74,22 @@ interface Props {
   pairMode?:       boolean;
   totalCaratMode?: boolean;
   pricePerCarat?:  number;
+  /** Override the API URL — used to scope to only assigned diamonds for a specific
+   *  ring setting + metal combo or jewellery product.
+   *  e.g. '/api/diamonds?ring_setting_id=xxx&metal=platinum'
+   *  e.g. '/api/diamonds?jewellery_id=xxx'
+   *  Defaults to '/api/diamonds' (all published diamonds). */
+  diamondApiUrl?:  string;
 }
 
 export function DiamondSelector({
   onClose, onSelect, selectedId,
   pairMode = false, totalCaratMode = false, pricePerCarat = 1000,
+  diamondApiUrl = '/api/diamonds',
 }: Props) {
   // ── Live diamond data from Supabase via API ───────────────────────────────
   const { data: liveDiamonds = [], isLoading: diamondsLoading } = useSWR<Diamond[]>(
-    totalCaratMode ? null : '/api/diamonds',
+    totalCaratMode ? null : diamondApiUrl,
     fetcher,
     { revalidateOnFocus: false },
   );
