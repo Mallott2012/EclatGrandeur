@@ -5,9 +5,12 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const G      = '#1a2b1a';
-const STONE  = '#f5f3ef';
-const BORDER = '#e8e8e8';
-const MUTED  = '#999';
+const BORDER = '#e2e2e2';
+const MUTED  = '#555';
+
+const CARD_W = 360;   // landscape style card width
+const CARD_H = 220;   // landscape style card height
+const PAD_T  = 36;    // top padding of the strip
 
 export interface StyleCard {
   id:     string;
@@ -22,9 +25,9 @@ interface Props {
 }
 
 /**
- * Horizontal, scrollable row of style cards with chevron controls — the
- * "shop by style" strip that sits at the top of every category page (public
- * and admin). Selecting a card filters the grid below.
+ * Horizontal, scrollable row of wide landscape style cards with chevron
+ * controls — the "shop by style" strip that sits at the top of every category
+ * page (public and admin). Selecting a card filters the grid below.
  */
 export function StyleScroller({ cards, activeId, onSelect }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -32,27 +35,30 @@ export function StyleScroller({ cards, activeId, onSelect }: Props) {
   if (cards.length === 0) return null;
 
   function scroll(direction: number) {
-    trackRef.current?.scrollBy({ left: direction * 360, behavior: 'smooth' });
+    trackRef.current?.scrollBy({ left: direction * (CARD_W + 24), behavior: 'smooth' });
   }
 
+  // Vertical centre of the card image (chevrons align to this, not the label).
+  const chevronTop = PAD_T + CARD_H / 2;
+
   return (
-    <div className="relative" style={{ borderBottom: `1px solid ${BORDER}`, padding: '32px 0 28px' }}>
+    <div className="relative" style={{ padding: `${PAD_T}px 0 28px` }}>
       {/* Left chevron */}
       <button
         type="button"
         onClick={() => scroll(-1)}
         aria-label="Scroll styles left"
-        className="absolute left-3 top-1/2 z-10 flex items-center justify-center -translate-y-1/2"
-        style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: '#fff', border: `1px solid ${BORDER}` }}
+        className="absolute left-4 z-10 flex items-center justify-center"
+        style={{ top: chevronTop, transform: 'translateY(-50%)', width: 40, height: 40 }}
       >
-        <ChevronLeft className="w-4 h-4" strokeWidth={1.5} style={{ color: G }} />
+        <ChevronLeft className="w-6 h-6" strokeWidth={1.25} style={{ color: G }} />
       </button>
 
       {/* Track */}
       <div
         ref={trackRef}
-        className="flex gap-3 overflow-x-auto scroll-smooth [&::-webkit-scrollbar]:hidden"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', padding: '0 60px' }}
+        className="flex overflow-x-auto scroll-smooth [&::-webkit-scrollbar]:hidden"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', gap: 24, padding: '0 72px' }}
       >
         {cards.map(card => {
           const active = activeId === card.id;
@@ -63,14 +69,13 @@ export function StyleScroller({ cards, activeId, onSelect }: Props) {
               onClick={() => onSelect(card.id)}
               className="group flex flex-shrink-0 flex-col items-center"
               aria-pressed={active}
+              style={{ width: CARD_W }}
             >
               <div
-                className="relative flex items-center justify-center overflow-hidden"
+                className="relative flex w-full items-center justify-center overflow-hidden bg-white"
                 style={{
-                  width: 124,
-                  height: 124,
-                  backgroundColor: STONE,
-                  border: active ? `1px solid ${G}` : '1px solid transparent',
+                  height: CARD_H,
+                  border: active ? `1px solid ${G}` : `1px solid ${BORDER}`,
                   transition: 'border-color 0.25s ease',
                 }}
               >
@@ -79,21 +84,21 @@ export function StyleScroller({ cards, activeId, onSelect }: Props) {
                     src={card.image}
                     alt={card.label}
                     fill
-                    sizes="124px"
-                    className="object-contain p-4 transition-transform duration-700 ease-out group-hover:scale-105"
+                    sizes={`${CARD_W}px`}
+                    className="object-contain p-8 transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                   />
                 ) : (
-                  <span className="font-display" style={{ fontSize: 13, color: '#cfcabe' }}>
+                  <span className="font-display" style={{ fontSize: 18, color: '#cfcabe' }}>
                     {card.label.charAt(0)}
                   </span>
                 )}
               </div>
               <span
-                className="font-sans"
+                className="font-sans text-center"
                 style={{
-                  marginTop: 12,
-                  fontSize: 11,
-                  letterSpacing: '0.1em',
+                  marginTop: 18,
+                  fontSize: 15,
+                  letterSpacing: '0.02em',
                   color: active ? G : MUTED,
                   fontWeight: active ? 400 : 300,
                   whiteSpace: 'nowrap',
@@ -111,10 +116,10 @@ export function StyleScroller({ cards, activeId, onSelect }: Props) {
         type="button"
         onClick={() => scroll(1)}
         aria-label="Scroll styles right"
-        className="absolute right-3 top-1/2 z-10 flex items-center justify-center -translate-y-1/2"
-        style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: '#fff', border: `1px solid ${BORDER}` }}
+        className="absolute right-4 z-10 flex items-center justify-center"
+        style={{ top: chevronTop, transform: 'translateY(-50%)', width: 40, height: 40 }}
       >
-        <ChevronRight className="w-4 h-4" strokeWidth={1.5} style={{ color: G }} />
+        <ChevronRight className="w-6 h-6" strokeWidth={1.25} style={{ color: G }} />
       </button>
     </div>
   );

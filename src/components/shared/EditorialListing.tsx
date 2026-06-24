@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import { StyleScroller, type StyleCard } from './StyleScroller';
 
 const G      = '#1a2b1a';
@@ -75,12 +75,13 @@ function ProductCard({
     <Link
       href={`${basePath}/${item.slug}`}
       className="group flex flex-col"
+      style={{ borderRight: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}
       onMouseEnter={enter}
       onMouseLeave={leave}
     >
       <div
-        className="relative overflow-hidden"
-        style={{ aspectRatio: '1 / 1', backgroundColor: STONE }}
+        className="relative overflow-hidden bg-white"
+        style={{ aspectRatio: '1 / 1' }}
       >
         {/* Still product image */}
         {item.image ? (
@@ -90,8 +91,8 @@ function ProductCard({
             fill
             sizes="(max-width: 768px) 50vw, 33vw"
             priority={priority}
-            className="object-contain p-8 transition-opacity duration-700 ease-out"
-            style={{ opacity: hovered && hasReveal ? 0 : 1 }}
+            className="object-contain transition-opacity duration-700 ease-out"
+            style={{ padding: '12%', opacity: hovered && hasReveal ? 0 : 1 }}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -127,7 +128,7 @@ function ProductCard({
       </div>
 
       {/* Name + price */}
-      <div style={{ paddingTop: 18 }}>
+      <div style={{ padding: '24px 28px 32px' }}>
         <p
           className="font-display"
           style={{ fontSize: 'clamp(15px, 1.3vw, 19px)', fontWeight: 300, letterSpacing: '0.02em', color: G, lineHeight: 1.3 }}
@@ -136,7 +137,7 @@ function ProductCard({
         </p>
         <p
           className="font-sans"
-          style={{ fontSize: 12, fontWeight: 300, color: '#888', letterSpacing: '0.04em', marginTop: 6 }}
+          style={{ fontSize: 12, fontWeight: 300, color: '#888', letterSpacing: '0.04em', marginTop: 8 }}
         >
           {item.price}
         </p>
@@ -157,16 +158,34 @@ export function EditorialListing({
   const [activeStyle, setActiveStyle] = useState<string | null>(null);
   const [activeMetal, setActiveMetal] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sortBy, setSortBy]           = useState<'featured' | 'price_asc' | 'price_desc' | 'name'>('featured');
+  const [sortOpen, setSortOpen]       = useState(false);
 
   // Style filtering is graceful: if no item carries the selected style we
   // keep every product visible rather than emptying the grid.
   const styleHasMatches = activeStyle ? items.some(i => i.style === activeStyle) : false;
 
-  const filtered = items.filter(item => {
-    if (activeStyle && styleHasMatches && item.style !== activeStyle) return false;
-    if (activeMetal && item.metal !== activeMetal) return false;
-    return true;
-  });
+  const priceValue = (p: string) => Number(p.replace(/[^0-9.]/g, '')) || 0;
+
+  const filtered = items
+    .filter(item => {
+      if (activeStyle && styleHasMatches && item.style !== activeStyle) return false;
+      if (activeMetal && item.metal !== activeMetal) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'price_asc')  return priceValue(a.price) - priceValue(b.price);
+      if (sortBy === 'price_desc') return priceValue(b.price) - priceValue(a.price);
+      if (sortBy === 'name')       return a.name.localeCompare(b.name);
+      return 0;
+    });
+
+  const SORT_OPTIONS: { id: typeof sortBy; label: string }[] = [
+    { id: 'featured',   label: 'Featured' },
+    { id: 'price_asc',  label: 'Price: Low to High' },
+    { id: 'price_desc', label: 'Price: High to Low' },
+    { id: 'name',       label: 'Name: A to Z' },
+  ];
 
   // Build the scroller cards, giving each style a representative thumbnail.
   const styleCards: StyleCard[] = styles.map((s, i) => ({
@@ -216,32 +235,86 @@ export function EditorialListing({
       {/* ── FILTER BAR ───────────────────────────────────────────────────── */}
       <div
         className="sticky top-0 z-30 flex items-center justify-between bg-white"
-        style={{ borderBottom: `1px solid ${BORDER}`, padding: '0 clamp(24px, 5vw, 80px)', height: 50 }}
+        style={{
+          borderTop: `1px solid ${BORDER}`,
+          borderBottom: `1px solid ${BORDER}`,
+          padding: '0 clamp(24px, 5vw, 80px)',
+          height: 60,
+        }}
       >
-        <span className="font-sans" style={{ fontSize: 11, color: '#c8c8c8', letterSpacing: '0.08em' }}>
-          {filtered.length} {filtered.length === 1 ? itemLabel : `${itemLabel}s`}
-        </span>
+        {/* Filter + count */}
+        <div className="flex items-center" style={{ gap: 28 }}>
+          <button
+            type="button"
+            onClick={() => setFiltersOpen(true)}
+            className="flex items-center gap-2 font-sans"
+            style={{ fontSize: 14, letterSpacing: '0.02em', color: G, fontWeight: 300 }}
+          >
+            Filter
+            <ChevronDown className="w-4 h-4" strokeWidth={1.5} />
+            {activeFilterCount > 0 && (
+              <span
+                style={{
+                  width: 16, height: 16, borderRadius: '50%',
+                  backgroundColor: G, color: '#fff',
+                  fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+          <span className="font-sans" style={{ fontSize: 14, color: '#999', letterSpacing: '0.02em', fontWeight: 300 }}>
+            ( {filtered.length} {filtered.length === 1 ? itemLabel : `${itemLabel}s`} )
+          </span>
+        </div>
 
-        <button
-          type="button"
-          onClick={() => setFiltersOpen(true)}
-          className="flex items-center gap-2 font-sans"
-          style={{ fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: G }}
-        >
-          Refine
-          <SlidersHorizontal className="w-3.5 h-3.5" strokeWidth={1.5} />
-          {activeFilterCount > 0 && (
-            <span
-              style={{
-                width: 16, height: 16, borderRadius: '50%',
-                backgroundColor: G, color: '#fff',
-                fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              {activeFilterCount}
-            </span>
+        {/* Sort By */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setSortOpen(o => !o)}
+            className="flex items-center gap-2 font-sans"
+            style={{ fontSize: 14, letterSpacing: '0.02em', color: G, fontWeight: 300 }}
+          >
+            Sort By
+            <ChevronDown
+              className="w-4 h-4"
+              strokeWidth={1.5}
+              style={{ transform: sortOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}
+            />
+          </button>
+
+          {sortOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setSortOpen(false)} />
+              <div
+                className="absolute right-0 z-50 bg-white"
+                style={{ top: 'calc(100% + 12px)', minWidth: 220, border: `1px solid ${BORDER}`, boxShadow: '0 12px 40px rgba(0,0,0,0.08)' }}
+              >
+                {SORT_OPTIONS.map(opt => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => { setSortBy(opt.id); setSortOpen(false); }}
+                    className="flex w-full items-center justify-between font-sans"
+                    style={{
+                      padding: '14px 20px',
+                      fontSize: 13,
+                      letterSpacing: '0.02em',
+                      color: sortBy === opt.id ? G : '#666',
+                      fontWeight: sortBy === opt.id ? 400 : 300,
+                      textAlign: 'left',
+                    }}
+                  >
+                    {opt.label}
+                    {sortBy === opt.id && <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: G }} />}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
-        </button>
+        </div>
       </div>
 
       {/* ── ACTIVE FILTER CHIPS ──────────────────────────────────────────── */}
@@ -299,7 +372,7 @@ export function EditorialListing({
       ) : (
         <div
           className="grid grid-cols-2 md:grid-cols-3"
-          style={{ padding: '56px clamp(24px, 6vw, 96px)', columnGap: 'clamp(16px, 3vw, 40px)', rowGap: 'clamp(40px, 5vw, 72px)' }}
+          style={{ borderTop: `1px solid ${BORDER}`, borderLeft: `1px solid ${BORDER}` }}
         >
           {filtered.map((item, index) => (
             <ProductCard key={item.id} item={item} basePath={basePath} priority={index < 3} />

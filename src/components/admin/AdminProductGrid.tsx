@@ -57,11 +57,12 @@ function AdminCard({ product, priority }: { product: AdminProduct; priority: boo
     <Link
       href={product.editHref}
       className="group flex flex-col"
+      style={{ borderRight: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}
       onMouseEnter={enter}
       onMouseLeave={leave}
       aria-label={`Edit ${product.name}`}
     >
-      <div className="relative overflow-hidden" style={{ aspectRatio: '1 / 1', backgroundColor: STONE }}>
+      <div className="relative overflow-hidden bg-white" style={{ aspectRatio: '1 / 1' }}>
         {/* Still product image */}
         {product.image ? (
           <Image
@@ -70,8 +71,8 @@ function AdminCard({ product, priority }: { product: AdminProduct; priority: boo
             fill
             sizes="(max-width: 768px) 50vw, 33vw"
             priority={priority}
-            className="object-contain p-8 transition-opacity duration-700 ease-out"
-            style={{ opacity: hovered && hasVideo ? 0 : 1 }}
+            className="object-contain transition-opacity duration-700 ease-out"
+            style={{ padding: '12%', opacity: hovered && hasVideo ? 0 : 1 }}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -121,7 +122,7 @@ function AdminCard({ product, priority }: { product: AdminProduct; priority: boo
       </div>
 
       {/* Name + price */}
-      <div style={{ paddingTop: 18 }}>
+      <div style={{ padding: '24px 28px 32px' }}>
         <p
           className="font-display"
           style={{ fontSize: 'clamp(15px, 1.3vw, 19px)', fontWeight: 300, letterSpacing: '0.02em', color: G, lineHeight: 1.3 }}
@@ -130,7 +131,7 @@ function AdminCard({ product, priority }: { product: AdminProduct; priority: boo
         </p>
         <p
           className="font-sans"
-          style={{ fontSize: 12, fontWeight: 300, color: '#888', letterSpacing: '0.04em', marginTop: 6 }}
+          style={{ fontSize: 12, fontWeight: 300, color: '#888', letterSpacing: '0.04em', marginTop: 8 }}
         >
           {product.price}
         </p>
@@ -218,7 +219,7 @@ export function AdminProductGrid({ title, lede, addHref, products, itemLabel, st
       ) : (
         <div
           className="grid grid-cols-2 md:grid-cols-3"
-          style={{ padding: '56px clamp(24px, 6vw, 96px)', columnGap: 'clamp(16px, 3vw, 40px)', rowGap: 'clamp(40px, 5vw, 72px)' }}
+          style={{ borderTop: `1px solid ${BORDER}`, borderLeft: `1px solid ${BORDER}` }}
         >
           {filtered.map((product, index) => (
             <AdminCard key={product.id} product={product} priority={index < 3} />
