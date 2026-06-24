@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const G      = '#1a2b1a';
-const BORDER = '#e2e2e2';
 const MUTED  = '#555';
 
 const CARD_W = 360;   // landscape style card width
@@ -73,11 +72,7 @@ export function StyleScroller({ cards, activeId, onSelect }: Props) {
             >
               <div
                 className="relative flex w-full items-center justify-center overflow-hidden bg-white"
-                style={{
-                  height: CARD_H,
-                  border: active ? `1px solid ${G}` : `1px solid ${BORDER}`,
-                  transition: 'border-color 0.25s ease',
-                }}
+                style={{ height: CARD_H }}
               >
                 {card.image ? (
                   <Image
@@ -102,6 +97,8 @@ export function StyleScroller({ cards, activeId, onSelect }: Props) {
                   color: active ? G : MUTED,
                   fontWeight: active ? 400 : 300,
                   whiteSpace: 'nowrap',
+                  borderBottom: active ? `1px solid ${G}` : '1px solid transparent',
+                  paddingBottom: 4,
                 }}
               >
                 {card.label}
