@@ -1,0 +1,952 @@
+[
+  {
+    "id": "dia-1",
+    "shape": "pear",
+    "carat": 0.5,
+    "colour": "I",
+    "clarity": "VVS2",
+    "cut": "Very Good",
+    "price": {
+      "amount": 51000,
+      "currency": "USD"
+    },
+    "report": "GIA 2369012796",
+    "authority": "GIA",
+    "table": 56,
+    "depth": 63.1,
+    "polish": "Excellent",
+    "symmetry": "Excellent",
+    "fluorescence": "Faint"
+  },
+  {
+    "id": "dia-2",
+    "shape": "emerald",
+    "carat": 0.5,
+    "colour": "D",
+    "clarity": "SI1",
+    "cut": "Very Good",
+    "price": {
+      "amount": 60000,
+      "currency": "USD"
+    },
+    "report": "GIA 2903569650",
+    "authority": "GIA",
+    "table": 61,
+    "depth": 61.4,
+    "polish": "Very Good",
+    "symmetry": "Excellent",
+    "fluorescence": "Faint"
+  },
+  {
+    "id": "dia-3",
+    "shape": "asscher",
+    "carat": 0.5,
+    "colour": "I",
+    "clarity": "FL",
+    "cut": "Excellent",
+    "price": {
+      "amount": 69000,
+      "currency": "USD"
+    },
+    "report": "GIA 2817167865",
+    "authority": "GIA",
+    "table": 58,
+    "depth": 62.3,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-4",
+    "shape": "emerald",
+    "carat": 0.5,
+    "colour": "E",
+    "clarity": "VS1",
+    "cut": "Ideal",
+    "price": {
+      "amount": 79000,
+      "currency": "USD"
+    },
+    "report": "GIA 2276928055",
+    "authority": "GIA",
+    "table": 58,
+    "depth": 61.6,
+    "polish": "Excellent",
+    "symmetry": "Excellent",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-5",
+    "shape": "heart",
+    "carat": 0.5,
+    "colour": "G",
+    "clarity": "IF",
+    "cut": "Excellent",
+    "price": {
+      "amount": 81000,
+      "currency": "USD"
+    },
+    "report": "GIA 2634354561",
+    "authority": "GIA",
+    "table": 60,
+    "depth": 61.9,
+    "polish": "Excellent",
+    "symmetry": "Excellent",
+    "fluorescence": "None"
+  },
+  {
+    "id": "dia-6",
+    "shape": "marquise",
+    "carat": 0.5,
+    "colour": "D",
+    "clarity": "VVS2",
+    "cut": "Excellent",
+    "price": {
+      "amount": 85000,
+      "currency": "USD"
+    },
+    "report": "GIA 2956797149",
+    "authority": "GIA",
+    "table": 59,
+    "depth": 61.6,
+    "polish": "Excellent",
+    "symmetry": "Excellent",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-7",
+    "shape": "oval",
+    "carat": 0.7,
+    "colour": "H",
+    "clarity": "VVS2",
+    "cut": "Very Good",
+    "price": {
+      "amount": 115000,
+      "currency": "USD"
+    },
+    "report": "GIA 2833536421",
+    "authority": "GIA",
+    "table": 56,
+    "depth": 63.3,
+    "polish": "Excellent",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-8",
+    "shape": "oval",
+    "carat": 0.9,
+    "colour": "I",
+    "clarity": "SI1",
+    "cut": "Very Good",
+    "price": {
+      "amount": 124000,
+      "currency": "USD"
+    },
+    "report": "GIA 2213847327",
+    "authority": "GIA",
+    "table": 58,
+    "depth": 61.1,
+    "polish": "Excellent",
+    "symmetry": "Very Good",
+    "fluorescence": "Faint"
+  },
+  {
+    "id": "dia-9",
+    "shape": "radiant",
+    "carat": 0.7,
+    "colour": "H",
+    "clarity": "FL",
+    "cut": "Very Good",
+    "price": {
+      "amount": 132000,
+      "currency": "USD"
+    },
+    "report": "GIA 2423028838",
+    "authority": "GIA",
+    "table": 56,
+    "depth": 61.5,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "Faint"
+  },
+  {
+    "id": "dia-10",
+    "shape": "round",
+    "carat": 0.7,
+    "colour": "G",
+    "clarity": "VVS2",
+    "cut": "Ideal",
+    "price": {
+      "amount": 169000,
+      "currency": "USD"
+    },
+    "report": "GIA 2596914544",
+    "authority": "GIA",
+    "table": 60,
+    "depth": 60,
+    "polish": "Excellent",
+    "symmetry": "Excellent",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-11",
+    "shape": "radiant",
+    "carat": 1,
+    "colour": "H",
+    "clarity": "SI1",
+    "cut": "Excellent",
+    "price": {
+      "amount": 169000,
+      "currency": "USD"
+    },
+    "report": "GIA 2872768449",
+    "authority": "GIA",
+    "table": 59,
+    "depth": 63.1,
+    "polish": "Excellent",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-12",
+    "shape": "oval",
+    "carat": 0.7,
+    "colour": "F",
+    "clarity": "VVS1",
+    "cut": "Ideal",
+    "price": {
+      "amount": 170000,
+      "currency": "USD"
+    },
+    "report": "GIA 2468101644",
+    "authority": "GIA",
+    "table": 60,
+    "depth": 61.9,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-13",
+    "shape": "cushion",
+    "carat": 0.7,
+    "colour": "D",
+    "clarity": "IF",
+    "cut": "Very Good",
+    "price": {
+      "amount": 171000,
+      "currency": "USD"
+    },
+    "report": "GIA 2878008573",
+    "authority": "GIA",
+    "table": 56,
+    "depth": 62.9,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "None"
+  },
+  {
+    "id": "dia-14",
+    "shape": "asscher",
+    "carat": 0.7,
+    "colour": "E",
+    "clarity": "VVS1",
+    "cut": "Ideal",
+    "price": {
+      "amount": 171000,
+      "currency": "USD"
+    },
+    "report": "GIA 2840938889",
+    "authority": "GIA",
+    "table": 58,
+    "depth": 60.1,
+    "polish": "Very Good",
+    "symmetry": "Excellent",
+    "fluorescence": "Faint"
+  },
+  {
+    "id": "dia-15",
+    "shape": "marquise",
+    "carat": 0.7,
+    "colour": "E",
+    "clarity": "FL",
+    "cut": "Very Good",
+    "price": {
+      "amount": 175000,
+      "currency": "USD"
+    },
+    "report": "GIA 2558890235",
+    "authority": "GIA",
+    "table": 59,
+    "depth": 63.3,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "None"
+  },
+  {
+    "id": "dia-16",
+    "shape": "asscher",
+    "carat": 1.2,
+    "colour": "I",
+    "clarity": "SI1",
+    "cut": "Very Good",
+    "price": {
+      "amount": 201000,
+      "currency": "USD"
+    },
+    "report": "GIA 2659736573",
+    "authority": "GIA",
+    "table": 60,
+    "depth": 63.7,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-17",
+    "shape": "princess",
+    "carat": 1,
+    "colour": "F",
+    "clarity": "VS2",
+    "cut": "Very Good",
+    "price": {
+      "amount": 214000,
+      "currency": "USD"
+    },
+    "report": "GIA 2428522431",
+    "authority": "GIA",
+    "table": 61,
+    "depth": 62.9,
+    "polish": "Very Good",
+    "symmetry": "Excellent",
+    "fluorescence": "Faint"
+  },
+  {
+    "id": "dia-18",
+    "shape": "oval",
+    "carat": 1,
+    "colour": "I",
+    "clarity": "VVS2",
+    "cut": "Excellent",
+    "price": {
+      "amount": 218000,
+      "currency": "USD"
+    },
+    "report": "GIA 2443011966",
+    "authority": "GIA",
+    "table": 58,
+    "depth": 63,
+    "polish": "Very Good",
+    "symmetry": "Excellent",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-19",
+    "shape": "heart",
+    "carat": 1,
+    "colour": "G",
+    "clarity": "VS2",
+    "cut": "Excellent",
+    "price": {
+      "amount": 223000,
+      "currency": "USD"
+    },
+    "report": "GIA 2604438355",
+    "authority": "GIA",
+    "table": 57,
+    "depth": 63.8,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "Faint"
+  },
+  {
+    "id": "dia-20",
+    "shape": "heart",
+    "carat": 1,
+    "colour": "I",
+    "clarity": "IF",
+    "cut": "Very Good",
+    "price": {
+      "amount": 224000,
+      "currency": "USD"
+    },
+    "report": "GIA 2211052358",
+    "authority": "GIA",
+    "table": 58,
+    "depth": 62.9,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-21",
+    "shape": "marquise",
+    "carat": 1,
+    "colour": "F",
+    "clarity": "VS1",
+    "cut": "Very Good",
+    "price": {
+      "amount": 238000,
+      "currency": "USD"
+    },
+    "report": "GIA 2842141162",
+    "authority": "GIA",
+    "table": 59,
+    "depth": 61.7,
+    "polish": "Very Good",
+    "symmetry": "Excellent",
+    "fluorescence": "Faint"
+  },
+  {
+    "id": "dia-22",
+    "shape": "pear",
+    "carat": 1,
+    "colour": "H",
+    "clarity": "VVS2",
+    "cut": "Ideal",
+    "price": {
+      "amount": 246000,
+      "currency": "USD"
+    },
+    "report": "GIA 2821106850",
+    "authority": "GIA",
+    "table": 57,
+    "depth": 62.9,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "None"
+  },
+  {
+    "id": "dia-23",
+    "shape": "cushion",
+    "carat": 1,
+    "colour": "G",
+    "clarity": "VVS1",
+    "cut": "Very Good",
+    "price": {
+      "amount": 249000,
+      "currency": "USD"
+    },
+    "report": "GIA 2579301631",
+    "authority": "GIA",
+    "table": 61,
+    "depth": 63.7,
+    "polish": "Very Good",
+    "symmetry": "Excellent",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-24",
+    "shape": "marquise",
+    "carat": 1.2,
+    "colour": "G",
+    "clarity": "VS2",
+    "cut": "Excellent",
+    "price": {
+      "amount": 304000,
+      "currency": "USD"
+    },
+    "report": "GIA 2388412999",
+    "authority": "GIA",
+    "table": 58,
+    "depth": 63.9,
+    "polish": "Very Good",
+    "symmetry": "Excellent",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-25",
+    "shape": "round",
+    "carat": 1.3,
+    "colour": "I",
+    "clarity": "VS2",
+    "cut": "Very Good",
+    "price": {
+      "amount": 328000,
+      "currency": "USD"
+    },
+    "report": "GIA 2405912804",
+    "authority": "GIA",
+    "table": 60,
+    "depth": 62.7,
+    "polish": "Excellent",
+    "symmetry": "Very Good",
+    "fluorescence": "None"
+  },
+  {
+    "id": "dia-26",
+    "shape": "asscher",
+    "carat": 1.2,
+    "colour": "I",
+    "clarity": "FL",
+    "cut": "Excellent",
+    "price": {
+      "amount": 362000,
+      "currency": "USD"
+    },
+    "report": "GIA 2185392683",
+    "authority": "GIA",
+    "table": 61,
+    "depth": 63.5,
+    "polish": "Excellent",
+    "symmetry": "Excellent",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-27",
+    "shape": "radiant",
+    "carat": 1.3,
+    "colour": "I",
+    "clarity": "VVS1",
+    "cut": "Ideal",
+    "price": {
+      "amount": 368000,
+      "currency": "USD"
+    },
+    "report": "GIA 2780752801",
+    "authority": "GIA",
+    "table": 59,
+    "depth": 62.4,
+    "polish": "Excellent",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-28",
+    "shape": "heart",
+    "carat": 1.3,
+    "colour": "I",
+    "clarity": "IF",
+    "cut": "Very Good",
+    "price": {
+      "amount": 368000,
+      "currency": "USD"
+    },
+    "report": "GIA 2997581719",
+    "authority": "GIA",
+    "table": 59,
+    "depth": 63.9,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "None"
+  },
+  {
+    "id": "dia-29",
+    "shape": "round",
+    "carat": 1.3,
+    "colour": "H",
+    "clarity": "VS2",
+    "cut": "Very Good",
+    "price": {
+      "amount": 369000,
+      "currency": "USD"
+    },
+    "report": "GIA 2919274520",
+    "authority": "GIA",
+    "table": 60,
+    "depth": 61.2,
+    "polish": "Excellent",
+    "symmetry": "Excellent",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-30",
+    "shape": "oval",
+    "carat": 1.3,
+    "colour": "E",
+    "clarity": "SI1",
+    "cut": "Excellent",
+    "price": {
+      "amount": 394000,
+      "currency": "USD"
+    },
+    "report": "GIA 2758328380",
+    "authority": "GIA",
+    "table": 57,
+    "depth": 62.3,
+    "polish": "Excellent",
+    "symmetry": "Excellent",
+    "fluorescence": "None"
+  },
+  {
+    "id": "dia-31",
+    "shape": "round",
+    "carat": 1.3,
+    "colour": "G",
+    "clarity": "VVS2",
+    "cut": "Very Good",
+    "price": {
+      "amount": 482000,
+      "currency": "USD"
+    },
+    "report": "GIA 2661218762",
+    "authority": "GIA",
+    "table": 61,
+    "depth": 62.5,
+    "polish": "Very Good",
+    "symmetry": "Excellent",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-32",
+    "shape": "cushion",
+    "carat": 1.5,
+    "colour": "I",
+    "clarity": "VVS1",
+    "cut": "Ideal",
+    "price": {
+      "amount": 489000,
+      "currency": "USD"
+    },
+    "report": "GIA 2336933255",
+    "authority": "GIA",
+    "table": 57,
+    "depth": 60.6,
+    "polish": "Excellent",
+    "symmetry": "Very Good",
+    "fluorescence": "None"
+  },
+  {
+    "id": "dia-33",
+    "shape": "princess",
+    "carat": 1.5,
+    "colour": "I",
+    "clarity": "FL",
+    "cut": "Excellent",
+    "price": {
+      "amount": 533000,
+      "currency": "USD"
+    },
+    "report": "GIA 2985299509",
+    "authority": "GIA",
+    "table": 60,
+    "depth": 61.8,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "None"
+  },
+  {
+    "id": "dia-34",
+    "shape": "emerald",
+    "carat": 1.3,
+    "colour": "F",
+    "clarity": "FL",
+    "cut": "Excellent",
+    "price": {
+      "amount": 587000,
+      "currency": "USD"
+    },
+    "report": "GIA 2582480585",
+    "authority": "GIA",
+    "table": 59,
+    "depth": 60.1,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-35",
+    "shape": "pear",
+    "carat": 1.5,
+    "colour": "E",
+    "clarity": "VVS2",
+    "cut": "Very Good",
+    "price": {
+      "amount": 610000,
+      "currency": "USD"
+    },
+    "report": "GIA 2995088230",
+    "authority": "GIA",
+    "table": 62,
+    "depth": 62.4,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "None"
+  },
+  {
+    "id": "dia-36",
+    "shape": "pear",
+    "carat": 1.5,
+    "colour": "F",
+    "clarity": "IF",
+    "cut": "Very Good",
+    "price": {
+      "amount": 656000,
+      "currency": "USD"
+    },
+    "report": "GIA 2296294033",
+    "authority": "GIA",
+    "table": 59,
+    "depth": 61.4,
+    "polish": "Excellent",
+    "symmetry": "Excellent",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-37",
+    "shape": "princess",
+    "carat": 1.7,
+    "colour": "F",
+    "clarity": "VS2",
+    "cut": "Ideal",
+    "price": {
+      "amount": 665000,
+      "currency": "USD"
+    },
+    "report": "GIA 2931422459",
+    "authority": "GIA",
+    "table": 60,
+    "depth": 63.1,
+    "polish": "Excellent",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-38",
+    "shape": "princess",
+    "carat": 1.5,
+    "colour": "G",
+    "clarity": "FL",
+    "cut": "Ideal",
+    "price": {
+      "amount": 701000,
+      "currency": "USD"
+    },
+    "report": "GIA 2924447750",
+    "authority": "GIA",
+    "table": 58,
+    "depth": 61.7,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "Faint"
+  },
+  {
+    "id": "dia-39",
+    "shape": "emerald",
+    "carat": 1.7,
+    "colour": "G",
+    "clarity": "IF",
+    "cut": "Excellent",
+    "price": {
+      "amount": 817000,
+      "currency": "USD"
+    },
+    "report": "GIA 2256640925",
+    "authority": "GIA",
+    "table": 57,
+    "depth": 62.6,
+    "polish": "Excellent",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-40",
+    "shape": "princess",
+    "carat": 1.7,
+    "colour": "G",
+    "clarity": "IF",
+    "cut": "Ideal",
+    "price": {
+      "amount": 818000,
+      "currency": "USD"
+    },
+    "report": "GIA 2801887642",
+    "authority": "GIA",
+    "table": 59,
+    "depth": 62.4,
+    "polish": "Very Good",
+    "symmetry": "Excellent",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-41",
+    "shape": "radiant",
+    "carat": 2.2,
+    "colour": "H",
+    "clarity": "VS2",
+    "cut": "Ideal",
+    "price": {
+      "amount": 900000,
+      "currency": "USD"
+    },
+    "report": "GIA 2765846585",
+    "authority": "GIA",
+    "table": 58,
+    "depth": 60.1,
+    "polish": "Excellent",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-42",
+    "shape": "emerald",
+    "carat": 2.2,
+    "colour": "G",
+    "clarity": "VS2",
+    "cut": "Excellent",
+    "price": {
+      "amount": 986000,
+      "currency": "USD"
+    },
+    "report": "GIA 2654061689",
+    "authority": "GIA",
+    "table": 59,
+    "depth": 60.5,
+    "polish": "Very Good",
+    "symmetry": "Excellent",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-43",
+    "shape": "marquise",
+    "carat": 2,
+    "colour": "D",
+    "clarity": "VS1",
+    "cut": "Ideal",
+    "price": {
+      "amount": 1149000,
+      "currency": "USD"
+    },
+    "report": "GIA 2874823772",
+    "authority": "GIA",
+    "table": 61,
+    "depth": 62.5,
+    "polish": "Excellent",
+    "symmetry": "Very Good",
+    "fluorescence": "None"
+  },
+  {
+    "id": "dia-44",
+    "shape": "pear",
+    "carat": 2,
+    "colour": "F",
+    "clarity": "VVS1",
+    "cut": "Ideal",
+    "price": {
+      "amount": 1190000,
+      "currency": "USD"
+    },
+    "report": "GIA 2152481067",
+    "authority": "GIA",
+    "table": 59,
+    "depth": 60.6,
+    "polish": "Excellent",
+    "symmetry": "Excellent",
+    "fluorescence": "Faint"
+  },
+  {
+    "id": "dia-45",
+    "shape": "cushion",
+    "carat": 2.5,
+    "colour": "I",
+    "clarity": "VVS2",
+    "cut": "Ideal",
+    "price": {
+      "amount": 1215000,
+      "currency": "USD"
+    },
+    "report": "GIA 2820610320",
+    "authority": "GIA",
+    "table": 57,
+    "depth": 62.4,
+    "polish": "Excellent",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-46",
+    "shape": "heart",
+    "carat": 2.2,
+    "colour": "H",
+    "clarity": "FL",
+    "cut": "Excellent",
+    "price": {
+      "amount": 1321000,
+      "currency": "USD"
+    },
+    "report": "GIA 2557932096",
+    "authority": "GIA",
+    "table": 61,
+    "depth": 61.2,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "Faint"
+  },
+  {
+    "id": "dia-47",
+    "shape": "cushion",
+    "carat": 2.5,
+    "colour": "H",
+    "clarity": "VVS1",
+    "cut": "Excellent",
+    "price": {
+      "amount": 1379000,
+      "currency": "USD"
+    },
+    "report": "GIA 2868954160",
+    "authority": "GIA",
+    "table": 61,
+    "depth": 60.7,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  },
+  {
+    "id": "dia-48",
+    "shape": "round",
+    "carat": 2,
+    "colour": "D",
+    "clarity": "VS1",
+    "cut": "Ideal",
+    "price": {
+      "amount": 1436000,
+      "currency": "USD"
+    },
+    "report": "GIA 2578404834",
+    "authority": "GIA",
+    "table": 57,
+    "depth": 62.5,
+    "polish": "Excellent",
+    "symmetry": "Very Good",
+    "fluorescence": "None"
+  },
+  {
+    "id": "dia-49",
+    "shape": "asscher",
+    "carat": 3,
+    "colour": "G",
+    "clarity": "SI1",
+    "cut": "Ideal",
+    "price": {
+      "amount": 1630000,
+      "currency": "USD"
+    },
+    "report": "GIA 2947818803",
+    "authority": "GIA",
+    "table": 60,
+    "depth": 60.3,
+    "polish": "Very Good",
+    "symmetry": "Excellent",
+    "fluorescence": "Faint"
+  },
+  {
+    "id": "dia-50",
+    "shape": "radiant",
+    "carat": 3,
+    "colour": "F",
+    "clarity": "VS2",
+    "cut": "Very Good",
+    "price": {
+      "amount": 1744000,
+      "currency": "USD"
+    },
+    "report": "GIA 2768513237",
+    "authority": "GIA",
+    "table": 59,
+    "depth": 61,
+    "polish": "Very Good",
+    "symmetry": "Very Good",
+    "fluorescence": "Medium"
+  }
+]

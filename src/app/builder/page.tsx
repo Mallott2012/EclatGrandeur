@@ -1,0 +1,5 @@
+import { redirect } from 'next/navigation';
+
+export default function BuilderRedirect() {
+  redirect('/build-a-ring');
+}

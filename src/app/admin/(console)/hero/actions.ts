@@ -1,0 +1,81 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { requireStaffRole } from '@/lib/staff';
+import { uploadJewelleryMedia } from '@/lib/storage/jewellery';
+import {
+  createHeroMedia,
+  updateHeroMedia,
+  deleteHeroMedia,
+  listAllCollageMedia,
+  setHeroPublished,
+  type HeroPlacement,
+  type CreateHeroInput,
+} from '@/lib/hero/service';
+
+export { listAllCollageMedia };
+
+export async function saveHeroAction(payload: {
+  id?:          string;
+  placement:    HeroPlacement;
+  media_type:   'image' | 'video';
+  storage_path: string;
+  headline:     string | null;
+  subheadline:  string | null;
+  is_published: boolean;
+  sort_order?:  number;
+}) {
+  const user = await requireStaffRole([]);
+
+  const input: CreateHeroInput = {
+    placement:    payload.placement,
+    media_type:   payload.media_type,
+    storage_path: payload.storage_path,
+    headline:     payload.headline,
+    subheadline:  payload.subheadline,
+    is_published: payload.is_published,
+    sort_order:   payload.sort_order,
+  };
+
+  const record = payload.id
+    ? await updateHeroMedia(user, payload.id, input)
+    : await createHeroMedia(user, input);
+
+  revalidatePath('/');
+  revalidatePath('/engagement-rings');
+  revalidatePath('/necklaces');
+  revalidatePath('/bracelets');
+  revalidatePath('/earrings');
+  revalidatePath('/admin');
+
+  return record;
+}
+
+export async function uploadHeroMediaAction(formData: FormData): Promise<string> {
+  await requireStaffRole([]);
+  const file = formData.get('file') as File;
+  return uploadJewelleryMedia(file, 'hero');
+}
+
+export async function setHeroPublishedAction(id: string, isPublished: boolean) {
+  await requireStaffRole([]);
+  await setHeroPublished(id, isPublished);
+  revalidatePath('/');
+  revalidatePath('/engagement-rings');
+  revalidatePath('/necklaces');
+  revalidatePath('/bracelets');
+  revalidatePath('/earrings');
+  revalidatePath('/admin');
+}
+
+export async function deleteHeroAction(id: string) {
+  await requireStaffRole([]);
+  await deleteHeroMedia(id);
+
+  revalidatePath('/');
+  revalidatePath('/engagement-rings');
+  revalidatePath('/necklaces');
+  revalidatePath('/bracelets');
+  revalidatePath('/earrings');
+  revalidatePath('/admin');
+}

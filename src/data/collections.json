@@ -1,0 +1,42 @@
+[
+  {
+    "id": "col-aurora",
+    "slug": "aurora",
+    "name": "Aurora",
+    "tagline": "Light, captured",
+    "description": "Inspired by the first light of dawn, the Aurora collection sets exceptional brilliant-cut diamonds in fluid, luminous settings that seem to move with the wearer.",
+    "art": { "kind": "solitaire-ring", "shape": "round", "metal": "yellow-gold", "caratVisual": 1.1 },
+    "productSlugs": ["aurora-solitaire-ring", "aria-oval-solitaire", "aurora-diamond-studs", "aurora-diamond-pendant", "aurora-line-bracelet"],
+    "featured": true
+  },
+  {
+    "id": "col-monarch",
+    "slug": "monarch",
+    "name": "Monarch",
+    "tagline": "Sovereign brilliance",
+    "description": "Bold, architectural and unapologetically grand. Monarch celebrates the rarest stones with settings worthy of a crown.",
+    "art": { "kind": "halo-ring", "shape": "round", "metal": "white-gold", "caratVisual": 1.1 },
+    "productSlugs": ["monarch-halo-ring", "trinity-three-stone-ring", "empress-emerald-ring", "monarch-emerald-necklace", "estelle-diamond-bangle", "comete-drop-earrings"],
+    "featured": true
+  },
+  {
+    "id": "col-eternelle",
+    "slug": "eternelle",
+    "name": "Éternelle",
+    "tagline": "Forever, in line",
+    "description": "A study in rhythm and repetition — diamonds set edge to edge in an unbroken line, the purest expression of devotion.",
+    "art": { "kind": "tennis-bracelet", "shape": "round", "metal": "white-gold" },
+    "productSlugs": ["eternelle-tennis-bracelet", "eternelle-eternity-band", "sovereign-riviere-necklace", "eclat-diamond-hoops"],
+    "featured": true
+  },
+  {
+    "id": "col-celeste",
+    "slug": "celeste",
+    "name": "Céleste",
+    "tagline": "A river of light",
+    "description": "Delicate, endlessly sparkling micro-pavé. The Céleste collection scatters the smallest, finest diamonds across featherlight settings.",
+    "art": { "kind": "pave-ring", "shape": "round", "metal": "rose-gold", "caratVisual": 1.0 },
+    "productSlugs": ["celeste-pave-ring", "celeste-pave-eternity", "cushion-tennis-bracelet", "lumiere-pear-pendant"],
+    "featured": false
+  }
+]
