@@ -152,40 +152,74 @@ export function RingDetailPage({ slug, dbRing, ringSettingId }: Props) {
         {/* ── SPLIT LAYOUT ───────────────────────────────────────────────── */}
         <div className="flex flex-col lg:flex-row">
 
-          {/* LEFT — square image grid */}
+          {/* LEFT — 2×2 gallery with per-tile crop/scale normalisation */}
           <div
             className="lg:w-[58%] lg:sticky lg:top-[80px]"
             style={{ maxHeight: 'calc(100vh - 80px)', overflow: 'hidden', padding: 8, background: '#fff' }}
           >
-            {/* padding-bottom:100% forces height = width (guaranteed square) */}
+            {/* padding-bottom:100% = guaranteed square regardless of flex/grid context */}
             <div style={{ position: 'relative', width: '100%', paddingBottom: '100%' }}>
-              {/* absolute fill → grid has fully definite dimensions */}
               <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 6 }}>
-                {video360Url && (
-                  <div style={{ position: 'relative', overflow: 'hidden' }}>
-                    <Media360Viewer src={video360Url} poster={displayImages[0]} className="absolute inset-0 w-full h-full" />
-                  </div>
-                )}
-                {displayImages.map((img, i) => (
-                  <div key={`${selectedMetal}-${i}`} style={{ position: 'relative', overflow: 'hidden' }}>
-                    <Image
-                      src={img}
-                      alt={`${ring.name} — view ${i + 1}`}
-                      fill
-                      className="object-contain"
-                      priority={i === 0}
-                      sizes="(max-width: 1024px) 50vw, 29vw"
-                      style={i === 0 ? { transform: `scale(${diamondScale})`, transition: 'transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)', transformOrigin: 'center center' } : undefined}
-                    />
-                    {i === 0 && selectedDiamond && (
-                      <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-none">
-                        <span className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.22em', color: '#aaa' }}>
-                          {selectedDiamond.carat.toFixed(2)}ct · approximate size
-                        </span>
+
+                {/* Per-tile crop config — adjust scale/x/y until each ring
+                    occupies ~65% of the tile and the stone is centred.
+                    Slot 0 = top-left, 1 = top-right, 2 = bottom-left, 3 = bottom-right.
+                    If a 360° video occupies slot 0 the image slots shift by one. */}
+                {(() => {
+                  const cropConfig: { scale: number; x: string; y: string }[] = [
+                    { scale: 1.10, x: '0%',  y: '0%'  }, // slot 0
+                    { scale: 1.10, x: '0%',  y: '0%'  }, // slot 1
+                    { scale: 1.10, x: '0%',  y: '0%'  }, // slot 2
+                    { scale: 1.10, x: '0%',  y: '0%'  }, // slot 3
+                  ];
+
+                  const tiles: React.ReactNode[] = [];
+                  let slot = 0;
+
+                  if (video360Url) {
+                    tiles.push(
+                      <div key="video" style={{ position: 'relative', overflow: 'hidden', background: '#fff' }}>
+                        <Media360Viewer src={video360Url} poster={displayImages[0]} className="absolute inset-0 w-full h-full" />
                       </div>
-                    )}
-                  </div>
-                ))}
+                    );
+                    slot = 1;
+                  }
+
+                  displayImages.forEach((img, i) => {
+                    const cfg = cropConfig[slot] ?? { scale: 1.0, x: '0%', y: '0%' };
+                    const isFirst = i === 0 && !video360Url;
+                    tiles.push(
+                      <div key={`${selectedMetal}-${i}`} style={{ position: 'relative', overflow: 'hidden', background: '#fff' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={img}
+                          alt={`${ring.name} — view ${i + 1}`}
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                            transform: `translate(${cfg.x}, ${cfg.y}) scale(${isFirst ? cfg.scale * diamondScale : cfg.scale})`,
+                            transition: isFirst ? 'transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)' : undefined,
+                            transformOrigin: 'center center',
+                          }}
+                        />
+                        {isFirst && selectedDiamond && (
+                          <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-none">
+                            <span className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.22em', color: '#aaa' }}>
+                              {selectedDiamond.carat.toFixed(2)}ct · approximate size
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                    slot++;
+                  });
+
+                  return tiles;
+                })()}
+
               </div>
             </div>
           </div>
