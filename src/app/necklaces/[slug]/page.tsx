@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { JewelleryDetailPage, type JewelleryDetailProduct } from '@/components/jewellery/JewelleryDetailPage';
 import { getJewelleryProductBySlug } from '@/lib/jewellery/service';
 import { METAL_LABELS } from '@/lib/diamonds/types';
-import { parseGalleryConfig } from '@/lib/gallery/types';
+import { parseGalleryConfig, parseMetalVariants, buildDefaultVariants } from '@/lib/gallery/types';
 
 interface Props { params: Promise<{ slug: string }>; }
 
@@ -33,6 +33,7 @@ export default async function Page({ params }: Props) {
       config={{ categoryLabel: 'Necklaces', categoryPath: '/necklaces' }}
       jewelleryId={p.id}
       galleryConfig={parseGalleryConfig(p.gallery_config)}
+      metalVariants={parseMetalVariants(p.metal_variants) ?? buildDefaultVariants(parseGalleryConfig(p.gallery_config))}
     />
   );
 }

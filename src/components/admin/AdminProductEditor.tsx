@@ -13,7 +13,13 @@ import { DiamondPanel, type DiamondRow } from '@/components/admin/DiamondPanel';
 import { MediaDropZone } from '@/components/admin/MediaDropZone';
 import { Media360Viewer } from '@/components/shared/Media360Viewer';
 import { ProductGallery } from '@/components/shared/ProductGallery';
-import { EMPTY_GALLERY, type GalleryData, type GallerySlot } from '@/lib/gallery/types';
+import { ProductCard } from '@/components/shared/ProductCard';
+import {
+  EMPTY_GALLERY, type GalleryData, type GallerySlot,
+  type MetalVariant, type MetalKey,
+  METAL_KEYS, METAL_DISPLAY,
+  buildDefaultVariants, variantToGalleryData, galleryDataToItems,
+} from '@/lib/gallery/types';
 
 const isVideoUrl = (url: string) => url.toLowerCase().endsWith('.mp4');
 
@@ -172,9 +178,12 @@ export interface AdminProductData {
   published:   boolean;
   categoryLabel: string;  // e.g. 'Engagement Rings'
   categoryHref:  string;  // e.g. '/engagement-rings' (frontend link)
-  // gallery config
+  // gallery config (legacy; migrated into metalVariants on first load)
   galleryConfig?:  GalleryData;
   onSaveGallery?:  (data: GalleryData) => Promise<void>;
+  // metal variants (new system)
+  metalVariants?:        MetalVariant[];
+  onSaveMetalVariants?:  (variants: MetalVariant[]) => Promise<void>;
   // diamond management (full CRUD + assignment)
   assignedDiamondIds:  string[];
   allDiamonds:         DiamondRow[];
@@ -222,6 +231,15 @@ export function AdminProductEditor(props: AdminProductData) {
   const [panelUploadErr, setPanelUploadErr] = useState<string | null>(null);
   const [galleryData,    setGalleryData]    = useState<GalleryData>(props.galleryConfig ?? EMPTY_GALLERY);
   const gallerySaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // metal variant state
+  const initVariants = props.metalVariants ?? buildDefaultVariants(props.galleryConfig);
+  const [variants,       setVariants]       = useState<MetalVariant[]>(initVariants);
+  const [activeMetalKey, setActiveMetalKey] = useState<MetalKey>(
+    initVariants.find(v => v.enabled)?.metal ?? 'platinum'
+  );
+  const variantsSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeVariant = variants.find(v => v.metal === activeMetalKey) ?? variants[0];
 
   const selectedMetal = metals[0] ?? 'Platinum';
   const metalMeta = ALL_METALS.find(m => m.label === selectedMetal || m.id === selectedMetal) ?? ALL_METALS[0];
@@ -340,6 +358,60 @@ export function AdminProductEditor(props: AdminProductData) {
     }, 600);
   }
 
+  // ── Metal-variant helpers ────────────────────────────────────────────────────
+  function scheduleVariantSave(next: MetalVariant[]) {
+    if (!props.onSaveMetalVariants) return;
+    if (variantsSaveTimer.current) clearTimeout(variantsSaveTimer.current);
+    variantsSaveTimer.current = setTimeout(() => {
+      startTransition(async () => {
+        await props.onSaveMetalVariants!(next);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2200);
+      });
+    }, 600);
+  }
+
+  function updateActiveVariant(patch: Partial<MetalVariant>) {
+    setVariants(prev => {
+      const next = prev.map(v => v.metal === activeMetalKey ? { ...v, ...patch } : v);
+      scheduleVariantSave(next);
+      return next;
+    });
+  }
+
+  function updateActiveGallery(galleryPatch: Partial<(typeof activeVariant)['gallery']>) {
+    setVariants(prev => {
+      const next = prev.map(v =>
+        v.metal === activeMetalKey
+          ? { ...v, gallery: { ...v.gallery, ...galleryPatch } }
+          : v
+      );
+      scheduleVariantSave(next);
+      return next;
+    });
+  }
+
+  function handleVariantGalleryChange(data: GalleryData) {
+    const newItems = galleryDataToItems(data, activeVariant.gallery.items);
+    const mainId   = newItems.find(it => it.id === activeVariant.gallery.cardMainMediaId)?.id
+                     ?? (newItems[0]?.id ?? null);
+    const hoverId  = newItems.find(it => it.id === activeVariant.gallery.cardHoverMediaId)?.id ?? null;
+    setVariants(prev => {
+      const next = prev.map(v =>
+        v.metal === activeMetalKey
+          ? { ...v, gallery: { ...v.gallery, items: newItems, cardMainMediaId: mainId, cardHoverMediaId: hoverId } }
+          : v
+      );
+      scheduleVariantSave(next);
+      return next;
+    });
+  }
+
+  async function handleVariantGalleryUpload(_slot: GallerySlot, fd: FormData): Promise<string> {
+    const item = await props.onUploadMedia(fd);
+    return item.url;
+  }
+
   const currentImage = mediaItems[activeImage]?.url ?? '';
   const displayPrice   = `Starting from £${basePrice.toLocaleString('en-GB')}`;
 
@@ -405,17 +477,156 @@ export function AdminProductEditor(props: AdminProductData) {
       {/* ── SPLIT LAYOUT ────────────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row">
 
-        {/* LEFT — sticky gallery panel */}
+        {/* LEFT — sticky gallery panel with metal variant controls */}
         <div
           className="lg:w-[58%] lg:sticky lg:top-[113px] lg:h-[calc(100vh-113px)] overflow-y-auto"
           style={{ background: '#fff', padding: 16 }}
         >
+          {/* Metal tabs */}
+          <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
+            {METAL_KEYS.map(key => {
+              const v   = variants.find(x => x.metal === key)!;
+              const act = key === activeMetalKey;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setActiveMetalKey(key)}
+                  style={{
+                    fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.14em',
+                    textTransform: 'uppercase', padding: '5px 10px', cursor: 'pointer',
+                    border: `1px solid ${act ? G : '#e8e8e8'}`,
+                    background: act ? G : '#fff',
+                    color: act ? '#fff' : v.enabled ? G : '#ccc',
+                    fontWeight: act ? 500 : 400,
+                  }}
+                >
+                  {METAL_DISPLAY[key]}
+                  {v.enabled && !act && <span style={{ display: 'inline-block', width: 5, height: 5, borderRadius: '50%', background: '#4a9e6b', marginLeft: 5, verticalAlign: 'middle' }} />}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Enable toggle + price for active variant */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 10, padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={activeVariant.enabled}
+                onChange={e => updateActiveVariant({ enabled: e.target.checked })}
+                style={{ accentColor: G }}
+              />
+              <span style={{ fontFamily: 'sans-serif', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#888' }}>
+                Enabled
+              </span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontFamily: 'sans-serif', fontSize: 10, color: '#888' }}>£</span>
+              <input
+                type="number"
+                value={activeVariant.price ?? ''}
+                onChange={e => updateActiveVariant({ price: e.target.value === '' ? undefined : Number(e.target.value) })}
+                placeholder="Price"
+                style={{ width: 80, border: 'none', borderBottom: '1px solid #e8e8e8', fontFamily: 'sans-serif', fontSize: 12, color: G, outline: 'none', background: 'transparent' }}
+              />
+            </label>
+          </div>
+
+          {/* Gallery for the active variant */}
           <ProductGallery
-            data={galleryData}
-            editable
-            onUpload={handleGalleryUpload}
-            onChange={handleGalleryChange}
+            data={variantToGalleryData(activeVariant)}
+            editable={activeVariant.enabled}
+            onUpload={handleVariantGalleryUpload}
+            onChange={handleVariantGalleryChange}
           />
+
+          {/* Card media selectors */}
+          <div style={{ marginTop: 14, borderTop: '1px solid #f0f0f0', paddingTop: 12 }}>
+            <p style={{ fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#bbb', marginBottom: 10 }}>
+              Card Media
+            </p>
+            {(['cardMainMediaId', 'cardHoverMediaId'] as const).map(field => {
+              const label = field === 'cardMainMediaId' ? 'Main' : 'Hover';
+              const currentId = activeVariant.gallery[field];
+              return (
+                <div key={field} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
+                  <span style={{ fontFamily: 'sans-serif', fontSize: 9, color: '#aaa', width: 34, flexShrink: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                    {label}
+                  </span>
+                  {/* None button */}
+                  <button
+                    type="button"
+                    onClick={() => updateActiveGallery({ [field]: null })}
+                    title="No card media"
+                    style={{
+                      width: 40, height: 40, border: `2px solid ${currentId === null ? G : '#e8e8e8'}`,
+                      fontFamily: 'sans-serif', fontSize: 10, color: '#ccc',
+                      background: 'none', cursor: 'pointer', flexShrink: 0,
+                    }}
+                  >
+                    ∅
+                  </button>
+                  {/* Item thumbnails */}
+                  {activeVariant.gallery.items.map(item => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => updateActiveGallery({ [field]: item.id })}
+                      title={`Set as card ${label.toLowerCase()}`}
+                      style={{
+                        width: 40, height: 40, position: 'relative', overflow: 'hidden',
+                        padding: 0, flexShrink: 0, cursor: 'pointer',
+                        border: `2px solid ${currentId === item.id ? G : '#e8e8e8'}`,
+                        background: '#f8f8f8',
+                      }}
+                    >
+                      {item.type === 'video'
+                        ? <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        : <img src={item.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      }
+                    </button>
+                  ))}
+                </div>
+              );
+            })}
+            {/* Hover enabled toggle */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginTop: 4 }}>
+              <input
+                type="checkbox"
+                checked={activeVariant.gallery.hoverMediaEnabled}
+                onChange={e => updateActiveGallery({ hoverMediaEnabled: e.target.checked })}
+                style={{ accentColor: G }}
+              />
+              <span style={{ fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#aaa' }}>
+                Hover enabled
+              </span>
+            </label>
+          </div>
+
+          {/* Live card preview */}
+          {(() => {
+            const mainItem  = activeVariant.gallery.items.find(it => it.id === activeVariant.gallery.cardMainMediaId);
+            const hoverItem = activeVariant.gallery.items.find(it => it.id === activeVariant.gallery.cardHoverMediaId);
+            return (
+              <div style={{ marginTop: 14, borderTop: '1px solid #f0f0f0', paddingTop: 12 }}>
+                <p style={{ fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#bbb', marginBottom: 10 }}>
+                  Card Preview
+                </p>
+                <div style={{ width: 180 }}>
+                  <ProductCard
+                    name={name}
+                    price={displayPrice}
+                    href="#"
+                    mainMedia={mainItem ? { url: mainItem.url, type: mainItem.type, posterUrl: mainItem.posterUrl } : null}
+                    hoverMedia={hoverItem ? { url: hoverItem.url, type: hoverItem.type, posterUrl: hoverItem.posterUrl } : null}
+                    hoverEnabled={activeVariant.gallery.hoverMediaEnabled}
+                  />
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* RIGHT — configuration panel, mirrors frontend exactly */}

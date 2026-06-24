@@ -10,6 +10,7 @@ import {
   unassignDiamondFromRingSetting,
   getRingSettingDiamonds,
   setRingSettingGallery,
+  setRingSettingMetalVariants,
 } from '@/lib/ring-settings/service'
 import {
   createDiamond,
@@ -95,6 +96,14 @@ export async function deleteDiamondAction(id: string) {
   const user = await requireStaffRole([])
   await deleteDiamond(user, id)
   revalidatePath('/admin/rings')
+}
+
+export async function saveRingMetalVariantsAction(id: string, metalVariants: unknown) {
+  await requireStaffRole([])
+  await setRingSettingMetalVariants(id, metalVariants)
+  revalidatePath(`/admin/rings/${id}`)
+  revalidatePath('/engagement-rings')
+  revalidatePath(`/engagement-rings/[slug]`, 'page')
 }
 
 export async function saveRingGalleryAction(id: string, galleryConfig: unknown) {

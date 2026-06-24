@@ -1,10 +1,9 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { useState } from 'react';
 import { ChevronDown, X } from 'lucide-react';
 import { StyleScroller, type StyleCard } from './StyleScroller';
+import { ProductCard } from './ProductCard';
 
 const G      = '#1a2b1a';
 const STONE  = '#f5f3ef';
@@ -41,107 +40,32 @@ export interface EditorialListingProps {
   enableMetals?:  boolean;
 }
 
-/* ── Single product card — still image that reveals the hero video on hover ── */
-function ProductCard({
-  item,
-  basePath,
-  priority,
-}: {
-  item: EditorialItem;
+/* ── Adapter: EditorialItem → shared ProductCard ──────────────────────────── */
+function EditorialItemCard({ item, basePath, priority }: {
+  item:     EditorialItem;
   basePath: string;
   priority: boolean;
 }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [hovered, setHovered] = useState(false);
-
-  const hasVideo    = Boolean(item.video);
-  const hasHoverImg = !hasVideo && Boolean(item.mediaImage);
-  const hasReveal   = hasVideo || hasHoverImg;
-
-  function enter() {
-    setHovered(true);
-    const v = videoRef.current;
-    if (v) {
-      v.currentTime = 0;
-      v.play().catch(() => {});
-    }
-  }
-  function leave() {
-    setHovered(false);
-    videoRef.current?.pause();
-  }
+  const hasVideo = Boolean(item.video);
+  const mainMedia = item.image
+    ? { url: item.image,           type: 'image' as const, alt: item.name }
+    : null;
+  const hoverMedia = hasVideo
+    ? { url: item.video!,          type: 'video' as const }
+    : item.mediaImage
+    ? { url: item.mediaImage,      type: 'image' as const }
+    : null;
 
   return (
-    <Link
+    <ProductCard
+      name={item.name}
+      price={item.price}
       href={`${basePath}/${item.slug}`}
-      className="group flex flex-col"
-      onMouseEnter={enter}
-      onMouseLeave={leave}
-    >
-      <div
-        className="relative overflow-hidden bg-white"
-        style={{ aspectRatio: '1 / 1' }}
-      >
-        {/* Still product image */}
-        {item.image ? (
-          <Image
-            src={item.image}
-            alt={item.name}
-            fill
-            sizes="(max-width: 768px) 50vw, 33vw"
-            priority={priority}
-            className="object-contain transition-opacity duration-700 ease-out"
-            style={{ opacity: hovered && hasReveal ? 0 : 1 }}
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#ccc' }}>
-              No image
-            </p>
-          </div>
-        )}
-
-        {/* Hover reveal — hero video (preferred) or lifestyle image */}
-        {hasVideo && (
-          <video
-            ref={videoRef}
-            src={item.video}
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-out"
-            style={{ opacity: hovered ? 1 : 0 }}
-          />
-        )}
-        {hasHoverImg && (
-          <Image
-            src={item.mediaImage as string}
-            alt=""
-            fill
-            sizes="(max-width: 768px) 50vw, 33vw"
-            className="absolute inset-0 object-cover transition-opacity duration-700 ease-out"
-            style={{ opacity: hovered ? 1 : 0 }}
-          />
-        )}
-      </div>
-
-      {/* Name + price */}
-      <div style={{ paddingTop: 20 }}>
-        <p
-          className="font-display"
-          style={{ fontSize: 'clamp(15px, 1.3vw, 19px)', fontWeight: 300, letterSpacing: '0.02em', color: G, lineHeight: 1.3 }}
-        >
-          {item.name}
-        </p>
-        <p
-          className="font-sans"
-          style={{ fontSize: 12, fontWeight: 300, color: '#888', letterSpacing: '0.04em', marginTop: 8 }}
-        >
-          {item.price}
-        </p>
-      </div>
-    </Link>
+      mainMedia={mainMedia}
+      hoverMedia={hoverMedia}
+      hoverEnabled={Boolean(hoverMedia)}
+      priority={priority}
+    />
   );
 }
 
@@ -365,7 +289,7 @@ export function EditorialListing({
           style={{ padding: 'clamp(40px, 5vw, 72px) clamp(24px, 6vw, 96px) clamp(56px, 6vw, 96px)', columnGap: 'clamp(16px, 3vw, 48px)', rowGap: 'clamp(40px, 5vw, 72px)' }}
         >
           {filtered.map((item, index) => (
-            <ProductCard key={item.id} item={item} basePath={basePath} priority={index < 3} />
+            <EditorialItemCard key={item.id} item={item} basePath={basePath} priority={index < 3} />
           ))}
         </div>
       )}

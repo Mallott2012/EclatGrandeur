@@ -15,8 +15,9 @@ import {
   updateDiamondAction,
   deleteDiamondAction,
   saveRingGalleryAction,
+  saveRingMetalVariantsAction,
 } from './actions';
-import { parseGalleryConfig } from '@/lib/gallery/types';
+import { parseGalleryConfig, parseMetalVariants } from '@/lib/gallery/types';
 import type { DiamondRow } from '@/components/admin/DiamondPanel';
 
 interface Props { params: Promise<{ id: string }> }
@@ -62,7 +63,8 @@ export default async function AdminRingEditPage({ params }: Props) {
     notes:            d.notes,
   }));
 
-  const galleryConfig = parseGalleryConfig(ring.gallery_config);
+  const galleryConfig  = parseGalleryConfig(ring.gallery_config);
+  const metalVariants  = parseMetalVariants(ring.metal_variants);
 
   return (
     <AdminProductEditor
@@ -166,6 +168,11 @@ export default async function AdminRingEditPage({ params }: Props) {
       onSaveGallery={async (data) => {
         'use server';
         await saveRingGalleryAction(id, data);
+      }}
+      metalVariants={metalVariants ?? undefined}
+      onSaveMetalVariants={async (variants) => {
+        'use server';
+        await saveRingMetalVariantsAction(id, variants);
       }}
       categoryLabel="Engagement Rings"
       categoryHref="/engagement-rings"

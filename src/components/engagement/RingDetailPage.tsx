@@ -10,7 +10,11 @@ import { useShortlist, type ShortlistItem } from '@/hooks/useShortlist';
 import { Heart } from 'lucide-react';
 import { Media360Viewer } from '@/components/shared/Media360Viewer';
 import { ProductGallery } from '@/components/shared/ProductGallery';
-import { EMPTY_GALLERY, type GalleryData } from '@/lib/gallery/types';
+import {
+  EMPTY_GALLERY, type GalleryData,
+  type MetalVariant, type MetalKey,
+  METAL_DISPLAY, variantToGalleryData,
+} from '@/lib/gallery/types';
 
 const G      = '#1a2b1a';
 const BORDER = '#e8e8e8';
@@ -67,12 +71,35 @@ interface Props {
    *  to only the diamonds assigned to this ring + selected metal. */
   ringSettingId?: string | null;
   galleryConfig?: GalleryData | null;
+  metalVariants?: MetalVariant[] | null;
 }
 
-export function RingDetailPage({ slug, dbRing, ringSettingId, galleryConfig }: Props) {
+export function RingDetailPage({ slug, dbRing, ringSettingId, galleryConfig, metalVariants }: Props) {
   const ring = dbRing ?? RINGS[slug] ?? FALLBACK;
 
   const [selectedMetal,   setSelectedMetal]   = useState(ring.materials[0]);
+
+  // Metal variant gallery switching
+  const enabledVariants = metalVariants?.filter(v => v.enabled) ?? [];
+  const [activeVariantMetal, setActiveVariantMetal] = useState<MetalKey | null>(
+    enabledVariants[0]?.metal ?? null
+  );
+  const [galleryOpacity, setGalleryOpacity] = useState(1);
+  const activeVariant = activeVariantMetal
+    ? metalVariants?.find(v => v.metal === activeVariantMetal) ?? null
+    : null;
+  const effectiveGalleryData = activeVariant
+    ? variantToGalleryData(activeVariant)
+    : (galleryConfig ?? EMPTY_GALLERY);
+
+  function switchVariantMetal(key: MetalKey) {
+    if (key === activeVariantMetal) return;
+    setGalleryOpacity(0);
+    setTimeout(() => {
+      setActiveVariantMetal(key);
+      setGalleryOpacity(1);
+    }, 200);
+  }
 
   // Build diamond API URL: scoped when we have a DB ring setting id, otherwise all diamonds
   // Look up the DB metal key (e.g. 'white_gold_18k') from the display label
@@ -155,12 +182,38 @@ export function RingDetailPage({ slug, dbRing, ringSettingId, galleryConfig }: P
         {/* ── SPLIT LAYOUT ───────────────────────────────────────────────── */}
         <div className="flex flex-col lg:flex-row">
 
-          {/* LEFT — gallery */}
+          {/* LEFT — gallery with optional metal variant tabs */}
           <div
             className="lg:w-[58%] lg:sticky lg:top-[80px]"
             style={{ maxHeight: 'calc(100vh - 80px)', overflow: 'hidden', padding: 8, background: '#fff' }}
           >
-            <ProductGallery data={galleryConfig ?? EMPTY_GALLERY} />
+            {/* Metal variant tabs — only shown when there are multiple enabled variants */}
+            {enabledVariants.length > 1 && (
+              <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+                {enabledVariants.map(v => {
+                  const act = v.metal === activeVariantMetal;
+                  return (
+                    <button
+                      key={v.metal}
+                      type="button"
+                      onClick={() => switchVariantMetal(v.metal)}
+                      style={{
+                        fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.14em',
+                        textTransform: 'uppercase', padding: '4px 10px', cursor: 'pointer',
+                        border: `1px solid ${act ? G : '#e8e8e8'}`,
+                        background: act ? G : '#fff',
+                        color: act ? '#fff' : G,
+                      }}
+                    >
+                      {METAL_DISPLAY[v.metal]}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <div style={{ opacity: galleryOpacity, transition: 'opacity 0.2s ease' }}>
+              <ProductGallery data={effectiveGalleryData} />
+            </div>
           </div>
 
           {/* RIGHT — sticky configuration panel */}

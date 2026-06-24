@@ -40,8 +40,9 @@ export interface RingSettingRecord {
   base_price_gbp: string | null
   is_published:   boolean
   sort_order:     number
-  gallery_config: unknown | null
-  created_by:     string | null
+  gallery_config:  unknown | null
+  metal_variants:  unknown | null
+  created_by:      string | null
   updated_by:     string | null
   created_at:     string
   updated_at:     string

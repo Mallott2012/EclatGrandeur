@@ -10,7 +10,11 @@ import { useShortlist, type ShortlistItem } from '@/hooks/useShortlist';
 import { Heart } from 'lucide-react';
 import { Media360Viewer } from '@/components/shared/Media360Viewer';
 import { ProductGallery } from '@/components/shared/ProductGallery';
-import { EMPTY_GALLERY, type GalleryData } from '@/lib/gallery/types';
+import {
+  EMPTY_GALLERY, type GalleryData,
+  type MetalVariant, type MetalKey,
+  METAL_DISPLAY, variantToGalleryData,
+} from '@/lib/gallery/types';
 
 
 const G      = '#1a2b1a';
@@ -48,13 +52,36 @@ interface Props {
   config:        JewelleryDetailConfig;
   /** DB id of the jewellery_products row — when present the diamond selector is
    *  scoped to only the diamonds assigned to this product. */
-  jewelleryId?:  string | null;
+  jewelleryId?:   string | null;
   galleryConfig?: GalleryData | null;
+  metalVariants?: MetalVariant[] | null;
 }
 
-export function JewelleryDetailPage({ product, config, jewelleryId, galleryConfig }: Props) {
+export function JewelleryDetailPage({ product, config, jewelleryId, galleryConfig, metalVariants }: Props) {
   const isVideo = (url: string) => url.toLowerCase().split('?')[0].match(/\.(mp4|mov|webm)$/) !== null;
   const [selectedMetal,   setSelectedMetal]   = useState(product.materials[0]);
+
+  // Metal variant gallery switching
+  const enabledVariants = metalVariants?.filter(v => v.enabled) ?? [];
+  const [activeVariantMetal, setActiveVariantMetal] = useState<MetalKey | null>(
+    enabledVariants[0]?.metal ?? null
+  );
+  const [galleryOpacity, setGalleryOpacity] = useState(1);
+  const activeVariant = activeVariantMetal
+    ? metalVariants?.find(v => v.metal === activeVariantMetal) ?? null
+    : null;
+  const effectiveGalleryData = activeVariant
+    ? variantToGalleryData(activeVariant)
+    : (galleryConfig ?? EMPTY_GALLERY);
+
+  function switchVariantMetal(key: MetalKey) {
+    if (key === activeVariantMetal) return;
+    setGalleryOpacity(0);
+    setTimeout(() => {
+      setActiveVariantMetal(key);
+      setGalleryOpacity(1);
+    }, 200);
+  }
   const [metalOpen,       setMetalOpen]       = useState(false);
   const [diamondOpen,     setDiamondOpen]     = useState(false);
   const [selectedDiamond, setSelectedDiamond] = useState<{ id: string; carat: number; color: string; clarity: string; price: number } | null>(null);
@@ -154,12 +181,37 @@ export function JewelleryDetailPage({ product, config, jewelleryId, galleryConfi
       {/* SPLIT LAYOUT */}
       <div className="flex flex-col lg:flex-row">
 
-        {/* LEFT — gallery */}
+        {/* LEFT — gallery with optional metal variant tabs */}
         <div
           className="lg:w-[58%] lg:sticky lg:top-[80px]"
           style={{ maxHeight: 'calc(100vh - 80px)', overflow: 'hidden', padding: 8, background: '#fff' }}
         >
-          <ProductGallery data={galleryConfig ?? EMPTY_GALLERY} />
+          {enabledVariants.length > 1 && (
+            <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+              {enabledVariants.map(v => {
+                const act = v.metal === activeVariantMetal;
+                return (
+                  <button
+                    key={v.metal}
+                    type="button"
+                    onClick={() => switchVariantMetal(v.metal)}
+                    style={{
+                      fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.14em',
+                      textTransform: 'uppercase', padding: '4px 10px', cursor: 'pointer',
+                      border: `1px solid ${act ? G : '#e8e8e8'}`,
+                      background: act ? G : '#fff',
+                      color: act ? '#fff' : G,
+                    }}
+                  >
+                    {METAL_DISPLAY[v.metal]}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          <div style={{ opacity: galleryOpacity, transition: 'opacity 0.2s ease' }}>
+            <ProductGallery data={effectiveGalleryData} />
+          </div>
         </div>
 
         {/* RIGHT — sticky configuration panel */}

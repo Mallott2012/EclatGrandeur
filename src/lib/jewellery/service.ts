@@ -145,6 +145,15 @@ export async function setJewelleryGallery(id: string, galleryConfig: unknown): P
   if (error) throw new Error('Failed to save gallery config')
 }
 
+export async function setJewelleryMetalVariants(id: string, metalVariants: unknown): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('jewellery_products')
+    .update({ metal_variants: metalVariants })
+    .eq('id', id)
+  if (error) throw new Error('Failed to save metal variants')
+}
+
 export async function updateJewelleryProduct(
   actor: StaffUser,
   id:    string,
