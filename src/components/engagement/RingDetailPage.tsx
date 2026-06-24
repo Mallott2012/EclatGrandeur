@@ -170,7 +170,7 @@ export function RingDetailPage({ slug, dbRing, ringSettingId }: Props) {
                     { scale: 1.10, x: '0%',  y: '0%'  }, // slot 0
                     { scale: 1.10, x: '0%',  y: '0%'  }, // slot 1
                     { scale: 1.10, x: '0%',  y: '0%'  }, // slot 2
-                    { scale: 1.10, x: '0%',  y: '0%'  }, // slot 3
+                    { scale: 1.10, x: '0%',  y: '-14%' }, // slot 3 — bottom-right: shifted up to match top-right vertical centre
                   ];
 
                   const tiles: React.ReactNode[] = [];
