@@ -1,10 +1,11 @@
 import { listRingSettings } from '@/lib/ring-settings/service';
 import { AdminProductGrid, type AdminProduct } from '@/components/admin/AdminProductGrid';
 import { METAL_LABELS } from '@/lib/ring-settings/types';
-import { RING_STYLES } from '@/lib/catalog/styles';
+import { listAllStyles } from '@/lib/catalog/service';
 
 export default async function AdminRingsPage() {
   const rings = await listRingSettings().catch(() => []);
+  const styles = await listAllStyles('engagement-rings').catch(() => []);
 
   const products: AdminProduct[] = rings.map((r) => ({
     id:        r.id,
@@ -25,7 +26,8 @@ export default async function AdminRingsPage() {
       addHref="/admin/rings/new"
       products={products}
       itemLabel="ring"
-      styles={RING_STYLES}
+      category="engagement-rings"
+      styles={styles}
     />
   );
 }

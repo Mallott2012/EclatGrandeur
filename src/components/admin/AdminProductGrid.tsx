@@ -4,7 +4,8 @@ import { useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Pencil, EyeOff, Plus } from 'lucide-react';
-import { StyleScroller, type StyleCard } from '@/components/shared/StyleScroller';
+import { StyleManager } from '@/components/admin/StyleManager';
+import type { CatalogStyle, StyleCategory } from '@/lib/catalog/service';
 
 const G      = '#1a2b1a';
 const STONE  = '#f5f3ef';
@@ -30,7 +31,8 @@ interface Props {
   addHref:   string;
   products:  AdminProduct[];
   itemLabel: string;
-  styles?:   { id: string; label: string }[];
+  category:  StyleCategory;
+  styles:    CatalogStyle[];
 }
 
 /* ── Admin card — mirrors the public ProductCard, with draft + edit affordances ── */
@@ -139,21 +141,8 @@ function AdminCard({ product, priority }: { product: AdminProduct; priority: boo
   );
 }
 
-export function AdminProductGrid({ title, lede, addHref, products, itemLabel, styles = [] }: Props) {
-  const [activeStyle, setActiveStyle] = useState<string | null>(null);
-
-  const styleHasMatches = activeStyle ? products.some(p => p.style === activeStyle) : false;
-  const filtered = products.filter(p => {
-    if (activeStyle && styleHasMatches && p.style !== activeStyle) return false;
-    return true;
-  });
-
-  const styleCards: StyleCard[] = styles.map((s, i) => ({
-    id:    s.id,
-    label: s.label,
-    image: products.find(p => p.style === s.id)?.image
-        ?? (products.length ? products[i % products.length].image : undefined),
-  }));
+export function AdminProductGrid({ title, lede, addHref, products, itemLabel, category, styles }: Props) {
+  const filtered = products;
 
   return (
     <div className="min-h-screen bg-white" style={{ color: G }}>
@@ -171,12 +160,8 @@ export function AdminProductGrid({ title, lede, addHref, products, itemLabel, st
         </h1>
       </div>
 
-      {/* ── STYLE SCROLLER — identical to the public page ──────────────── */}
-      <StyleScroller
-        cards={styleCards}
-        activeId={activeStyle}
-        onSelect={(id) => setActiveStyle(prev => (prev === id ? null : id))}
-      />
+      {/* ── STYLE MANAGER — editable version of the public scroller ────── */}
+      <StyleManager category={category} initialStyles={styles} />
 
       {/* ── TOOLBAR ─────────────────────────────────────────────────────── */}
       <div

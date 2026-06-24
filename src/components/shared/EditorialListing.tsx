@@ -36,7 +36,7 @@ export interface EditorialListingProps {
   categoryLede:   string;
   basePath:       string;
   itemLabel:      string;
-  styles?:        { id: string; label: string }[];
+  styles?:        { id: string; label: string; image?: string | null }[];
   items:          EditorialItem[];
   enableMetals?:  boolean;
 }
@@ -190,7 +190,8 @@ export function EditorialListing({
   const styleCards: StyleCard[] = styles.map((s, i) => ({
     id:    s.id,
     label: s.label,
-    image: items.find(it => it.style === s.id)?.image
+    image: s.image
+        ?? items.find(it => it.style === s.id)?.image
         ?? (items.length ? items[i % items.length].image : undefined),
   }));
 

@@ -18,7 +18,7 @@ export interface JewelleryConfig {
   heroCopy:     string;
   heroImage:    string;   // legacy — no longer used
   basePath:     string;
-  styles:       { id: string; label: string }[];
+  styles:       { id: string; label: string; image?: string | null }[];
   itemLabel:    string;
   products:     JewelleryProduct[];
   collageSlots: unknown[]; // legacy — no longer used

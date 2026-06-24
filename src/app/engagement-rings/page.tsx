@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { listRingSettings } from '@/lib/ring-settings/service';
-import type { RingSettingFull } from '@/lib/ring-settings/types';
 import { EngagementRingPage } from '@/components/engagement/EngagementRingPage';
+import { listVisibleStyles } from '@/lib/catalog/service';
 
 export const metadata: Metadata = {
   title: 'Engagement Rings — Éclat Grandeur',
@@ -11,5 +11,7 @@ export const metadata: Metadata = {
 export default async function Page() {
   const all      = await listRingSettings().catch(() => []);
   const settings = all.filter(s => s.is_published);
-  return <EngagementRingPage settings={settings} />;
+  const dbStyles = await listVisibleStyles('engagement-rings').catch(() => []);
+  const styles   = dbStyles.map(s => ({ id: s.slug, label: s.label, image: s.image_url }));
+  return <EngagementRingPage settings={settings} styles={styles} />;
 }

@@ -1,9 +1,10 @@
 import { listJewelleryProducts } from '@/lib/jewellery/service';
 import { AdminProductGrid, type AdminProduct } from '@/components/admin/AdminProductGrid';
-import { EARRING_STYLES } from '@/lib/catalog/styles';
+import { listAllStyles } from '@/lib/catalog/service';
 
 export default async function AdminEarringsPage() {
   const products_db = await listJewelleryProducts('earrings').catch(() => []);
+  const styles = await listAllStyles('earrings').catch(() => []);
 
   const products: AdminProduct[] = products_db.map((p) => ({
     id:        p.id,
@@ -24,7 +25,8 @@ export default async function AdminEarringsPage() {
       addHref="/admin/earrings/new"
       products={products}
       itemLabel="earring"
-      styles={EARRING_STYLES}
+      category="earrings"
+      styles={styles}
     />
   );
 }

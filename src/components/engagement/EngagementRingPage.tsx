@@ -1,12 +1,12 @@
 import { EditorialListing, type EditorialItem } from '@/components/shared/EditorialListing';
 import type { RingSettingFull } from '@/lib/ring-settings/types';
-import { RING_STYLES } from '@/lib/catalog/styles';
 
 interface Props {
   settings: RingSettingFull[];
+  styles:   { id: string; label: string; image?: string | null }[];
 }
 
-export function EngagementRingPage({ settings }: Props) {
+export function EngagementRingPage({ settings, styles }: Props) {
   const items: EditorialItem[] = settings.map(ring => {
     const media      = ring.media ?? [];
     const image      = media.find(m => m.media_type === 'image' && m.is_primary)?.storage_path
@@ -38,7 +38,7 @@ export function EngagementRingPage({ settings }: Props) {
       basePath="/engagement-rings"
       itemLabel="ring"
       enableMetals
-      styles={RING_STYLES}
+      styles={styles}
       items={items}
     />
   );
