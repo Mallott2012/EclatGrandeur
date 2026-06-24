@@ -9,6 +9,7 @@ import {
   assignDiamondToRingSetting,
   unassignDiamondFromRingSetting,
   getRingSettingDiamonds,
+  setRingSettingGallery,
 } from '@/lib/ring-settings/service'
 import {
   createDiamond,
@@ -94,6 +95,14 @@ export async function deleteDiamondAction(id: string) {
   const user = await requireStaffRole([])
   await deleteDiamond(user, id)
   revalidatePath('/admin/rings')
+}
+
+export async function saveRingGalleryAction(id: string, galleryConfig: unknown) {
+  await requireStaffRole([])
+  await setRingSettingGallery(id, galleryConfig)
+  revalidatePath(`/admin/rings/${id}`)
+  revalidatePath('/engagement-rings')
+  revalidatePath(`/engagement-rings/[slug]`, 'page')
 }
 
 export { listDiamonds }

@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { getJewelleryProduct, getJewelleryDiamonds, addJewelleryProductMedia, deleteJewelleryProductMedia, reorderJewelleryProductMedia, setJewelleryMediaMetal } from '@/lib/jewellery/service';
+import { getJewelleryProduct, getJewelleryDiamonds, addJewelleryProductMedia, deleteJewelleryProductMedia, reorderJewelleryProductMedia, setJewelleryMediaMetal, setJewelleryGallery } from '@/lib/jewellery/service';
+import { parseGalleryConfig } from '@/lib/gallery/types';
 import { uploadJewelleryMedia, deleteJewelleryMedia } from '@/lib/storage/jewellery';
 import { requireStaffRole } from '@/lib/staff';
 import { AdminProductEditor } from '@/components/admin/AdminProductEditor';
@@ -42,6 +43,8 @@ export default async function AdminEARRINGEditPage({ params }: Props) {
     gia_report_number: d.gia_report_number,
     gia_report_url: d.gia_report_url, notes: d.notes,
   }));
+
+  const galleryConfig = parseGalleryConfig(product.gallery_config);
 
   return (
     <AdminProductEditor
@@ -119,6 +122,15 @@ export default async function AdminEARRINGEditPage({ params }: Props) {
         'use server';
         await requireStaffRole([]);
         await setJewelleryMediaMetal(id, mediaId, metal);
+        revalidatePath(`/admin/earrings/${id}`);
+        revalidatePath('/earrings');
+        revalidatePath('/earrings/[slug]', 'page');
+      }}
+      galleryConfig={galleryConfig}
+      onSaveGallery={async (data) => {
+        'use server';
+        await requireStaffRole([]);
+        await setJewelleryGallery(id, data);
         revalidatePath(`/admin/earrings/${id}`);
         revalidatePath('/earrings');
         revalidatePath('/earrings/[slug]', 'page');

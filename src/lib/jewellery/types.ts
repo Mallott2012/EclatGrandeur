@@ -22,6 +22,7 @@ export interface JewelleryProductRecord {
   is_pair:        boolean
   is_published:   boolean
   sort_order:     number
+  gallery_config: unknown | null
   created_by:     string | null
   updated_by:     string | null
   created_at:     string
@@ -56,6 +57,7 @@ export interface JewelleryProduct {
   is_pair:        boolean
   is_published:   boolean
   sort_order:     number
+  gallery_config: unknown | null
   created_at:     string
   updated_at:     string
   media:          JewelleryProductMediaRecord[]
@@ -70,6 +72,7 @@ export function parseJewelleryProduct(
   return {
     ...r,
     base_price_gbp: parseFloat(r.base_price_gbp),
+    gallery_config: r.gallery_config ?? null,
     media,
   }
 }

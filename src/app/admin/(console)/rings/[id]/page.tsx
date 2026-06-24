@@ -14,7 +14,9 @@ import {
   createDiamondAction,
   updateDiamondAction,
   deleteDiamondAction,
+  saveRingGalleryAction,
 } from './actions';
+import { parseGalleryConfig } from '@/lib/gallery/types';
 import type { DiamondRow } from '@/components/admin/DiamondPanel';
 
 interface Props { params: Promise<{ id: string }> }
@@ -59,6 +61,8 @@ export default async function AdminRingEditPage({ params }: Props) {
     gia_report_url:   d.gia_report_url,
     notes:            d.notes,
   }));
+
+  const galleryConfig = parseGalleryConfig(ring.gallery_config);
 
   return (
     <AdminProductEditor
@@ -157,6 +161,11 @@ export default async function AdminRingEditPage({ params }: Props) {
         revalidatePath(`/admin/rings/${id}`);
         revalidatePath('/engagement-rings');
         revalidatePath('/engagement-rings/[slug]', 'page');
+      }}
+      galleryConfig={galleryConfig}
+      onSaveGallery={async (data) => {
+        'use server';
+        await saveRingGalleryAction(id, data);
       }}
       categoryLabel="Engagement Rings"
       categoryHref="/engagement-rings"

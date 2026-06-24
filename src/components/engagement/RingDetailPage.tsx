@@ -9,6 +9,8 @@ import { DiamondSelector } from './DiamondSelector';
 import { useShortlist, type ShortlistItem } from '@/hooks/useShortlist';
 import { Heart } from 'lucide-react';
 import { Media360Viewer } from '@/components/shared/Media360Viewer';
+import { ProductGallery } from '@/components/shared/ProductGallery';
+import { EMPTY_GALLERY, type GalleryData } from '@/lib/gallery/types';
 
 const G      = '#1a2b1a';
 const BORDER = '#e8e8e8';
@@ -64,9 +66,10 @@ interface Props {
   /** DB id of the ring_settings row — when present the diamond selector is scoped
    *  to only the diamonds assigned to this ring + selected metal. */
   ringSettingId?: string | null;
+  galleryConfig?: GalleryData | null;
 }
 
-export function RingDetailPage({ slug, dbRing, ringSettingId }: Props) {
+export function RingDetailPage({ slug, dbRing, ringSettingId, galleryConfig }: Props) {
   const ring = dbRing ?? RINGS[slug] ?? FALLBACK;
 
   const [selectedMetal,   setSelectedMetal]   = useState(ring.materials[0]);
@@ -138,7 +141,7 @@ export function RingDetailPage({ slug, dbRing, ringSettingId }: Props) {
 
   return (
     <>
-      <div className="min-h-screen bg-white" style={{ color: G }}>
+      <div className="min-h-screen bg-white pb-10 lg:pb-20" style={{ color: G }}>
 
         {/* ── BREADCRUMB — pt clears fixed header ────────────────────────── */}
         <nav className="flex items-center gap-2 px-8 lg:px-14 pt-24 pb-5" style={{ borderBottom: `1px solid ${BORDER}` }} aria-label="Breadcrumb">
@@ -152,76 +155,12 @@ export function RingDetailPage({ slug, dbRing, ringSettingId }: Props) {
         {/* ── SPLIT LAYOUT ───────────────────────────────────────────────── */}
         <div className="flex flex-col lg:flex-row">
 
-          {/* LEFT — 2×2 gallery with per-tile crop/scale normalisation */}
+          {/* LEFT — gallery */}
           <div
             className="lg:w-[58%] lg:sticky lg:top-[80px]"
             style={{ maxHeight: 'calc(100vh - 80px)', overflow: 'hidden', padding: 8, background: '#fff' }}
           >
-            {/* padding-bottom:100% = guaranteed square regardless of flex/grid context */}
-            <div style={{ position: 'relative', width: '100%', paddingBottom: '100%' }}>
-              <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 6 }}>
-
-                {/* Per-tile crop config — adjust scale/x/y until each ring
-                    occupies ~65% of the tile and the stone is centred.
-                    Slot 0 = top-left, 1 = top-right, 2 = bottom-left, 3 = bottom-right.
-                    If a 360° video occupies slot 0 the image slots shift by one. */}
-                {(() => {
-                  const cropConfig: { scale: number; x: string; y: string }[] = [
-                    { scale: 1.10, x: '0%',  y: '0%'  }, // slot 0
-                    { scale: 1.10, x: '0%',  y: '0%'  }, // slot 1
-                    { scale: 1.10, x: '0%',  y: '0%'  }, // slot 2
-                    { scale: 1.10, x: '0%',  y: '-14%' }, // slot 3 — bottom-right: shifted up to match top-right vertical centre
-                  ];
-
-                  const tiles: React.ReactNode[] = [];
-                  let slot = 0;
-
-                  if (video360Url) {
-                    tiles.push(
-                      <div key="video" style={{ position: 'relative', overflow: 'hidden', background: '#fff' }}>
-                        <Media360Viewer src={video360Url} poster={displayImages[0]} className="absolute inset-0 w-full h-full" />
-                      </div>
-                    );
-                    slot = 1;
-                  }
-
-                  displayImages.forEach((img, i) => {
-                    const cfg = cropConfig[slot] ?? { scale: 1.0, x: '0%', y: '0%' };
-                    const isFirst = i === 0 && !video360Url;
-                    tiles.push(
-                      <div key={`${selectedMetal}-${i}`} style={{ position: 'relative', overflow: 'hidden', background: '#fff' }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={img}
-                          alt={`${ring.name} — view ${i + 1}`}
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'contain',
-                            transform: `translate(${cfg.x}, ${cfg.y}) scale(${isFirst ? cfg.scale * diamondScale : cfg.scale})`,
-                            transition: isFirst ? 'transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)' : undefined,
-                            transformOrigin: 'center center',
-                          }}
-                        />
-                        {isFirst && selectedDiamond && (
-                          <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-none">
-                            <span className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.22em', color: '#aaa' }}>
-                              {selectedDiamond.carat.toFixed(2)}ct · approximate size
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                    slot++;
-                  });
-
-                  return tiles;
-                })()}
-
-              </div>
-            </div>
+            <ProductGallery data={galleryConfig ?? EMPTY_GALLERY} />
           </div>
 
           {/* RIGHT — sticky configuration panel */}

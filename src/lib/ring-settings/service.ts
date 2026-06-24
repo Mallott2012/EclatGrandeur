@@ -214,6 +214,15 @@ export async function deleteRingSettingMedia(
   if (error) throw new ServiceException({ code: 'db_error', message: 'Failed to delete media', statusHint: 500 })
 }
 
+export async function setRingSettingGallery(id: string, galleryConfig: unknown): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('ring_settings')
+    .update({ gallery_config: galleryConfig })
+    .eq('id', id)
+  if (error) throw new ServiceException({ code: 'db_error', message: 'Failed to save gallery config', statusHint: 500 })
+}
+
 /** Remove a diamond from a ring setting + metal combo */
 export async function unassignDiamondFromRingSetting(
   ringSettingId: string,

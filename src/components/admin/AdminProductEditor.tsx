@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -12,6 +12,8 @@ import {
 import { DiamondPanel, type DiamondRow } from '@/components/admin/DiamondPanel';
 import { MediaDropZone } from '@/components/admin/MediaDropZone';
 import { Media360Viewer } from '@/components/shared/Media360Viewer';
+import { ProductGallery } from '@/components/shared/ProductGallery';
+import { EMPTY_GALLERY, type GalleryData, type GallerySlot } from '@/lib/gallery/types';
 
 const isVideoUrl = (url: string) => url.toLowerCase().endsWith('.mp4');
 
@@ -170,6 +172,9 @@ export interface AdminProductData {
   published:   boolean;
   categoryLabel: string;  // e.g. 'Engagement Rings'
   categoryHref:  string;  // e.g. '/engagement-rings' (frontend link)
+  // gallery config
+  galleryConfig?:  GalleryData;
+  onSaveGallery?:  (data: GalleryData) => Promise<void>;
   // diamond management (full CRUD + assignment)
   assignedDiamondIds:  string[];
   allDiamonds:         DiamondRow[];
@@ -215,6 +220,8 @@ export function AdminProductEditor(props: AdminProductData) {
   const [panelDragOver,  setPanelDragOver]  = useState(false);
   const [panelUploading, setPanelUploading] = useState(false);
   const [panelUploadErr, setPanelUploadErr] = useState<string | null>(null);
+  const [galleryData,    setGalleryData]    = useState<GalleryData>(props.galleryConfig ?? EMPTY_GALLERY);
+  const gallerySaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedMetal = metals[0] ?? 'Platinum';
   const metalMeta = ALL_METALS.find(m => m.label === selectedMetal || m.id === selectedMetal) ?? ALL_METALS[0];
@@ -315,6 +322,24 @@ export function AdminProductEditor(props: AdminProductData) {
     }
   }
 
+  async function handleGalleryUpload(_slot: GallerySlot, fd: FormData): Promise<string> {
+    const item = await props.onUploadMedia(fd);
+    return item.url;
+  }
+
+  function handleGalleryChange(data: GalleryData) {
+    setGalleryData(data);
+    if (!props.onSaveGallery) return;
+    if (gallerySaveTimer.current) clearTimeout(gallerySaveTimer.current);
+    gallerySaveTimer.current = setTimeout(() => {
+      startTransition(async () => {
+        await props.onSaveGallery!(data);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2200);
+      });
+    }, 600);
+  }
+
   const currentImage = mediaItems[activeImage]?.url ?? '';
   const displayPrice   = `Starting from £${basePrice.toLocaleString('en-GB')}`;
 
@@ -380,210 +405,17 @@ export function AdminProductEditor(props: AdminProductData) {
       {/* ── SPLIT LAYOUT ────────────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row">
 
-        {/* LEFT — sticky image panel, matches frontend layout */}
+        {/* LEFT — sticky gallery panel */}
         <div
-          className="lg:w-[58%] lg:sticky lg:top-[113px] lg:h-[calc(100vh-113px)] flex overflow-hidden relative"
-          style={{ background: '#f8f7f5' }}
-          onDragOver={e => { e.preventDefault(); setPanelDragOver(true); }}
-          onDragLeave={e => {
-            if (!e.currentTarget.contains(e.relatedTarget as Node)) setPanelDragOver(false);
-          }}
-          onDrop={e => {
-            e.preventDefault();
-            setPanelDragOver(false);
-            handlePanelDrop(e.dataTransfer.files);
-          }}
+          className="lg:w-[58%] lg:sticky lg:top-[113px] lg:h-[calc(100vh-113px)] overflow-y-auto"
+          style={{ background: '#fff', padding: 16 }}
         >
-          {/* Vertical thumbnail strip (desktop) */}
-          <div className="hidden lg:flex flex-col gap-2 p-4 overflow-y-auto flex-shrink-0" style={{ width: 88 }}>
-            {mediaItems.map((item, i) => (
-              <div
-                key={item.id}
-                className="flex-shrink-0"
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}
-              >
-                {/* Thumbnail */}
-                <div
-                  onClick={() => setActiveImage(i)}
-                  className="relative cursor-pointer"
-                  style={{ width: 64, height: 64, border: i === activeImage ? `1.5px solid ${G}` : `1px solid ${BORDER}`, padding: 3, background: '#fff', flexShrink: 0 }}
-                >
-                  {isVideoUrl(item.url) ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-                      <RotateCw className="w-4 h-4" style={{ color: '#bbb' }} strokeWidth={1.5} />
-                      <span className="font-sans uppercase" style={{ fontSize: 7, letterSpacing: '0.18em', color: '#bbb' }}>360°</span>
-                    </div>
-                  ) : (
-                    <Image src={item.url} alt="" fill className="object-contain" sizes="64px" />
-                  )}
-
-                  {/* Star badge */}
-                  <button
-                    type="button"
-                    onClick={e => { e.stopPropagation(); setPrimary(item.id); }}
-                    className="absolute top-0.5 left-0.5 z-10 flex items-center justify-center"
-                    style={{ width: 14, height: 14, background: item.isPrimary ? G : 'rgba(255,255,255,0.85)', borderRadius: 2 }}
-                    title={item.isPrimary ? 'Card image' : 'Set as card image'}
-                  >
-                    <Star className="w-2 h-2" style={{ color: item.isPrimary ? '#fff' : '#bbb', fill: item.isPrimary ? '#fff' : 'none' }} strokeWidth={2} />
-                  </button>
-
-                  {/* Heart badge */}
-                  {!item.isPrimary && (
-                    <button
-                      type="button"
-                      onClick={e => { e.stopPropagation(); setSecondary(item.id); }}
-                      className="absolute top-0.5 right-0.5 z-10 flex items-center justify-center"
-                      style={{ width: 14, height: 14, background: item.isSecondary ? '#c84b4b' : 'rgba(255,255,255,0.85)', borderRadius: 2 }}
-                      title={item.isSecondary ? 'Hover image' : 'Set as hover image'}
-                    >
-                      <Heart className="w-2 h-2" style={{ color: item.isSecondary ? '#fff' : '#ddd', fill: item.isSecondary ? '#fff' : 'none' }} strokeWidth={2} />
-                    </button>
-                  )}
-                </div>
-
-                {/* Reorder up/down */}
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => moveMedia(i, -1)}
-                    disabled={i === 0}
-                    className="disabled:opacity-20"
-                    style={{ padding: '1px 3px', border: `1px solid ${BORDER}`, lineHeight: 1 }}
-                    title="Move up"
-                  >
-                    <ChevronUp className="w-2.5 h-2.5" style={{ color: '#888' }} strokeWidth={2} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveMedia(i, 1)}
-                    disabled={i === mediaItems.length - 1}
-                    className="disabled:opacity-20"
-                    style={{ padding: '1px 3px', border: `1px solid ${BORDER}`, lineHeight: 1 }}
-                    title="Move down"
-                  >
-                    <ChevronDown className="w-2.5 h-2.5" style={{ color: '#888' }} strokeWidth={2} />
-                  </button>
-                </div>
-
-                {/* Metal variant tag */}
-                {props.onSetMediaMetal && (
-                  <div style={{ width: 64 }}>
-                    <select
-                      value={item.metal ?? ''}
-                      onChange={e => { e.stopPropagation(); setMediaMetal(item.id, e.target.value || null); }}
-                      className="w-full font-sans"
-                      style={{ fontSize: 9, padding: '2px 2px', border: `1px solid ${BORDER}`, background: '#fff', color: '#555', cursor: 'pointer', appearance: 'auto' }}
-                      title="Set metal variant"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <option value="">All metals</option>
-                      {metals.map(m => (
-                        <option key={m} value={m}>
-                          {ALL_METALS.find(x => x.id === m)?.label ?? m}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {/* Add media button */}
-            <div style={{ width: 64 }}>
-              <MediaDropZone onUpload={uploadForDropZone} onUploaded={() => {}} disabled={pending} />
-            </div>
-          </div>
-
-          {/* Main image */}
-          <div className="flex-1 min-h-0 relative overflow-hidden aspect-square lg:aspect-auto">
-            {mediaItems.length === 0 && !panelDragOver && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none">
-                <Upload className="w-8 h-8" style={{ color: '#ddd' }} strokeWidth={1} />
-                <span className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.2em', color: '#ccc' }}>
-                  Drop an image or video here
-                </span>
-              </div>
-            )}
-
-            {mediaItems.length > 0 && currentImage && (
-              isVideoUrl(currentImage) ? (
-                <Media360Viewer src={currentImage} className="absolute inset-0 w-full h-full" />
-              ) : (
-                <Image
-                  key={activeImage}
-                  src={currentImage}
-                  alt={name}
-                  fill
-                  className="object-contain"
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  style={{ padding: '19%' }}
-                />
-              )
-            )}
-
-            {/* Remove button */}
-            {mediaItems.length > 0 && (
-              <button
-                type="button"
-                onClick={() => removeMedia(activeImage)}
-                className="absolute top-4 right-4 flex items-center gap-1.5 font-sans uppercase"
-                style={{ fontSize: 9, letterSpacing: '0.2em', color: '#fff', background: 'rgba(180,50,50,0.72)', padding: '4px 9px' }}
-              >
-                <Trash2 className="w-2.5 h-2.5" strokeWidth={2} /> Remove
-              </button>
-            )}
-
-            {/* Mobile thumbnail strip */}
-            <div className="lg:hidden absolute bottom-4 left-0 right-0 flex items-center justify-center gap-2 px-4">
-              {mediaItems.map((item, i) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setActiveImage(i)}
-                  className="relative flex-shrink-0"
-                  style={{ width: 48, height: 48, border: i === activeImage ? `1.5px solid ${G}` : `1px solid ${BORDER}`, padding: 2, background: '#fff' }}
-                >
-                  {isVideoUrl(item.url) ? (
-                    <RotateCw className="w-4 h-4 m-auto" style={{ color: '#bbb' }} strokeWidth={1.5} />
-                  ) : (
-                    <Image src={item.url} alt="" fill className="object-contain" sizes="48px" />
-                  )}
-                </button>
-              ))}
-              <MediaDropZone onUpload={uploadForDropZone} onUploaded={() => {}} disabled={pending} />
-            </div>
-
-            {/* Drag-over overlay */}
-            {(panelDragOver || panelUploading) && (
-              <div
-                className="absolute inset-0 flex flex-col items-center justify-center gap-4 pointer-events-none"
-                style={{ background: 'rgba(255,255,255,0.92)', border: `2px dashed ${G}`, zIndex: 20 }}
-              >
-                {panelUploading ? (
-                  <>
-                    <Loader2 className="w-10 h-10 animate-spin" style={{ color: G }} strokeWidth={1} />
-                    <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.2em', color: G }}>Uploading…</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-10 h-10" style={{ color: G }} strokeWidth={1} />
-                    <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.2em', color: G }}>Drop to upload</span>
-                  </>
-                )}
-              </div>
-            )}
-            {panelUploadErr && (
-              <div
-                className="absolute bottom-24 left-1/2 -translate-x-1/2 font-sans"
-                style={{ fontSize: 11, color: '#e05050', background: '#fff8f8', border: '1px solid #fcc', padding: '4px 12px', whiteSpace: 'nowrap' }}
-              >
-                {panelUploadErr}
-              </div>
-            )}
-          </div>
-
+          <ProductGallery
+            data={galleryData}
+            editable
+            onUpload={handleGalleryUpload}
+            onChange={handleGalleryChange}
+          />
         </div>
 
         {/* RIGHT — configuration panel, mirrors frontend exactly */}

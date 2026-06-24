@@ -136,6 +136,15 @@ export async function createJewelleryProduct(
   return parseJewelleryProduct(data as JewelleryProductRecord)
 }
 
+export async function setJewelleryGallery(id: string, galleryConfig: unknown): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('jewellery_products')
+    .update({ gallery_config: galleryConfig })
+    .eq('id', id)
+  if (error) throw new Error('Failed to save gallery config')
+}
+
 export async function updateJewelleryProduct(
   actor: StaffUser,
   id:    string,
