@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import useSWR from 'swr';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, ChevronDown, RotateCw } from 'lucide-react';
@@ -72,11 +73,14 @@ export function RingDetailPage({ slug, dbRing, ringSettingId }: Props) {
 
   // Build diamond API URL: scoped when we have a DB ring setting id, otherwise all diamonds
   // Look up the DB metal key (e.g. 'white_gold_18k') from the display label
-  const isVideo = (url: string) => url.toLowerCase().endsWith('.mp4');
+  const isVideo = (url: string) => url.toLowerCase().split('?')[0].match(/\.(mp4|mov|webm)$/) !== null;
   const selectedMetalId = METALS.find(m => m.label === selectedMetal)?.id ?? selectedMetal
   const diamondApiUrl = ringSettingId
     ? `/api/diamonds?ring_setting_id=${ringSettingId}&metal=${encodeURIComponent(selectedMetalId)}`
     : '/api/diamonds'
+
+  // Pre-warm the SWR cache so diamonds are ready before the panel opens
+  useSWR(diamondApiUrl, (url: string) => fetch(url).then(r => r.json()).then((d: { diamonds: Diamond[] }) => d.diamonds), { revalidateOnFocus: false });
 
   // Filter media by selected metal; fall back to untagged (null) if no metal-specific images exist
   const filteredMedia = (() => {
@@ -85,8 +89,12 @@ export function RingDetailPage({ slug, dbRing, ringSettingId }: Props) {
     const generic = ring.media.filter(m => !m.metal);
     return generic.length > 0 ? generic : ring.media;
   })();
-  const video360Url  = filteredMedia.find(m => isVideo(m.url))?.url ?? null;
+  const video360Url   = filteredMedia.find(m => isVideo(m.url))?.url ?? null;
   const displayImages = filteredMedia.filter(m => !isVideo(m.url)).map(m => m.url);
+
+  // Grid dimensions — computed before return so no IIFE needed in JSX
+  const gridItems = (video360Url ? 1 : 0) + displayImages.length;
+  const gridRows  = Math.max(1, Math.ceil(gridItems / 2));
 
   const [metalOpen,       setMetalOpen]       = useState(false);
   const [diamondOpen,     setDiamondOpen]     = useState(false);
@@ -144,31 +152,22 @@ export function RingDetailPage({ slug, dbRing, ringSettingId }: Props) {
         {/* ── SPLIT LAYOUT ───────────────────────────────────────────────── */}
         <div className="flex flex-col lg:flex-row">
 
-          {/* LEFT — 2×2 image grid */}
-          {(() => {
-            const allItems = (video360Url ? 1 : 0) + displayImages.length;
-            const numRows  = Math.max(1, Math.ceil(allItems / 2));
-            return (
-          <div className="lg:w-[58%] lg:sticky lg:top-[80px] lg:h-[calc(100vh-80px)] overflow-hidden" style={{ background: '#fff' }}>
-            <div
-              className="grid grid-cols-2 w-full h-full"
-              style={{ gridTemplateRows: `repeat(${numRows}, 1fr)` }}
-            >
-              {/* 360° cell first if available */}
-              {video360Url && (
-                <div className="relative overflow-hidden" style={{ background: '#fff' }}>
-                  <Media360Viewer src={video360Url} poster={displayImages[0]} className="absolute inset-0 w-full h-full" />
-                </div>
-              )}
-
-              {displayImages.map((img, i) => {
-                const isLastOdd = allItems % 2 === 1 && i === displayImages.length - 1;
-                return (
-                  <div
-                    key={`${selectedMetal}-${i}`}
-                    className="relative overflow-hidden"
-                    style={{ background: '#fff', gridColumn: isLastOdd ? 'span 2' : undefined }}
-                  >
+          {/* LEFT — square image grid */}
+          <div
+            className="lg:w-[58%] lg:sticky lg:top-[80px]"
+            style={{ maxHeight: 'calc(100vh - 80px)', overflow: 'hidden', padding: 8, background: '#fff' }}
+          >
+            {/* padding-bottom:100% forces height = width (guaranteed square) */}
+            <div style={{ position: 'relative', width: '100%', paddingBottom: '100%' }}>
+              {/* absolute fill → grid has fully definite dimensions */}
+              <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 6 }}>
+                {video360Url && (
+                  <div style={{ position: 'relative', overflow: 'hidden' }}>
+                    <Media360Viewer src={video360Url} poster={displayImages[0]} className="absolute inset-0 w-full h-full" />
+                  </div>
+                )}
+                {displayImages.map((img, i) => (
+                  <div key={`${selectedMetal}-${i}`} style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image
                       src={img}
                       alt={`${ring.name} — view ${i + 1}`}
@@ -176,10 +175,7 @@ export function RingDetailPage({ slug, dbRing, ringSettingId }: Props) {
                       className="object-contain"
                       priority={i === 0}
                       sizes="(max-width: 1024px) 50vw, 29vw"
-                      style={{
-                        padding: '10%',
-                        ...(i === 0 ? { transform: `scale(${diamondScale})`, transition: 'transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)', transformOrigin: 'center center' } : {}),
-                      }}
+                      style={i === 0 ? { transform: `scale(${diamondScale})`, transition: 'transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)', transformOrigin: 'center center' } : undefined}
                     />
                     {i === 0 && selectedDiamond && (
                       <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-none">
@@ -189,17 +185,14 @@ export function RingDetailPage({ slug, dbRing, ringSettingId }: Props) {
                       </div>
                     )}
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
           </div>
-            );
-          })()}
 
           {/* RIGHT — sticky configuration panel */}
           <div
             className="lg:w-[42%] lg:sticky lg:top-[80px] lg:h-[calc(100vh-80px)] lg:overflow-y-auto px-8 lg:px-12 pt-12 pb-20 flex flex-col"
-            style={{ borderLeft: `1px solid ${BORDER}` }}
           >
 
             {/* Name */}
@@ -381,6 +374,28 @@ export function RingDetailPage({ slug, dbRing, ringSettingId }: Props) {
             </div>
 
           </div>
+        </div>
+      </div>
+
+      {/* ── BELOW FOLD ─────────────────────────────────────────────────────── */}
+      <div className="max-w-5xl mx-auto px-8 py-20" style={{ borderTop: `1px solid ${BORDER}` }}>
+        <p className="font-sans uppercase text-center" style={{ fontSize: 10, letterSpacing: '0.3em', color: '#bbb', marginBottom: 40 }}>
+          Ring Details
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {[
+            { label: 'Setting Style',   value: 'Solitaire' },
+            { label: 'Metal Options',   value: ring.materials.join(', ') },
+            { label: 'Centre Stone',    value: "Customer's Choice of Diamond" },
+            { label: 'Band Width',      value: '1.8 mm' },
+            { label: 'Setting Height',  value: '5.5 mm' },
+            { label: 'Warranty',        value: 'Lifetime complimentary' },
+          ].map(({ label, value }) => (
+            <div key={label} style={{ borderBottom: `1px solid ${BORDER}`, paddingBottom: 16 }}>
+              <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#bbb', marginBottom: 6 }}>{label}</p>
+              <p className="font-sans" style={{ fontSize: 13, color: '#444', fontWeight: 300 }}>{value}</p>
+            </div>
+          ))}
         </div>
       </div>
 

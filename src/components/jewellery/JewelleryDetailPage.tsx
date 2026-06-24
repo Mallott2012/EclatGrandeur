@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import useSWR from 'swr';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, ChevronDown, RotateCw } from 'lucide-react';
@@ -49,7 +50,7 @@ interface Props {
 }
 
 export function JewelleryDetailPage({ product, config, jewelleryId }: Props) {
-  const isVideo = (url: string) => url.toLowerCase().endsWith('.mp4');
+  const isVideo = (url: string) => url.toLowerCase().split('?')[0].match(/\.(mp4|mov|webm)$/) !== null;
   const [selectedMetal,   setSelectedMetal]   = useState(product.materials[0]);
   const [metalOpen,       setMetalOpen]       = useState(false);
   const [diamondOpen,     setDiamondOpen]     = useState(false);
@@ -77,6 +78,13 @@ export function JewelleryDetailPage({ product, config, jewelleryId }: Props) {
   const diamondApiUrl = jewelleryId
     ? `/api/diamonds?jewellery_id=${jewelleryId}`
     : '/api/diamonds'
+
+  // Pre-warm the SWR cache so diamonds are ready before the panel opens
+  useSWR(showDiamond ? diamondApiUrl : null, (url: string) => fetch(url).then(r => r.json()), { revalidateOnFocus: false });
+
+  // Grid dimensions — computed before JSX
+  const gridItems = (video360Url ? 1 : 0) + displayImages.length;
+  const gridRows  = Math.max(1, Math.ceil(gridItems / 2));
 
   // price: base setting + diamond(s)
   const caratExtra   = isTotalCarat && selectedCarat ? Math.round(selectedCarat * (product.pricePerCarat ?? 0)) : 0;
@@ -143,31 +151,22 @@ export function JewelleryDetailPage({ product, config, jewelleryId }: Props) {
       {/* SPLIT LAYOUT */}
       <div className="flex flex-col lg:flex-row">
 
-        {/* LEFT — 2×2 image grid */}
-        {(() => {
-          const allItems = (video360Url ? 1 : 0) + displayImages.length;
-          const numRows  = Math.max(1, Math.ceil(allItems / 2));
-          return (
-        <div className="lg:w-[58%] lg:sticky lg:top-[80px] lg:h-[calc(100vh-80px)] overflow-hidden" style={{ background: '#fff' }}>
-          <div
-            className="grid grid-cols-2 w-full h-full"
-            style={{ gridTemplateRows: `repeat(${numRows}, 1fr)` }}
-          >
-            {/* 360° cell first if available */}
-            {video360Url && (
-              <div className="relative overflow-hidden" style={{ background: '#fff' }}>
-                <Media360Viewer src={video360Url} poster={displayImages[0]} className="absolute inset-0 w-full h-full" />
-              </div>
-            )}
-
-            {displayImages.map((img, i) => {
-              const isLastOdd = allItems % 2 === 1 && i === displayImages.length - 1;
-              return (
-                <div
-                  key={`${selectedMetal}-${i}`}
-                  className="relative overflow-hidden"
-                  style={{ background: '#fff', gridColumn: isLastOdd ? 'span 2' : undefined }}
-                >
+        {/* LEFT — square image grid */}
+        <div
+          className="lg:w-[58%] lg:sticky lg:top-[80px]"
+          style={{ maxHeight: 'calc(100vh - 80px)', overflow: 'hidden', padding: 8, background: '#fff' }}
+        >
+          {/* padding-bottom:100% forces height = width (guaranteed square) */}
+          <div style={{ position: 'relative', width: '100%', paddingBottom: '100%' }}>
+            {/* absolute fill → grid has fully definite dimensions */}
+            <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 6 }}>
+              {video360Url && (
+                <div style={{ position: 'relative', overflow: 'hidden' }}>
+                  <Media360Viewer src={video360Url} poster={displayImages[0]} className="absolute inset-0 w-full h-full" />
+                </div>
+              )}
+              {displayImages.map((img, i) => (
+                <div key={`${selectedMetal}-${i}`} style={{ position: 'relative', overflow: 'hidden' }}>
                   <Image
                     src={img}
                     alt={`${product.name} — view ${i + 1}`}
@@ -175,10 +174,7 @@ export function JewelleryDetailPage({ product, config, jewelleryId }: Props) {
                     className="object-contain"
                     priority={i === 0}
                     sizes="(max-width: 1024px) 50vw, 29vw"
-                    style={{
-                      padding: '10%',
-                      ...(i === 0 ? { transform: `scale(${diamondScale})`, transition: 'transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)', transformOrigin: 'center center' } : {}),
-                    }}
+                    style={i === 0 ? { transform: `scale(${diamondScale})`, transition: 'transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)', transformOrigin: 'center center' } : undefined}
                   />
                   {i === 0 && previewCarat && (
                     <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-none">
@@ -188,17 +184,14 @@ export function JewelleryDetailPage({ product, config, jewelleryId }: Props) {
                     </div>
                   )}
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
-          );
-        })()}
 
         {/* RIGHT — sticky configuration panel */}
         <div
           className="lg:w-[42%] lg:sticky lg:top-[80px] lg:h-[calc(100vh-80px)] lg:overflow-y-auto px-8 lg:px-12 pt-12 pb-20 flex flex-col"
-          style={{ borderLeft: `1px solid ${BORDER}` }}
         >
           {/* Name */}
           <h1

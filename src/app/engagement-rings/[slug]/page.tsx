@@ -18,25 +18,18 @@ export default async function EngagementRingDetailRoute({ params }: Props) {
     const setting = await getRingSettingBySlug(slug);
     if (setting) {
       ringSettingId = setting.id;
-      const sorted = setting.media.sort((a, b) => a.display_order - b.display_order);
-      const media = sorted.length > 0
-        ? sorted.map(m => ({ url: m.storage_path, metal: m.metal ?? null }))
-        : [
-            { url: '/images/rings/ring-1.png', metal: null },
-            { url: '/images/rings/ring-3.png', metal: null },
-            { url: '/images/rings/ring-7.png', metal: null },
-          ];
+      const sorted = [...setting.media].sort((a, b) => a.display_order - b.display_order);
       dbRing = {
         name:        setting.name,
         subtitle:    setting.collection ?? 'Engagement Ring',
         basePrice:   setting.base_price_gbp ? parseFloat(setting.base_price_gbp) : 4800,
         description: setting.description ?? '',
-        media,
+        media:       sorted.map(m => ({ url: m.storage_path, metal: m.metal ?? null })),
         materials:   setting.metals.map((m) => METAL_LABELS[m]),
       };
     }
-  } catch {
-    // Fall through to hardcoded data
+  } catch (err) {
+    console.error('[engagement-rings] failed to load ring from DB:', err);
   }
 
   return <RingDetailPage slug={slug} dbRing={dbRing} ringSettingId={ringSettingId} />;
