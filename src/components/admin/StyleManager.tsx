@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import Image from 'next/image'
 import { ChevronLeft, ChevronRight, Pencil, Plus, X, Eye, EyeOff } from 'lucide-react'
 import {
   saveStyleAction,
@@ -75,7 +74,8 @@ export function StyleManager({ category, initialStyles }: Props) {
               style={{ height: CARD_H, opacity: card.is_visible ? 1 : 0.4 }}
             >
               {card.image_url ? (
-                <Image src={card.image_url} alt={card.label} fill sizes={`${CARD_W}px`} className="object-contain p-8" />
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={card.image_url} alt={card.label} className="absolute inset-0 h-full w-full object-contain p-8" />
               ) : (
                 <span className="font-display" style={{ fontSize: 18, color: '#cfcabe' }}>{card.label.charAt(0)}</span>
               )}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef } from 'react';
-import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const G      = '#1a2b1a';
@@ -75,12 +74,11 @@ export function StyleScroller({ cards, activeId, onSelect }: Props) {
                 style={{ height: CARD_H }}
               >
                 {card.image ? (
-                  <Image
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
                     src={card.image}
                     alt={card.label}
-                    fill
-                    sizes={`${CARD_W}px`}
-                    className="object-contain p-8 transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                    className="absolute inset-0 h-full w-full object-contain p-8 transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                   />
                 ) : (
                   <span className="font-display" style={{ fontSize: 18, color: '#cfcabe' }}>
