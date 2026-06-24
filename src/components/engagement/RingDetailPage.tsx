@@ -377,26 +377,37 @@ export function RingDetailPage({ slug, dbRing, ringSettingId }: Props) {
         </div>
       </div>
 
-      {/* ── BELOW FOLD ─────────────────────────────────────────────────────── */}
-      <div className="max-w-5xl mx-auto px-8 py-20" style={{ borderTop: `1px solid ${BORDER}` }}>
-        <p className="font-sans uppercase text-center" style={{ fontSize: 10, letterSpacing: '0.3em', color: '#bbb', marginBottom: 40 }}>
-          Ring Details
-        </p>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {[
-            { label: 'Setting Style',   value: 'Solitaire' },
-            { label: 'Metal Options',   value: ring.materials.join(', ') },
-            { label: 'Centre Stone',    value: "Customer's Choice of Diamond" },
-            { label: 'Band Width',      value: '1.8 mm' },
-            { label: 'Setting Height',  value: '5.5 mm' },
-            { label: 'Warranty',        value: 'Lifetime complimentary' },
-          ].map(({ label, value }) => (
-            <div key={label} style={{ borderBottom: `1px solid ${BORDER}`, paddingBottom: 16 }}>
-              <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#bbb', marginBottom: 6 }}>{label}</p>
-              <p className="font-sans" style={{ fontSize: 13, color: '#444', fontWeight: 300 }}>{value}</p>
-            </div>
-          ))}
+      {/* ── HEADER REPEAT BAR ───────────────────────────────────────────────── */}
+      <div style={{ borderTop: '1px solid #f0f0f0', backgroundColor: '#ffffff' }}>
+        <div className="relative flex h-20 items-center px-8 md:px-16">
+          {/* Hamburger */}
+          <div className="flex flex-col gap-[5px]">
+            <span className="block h-px w-6" style={{ backgroundColor: G }} />
+            <span className="block h-px w-6" style={{ backgroundColor: G }} />
+            <span className="block h-px w-4" style={{ backgroundColor: G }} />
+          </div>
+
+          {/* Wordmark — centred */}
+          <Link
+            href="/"
+            className="absolute left-1/2 -translate-x-1/2 flex items-baseline gap-4 whitespace-nowrap"
+          >
+            <span className="font-display" style={{ color: G, fontSize: 'clamp(20px, 2.2vw, 30px)', fontWeight: 300, letterSpacing: '0.22em', textTransform: 'uppercase' }}>
+              Éclat Grandeur
+            </span>
+            <span className="self-stretch" style={{ width: 1, backgroundColor: `${G}30`, margin: '2px 0' }} aria-hidden="true" />
+            <span className="font-sans" style={{ color: `${G}55`, fontSize: 'clamp(8px, 0.65vw, 10px)', fontWeight: 300, letterSpacing: '0.35em', textTransform: 'uppercase' }}>
+              Est.&nbsp;1975
+            </span>
+          </Link>
+
+          {/* Right links */}
+          <div className="ml-auto flex items-center gap-6">
+            <Link href="/about" className="font-sans uppercase transition-opacity hover:opacity-50" style={{ fontSize: 9, letterSpacing: '0.25em', color: G, fontWeight: 300 }}>About Us</Link>
+            <Link href="/account" className="font-sans uppercase transition-opacity hover:opacity-50" style={{ fontSize: 9, letterSpacing: '0.25em', color: G, fontWeight: 300 }}>My Account</Link>
+          </div>
         </div>
+        <div style={{ height: 1, backgroundColor: `${G}12` }} />
       </div>
 
       {/* ── DIAMOND SELECTOR DRAWER — z above header (z-[70]) ────────────── */}

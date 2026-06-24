@@ -67,7 +67,7 @@ export function RingGrid({ settings, activeSetting, activeMetal }: Props) {
                 src={ring.image}
                 alt={ring.name}
                 fill
-                className="object-contain p-6 transition-transform duration-700 group-hover:scale-105"
+                className="object-contain"
                 sizes="(max-width: 768px) 50vw, 33vw"
               />
             </div>

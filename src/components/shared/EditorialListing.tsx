@@ -91,7 +91,7 @@ function ProductCard({
             sizes="(max-width: 768px) 50vw, 33vw"
             priority={priority}
             className="object-contain transition-opacity duration-700 ease-out"
-            style={{ padding: '12%', opacity: hovered && hasReveal ? 0 : 1 }}
+            style={{ opacity: hovered && hasReveal ? 0 : 1 }}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
