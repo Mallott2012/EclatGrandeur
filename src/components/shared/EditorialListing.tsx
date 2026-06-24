@@ -205,23 +205,13 @@ export function EditorialListing({
     <div className="min-h-screen bg-white" style={{ color: G }}>
 
       {/* ── CATEGORY HEADER ──────────────────────────────────────────────── */}
-      <div style={{ paddingTop: 120, paddingBottom: 44, textAlign: 'center' }}>
-        <p className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.36em', color: MUTED, marginBottom: 22 }}>
-          Éclat Grandeur
-        </p>
+      <div style={{ paddingTop: 130, paddingBottom: 32, textAlign: 'center' }}>
         <h1
           className="font-display text-balance"
-          style={{ fontSize: 'clamp(44px, 6vw, 78px)', fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1.0, color: G }}
+          style={{ fontSize: 'clamp(30px, 3.4vw, 46px)', fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1.0, color: G }}
         >
           {categoryTitle}
         </h1>
-        <div style={{ width: 40, height: 1, backgroundColor: G, margin: '28px auto 22px', opacity: 0.3 }} />
-        <p
-          className="font-sans"
-          style={{ fontSize: 12, letterSpacing: '0.2em', color: MUTED, textTransform: 'uppercase', fontWeight: 300 }}
-        >
-          {categoryLede}
-        </p>
       </div>
 
       {/* ── STYLE SCROLLER ───────────────────────────────────────────────── */}

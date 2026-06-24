@@ -159,20 +159,16 @@ export function AdminProductGrid({ title, lede, addHref, products, itemLabel, st
     <div className="min-h-screen bg-white" style={{ color: G }}>
 
       {/* ── CATEGORY HEADER — mirror of the public listing ─────────────── */}
-      <div style={{ paddingTop: 40, paddingBottom: 40, textAlign: 'center', borderBottom: `1px solid ${BORDER}` }}>
-        <p className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.36em', color: MUTED, marginBottom: 18 }}>
+      <div style={{ paddingTop: 48, paddingBottom: 28, textAlign: 'center' }}>
+        <p className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.36em', color: MUTED, marginBottom: 12 }}>
           Admin
         </p>
         <h1
           className="font-display"
-          style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1.0, color: G }}
+          style={{ fontSize: 'clamp(30px, 3.4vw, 46px)', fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1.0, color: G }}
         >
           {title}
         </h1>
-        <div style={{ width: 40, height: 1, backgroundColor: G, margin: '24px auto 18px', opacity: 0.2 }} />
-        <p className="font-sans" style={{ fontSize: 11, letterSpacing: '0.2em', color: MUTED, textTransform: 'uppercase', fontWeight: 300 }}>
-          {lede}
-        </p>
       </div>
 
       {/* ── STYLE SCROLLER — identical to the public page ──────────────── */}
