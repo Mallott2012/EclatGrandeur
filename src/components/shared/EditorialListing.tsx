@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { SlidersHorizontal, X } from 'lucide-react';
+import { StyleScroller, type StyleCard } from './StyleScroller';
 
 const G      = '#1a2b1a';
 const STONE  = '#f5f3ef';
@@ -23,21 +24,125 @@ export interface EditorialItem {
   name:     string;
   subtitle: string;       // e.g. collection name or style
   price:    string;
-  image:    string;       // URL — primary still product image (product box)
-  mediaImage?: string;    // URL — editorial/lifestyle image for the media box
-  video?:   string;       // URL — optional hero video for this piece
+  image:    string;       // URL — primary still product image
+  mediaImage?: string;    // URL — lifestyle/model image revealed on hover
+  video?:   string;       // URL — hero video revealed + played on hover
   metal?:   string;       // optional — for ring metal filtering
-  style?:   string;       // optional — for jewellery style filtering
+  style?:   string;       // optional — for style filtering
 }
 
 export interface EditorialListingProps {
-  categoryTitle:  string;             // e.g. "Engagement Rings"
-  categoryLede:   string;             // one atmospheric line e.g. "Crafted to last a lifetime"
-  basePath:       string;             // e.g. "/engagement-rings"
-  itemLabel:      string;             // singular — "ring", "necklace"
+  categoryTitle:  string;
+  categoryLede:   string;
+  basePath:       string;
+  itemLabel:      string;
   styles?:        { id: string; label: string }[];
   items:          EditorialItem[];
   enableMetals?:  boolean;
+}
+
+/* ── Single product card — still image that reveals the hero video on hover ── */
+function ProductCard({
+  item,
+  basePath,
+  priority,
+}: {
+  item: EditorialItem;
+  basePath: string;
+  priority: boolean;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hovered, setHovered] = useState(false);
+
+  const hasVideo    = Boolean(item.video);
+  const hasHoverImg = !hasVideo && Boolean(item.mediaImage);
+  const hasReveal   = hasVideo || hasHoverImg;
+
+  function enter() {
+    setHovered(true);
+    const v = videoRef.current;
+    if (v) {
+      v.currentTime = 0;
+      v.play().catch(() => {});
+    }
+  }
+  function leave() {
+    setHovered(false);
+    videoRef.current?.pause();
+  }
+
+  return (
+    <Link
+      href={`${basePath}/${item.slug}`}
+      className="group flex flex-col"
+      onMouseEnter={enter}
+      onMouseLeave={leave}
+    >
+      <div
+        className="relative overflow-hidden"
+        style={{ aspectRatio: '1 / 1', backgroundColor: STONE }}
+      >
+        {/* Still product image */}
+        {item.image ? (
+          <Image
+            src={item.image}
+            alt={item.name}
+            fill
+            sizes="(max-width: 768px) 50vw, 33vw"
+            priority={priority}
+            className="object-contain p-8 transition-opacity duration-700 ease-out"
+            style={{ opacity: hovered && hasReveal ? 0 : 1 }}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#ccc' }}>
+              No image
+            </p>
+          </div>
+        )}
+
+        {/* Hover reveal — hero video (preferred) or lifestyle image */}
+        {hasVideo && (
+          <video
+            ref={videoRef}
+            src={item.video}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-out"
+            style={{ opacity: hovered ? 1 : 0 }}
+          />
+        )}
+        {hasHoverImg && (
+          <Image
+            src={item.mediaImage as string}
+            alt=""
+            fill
+            sizes="(max-width: 768px) 50vw, 33vw"
+            className="absolute inset-0 object-cover transition-opacity duration-700 ease-out"
+            style={{ opacity: hovered ? 1 : 0 }}
+          />
+        )}
+      </div>
+
+      {/* Name + price */}
+      <div style={{ paddingTop: 18 }}>
+        <p
+          className="font-display"
+          style={{ fontSize: 'clamp(15px, 1.3vw, 19px)', fontWeight: 300, letterSpacing: '0.02em', color: G, lineHeight: 1.3 }}
+        >
+          {item.name}
+        </p>
+        <p
+          className="font-sans"
+          style={{ fontSize: 12, fontWeight: 300, color: '#888', letterSpacing: '0.04em', marginTop: 6 }}
+        >
+          {item.price}
+        </p>
+      </div>
+    </Link>
+  );
 }
 
 export function EditorialListing({
@@ -49,15 +154,27 @@ export function EditorialListing({
   items,
   enableMetals = false,
 }: EditorialListingProps) {
-  const [activeStyle,  setActiveStyle]  = useState<string | null>(null);
-  const [activeMetal,  setActiveMetal]  = useState<string | null>(null);
-  const [filtersOpen,  setFiltersOpen]  = useState(false);
+  const [activeStyle, setActiveStyle] = useState<string | null>(null);
+  const [activeMetal, setActiveMetal] = useState<string | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Style filtering is graceful: if no item carries the selected style we
+  // keep every product visible rather than emptying the grid.
+  const styleHasMatches = activeStyle ? items.some(i => i.style === activeStyle) : false;
 
   const filtered = items.filter(item => {
-    if (activeStyle && item.style !== activeStyle) return false;
-    if (activeMetal && item.metal !== activeMetal)  return false;
+    if (activeStyle && styleHasMatches && item.style !== activeStyle) return false;
+    if (activeMetal && item.metal !== activeMetal) return false;
     return true;
   });
+
+  // Build the scroller cards, giving each style a representative thumbnail.
+  const styleCards: StyleCard[] = styles.map((s, i) => ({
+    id:    s.id,
+    label: s.label,
+    image: items.find(it => it.style === s.id)?.image
+        ?? (items.length ? items[i % items.length].image : undefined),
+  }));
 
   const activeFilterCount = [activeStyle, activeMetal].filter(Boolean).length;
 
@@ -69,35 +186,18 @@ export function EditorialListing({
   return (
     <div className="min-h-screen bg-white" style={{ color: G }}>
 
-      {/* ── CATEGORY HEADER ─────────────────────────────────────────────── */}
-      <div style={{ paddingTop: 120, paddingBottom: 56, textAlign: 'center' }}>
-        <p
-          className="font-sans uppercase"
-          style={{ fontSize: 10, letterSpacing: '0.36em', color: MUTED, marginBottom: 22 }}
-        >
+      {/* ── CATEGORY HEADER ──────────────────────────────────────────────── */}
+      <div style={{ paddingTop: 120, paddingBottom: 44, textAlign: 'center' }}>
+        <p className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.36em', color: MUTED, marginBottom: 22 }}>
           Éclat Grandeur
         </p>
         <h1
           className="font-display text-balance"
-          style={{
-            fontSize: 'clamp(44px, 6vw, 78px)',
-            fontWeight: 300,
-            letterSpacing: '0.04em',
-            lineHeight: 1.0,
-            color: G,
-          }}
+          style={{ fontSize: 'clamp(44px, 6vw, 78px)', fontWeight: 300, letterSpacing: '0.04em', lineHeight: 1.0, color: G }}
         >
           {categoryTitle}
         </h1>
-        <div
-          style={{
-            width: 40,
-            height: 1,
-            backgroundColor: G,
-            margin: '28px auto 22px',
-            opacity: 0.3,
-          }}
-        />
+        <div style={{ width: 40, height: 1, backgroundColor: G, margin: '28px auto 22px', opacity: 0.3 }} />
         <p
           className="font-sans"
           style={{ fontSize: 12, letterSpacing: '0.2em', color: MUTED, textTransform: 'uppercase', fontWeight: 300 }}
@@ -106,15 +206,17 @@ export function EditorialListing({
         </p>
       </div>
 
-      {/* ── FILTER BAR ──────────────────────────────────────────────────── */}
+      {/* ── STYLE SCROLLER ───────────────────────────────────────────────── */}
+      <StyleScroller
+        cards={styleCards}
+        activeId={activeStyle}
+        onSelect={(id) => setActiveStyle(prev => (prev === id ? null : id))}
+      />
+
+      {/* ── FILTER BAR ───────────────────────────────────────────────────── */}
       <div
-        className="sticky top-0 z-30 bg-white flex items-center justify-between"
-        style={{
-          borderTop: `1px solid ${BORDER}`,
-          borderBottom: `1px solid ${BORDER}`,
-          padding: '0 clamp(24px, 5vw, 80px)',
-          height: 50,
-        }}
+        className="sticky top-0 z-30 flex items-center justify-between bg-white"
+        style={{ borderBottom: `1px solid ${BORDER}`, padding: '0 clamp(24px, 5vw, 80px)', height: 50 }}
       >
         <span className="font-sans" style={{ fontSize: 11, color: '#c8c8c8', letterSpacing: '0.08em' }}>
           {filtered.length} {filtered.length === 1 ? itemLabel : `${itemLabel}s`}
@@ -142,10 +244,10 @@ export function EditorialListing({
         </button>
       </div>
 
-      {/* ── ACTIVE FILTER CHIPS ─────────────────────────────────────────── */}
+      {/* ── ACTIVE FILTER CHIPS ──────────────────────────────────────────── */}
       {activeFilterCount > 0 && (
         <div
-          className="flex items-center gap-3 flex-wrap"
+          className="flex flex-wrap items-center gap-3"
           style={{ padding: '12px clamp(24px, 5vw, 80px)', borderBottom: `1px solid ${BORDER}` }}
         >
           {activeStyle && (
@@ -181,13 +283,10 @@ export function EditorialListing({
         </div>
       )}
 
-      {/* ── EDITORIAL ROWS ──────────────────────────────────────────────── */}
+      {/* ── PRODUCT GRID ─────────────────────────────────────────────────── */}
       {filtered.length === 0 ? (
         <div style={{ padding: '120px 0', textAlign: 'center' }}>
-          <p
-            className="font-display"
-            style={{ fontSize: 28, fontWeight: 300, color: '#ccc', letterSpacing: '0.04em' }}
-          >
+          <p className="font-display" style={{ fontSize: 28, fontWeight: 300, color: '#ccc', letterSpacing: '0.04em' }}>
             No {itemLabel}s available yet
           </p>
           <p
@@ -198,89 +297,17 @@ export function EditorialListing({
           </p>
         </div>
       ) : (
-        <div style={{ padding: '48px clamp(24px, 6vw, 96px)', display: 'flex', flexDirection: 'column', gap: 48 }}>
-          {filtered.map((item, index) => {
-            const mediaLeft = index % 2 === 0;
-
-            return (
-              <Link
-                key={item.id}
-                href={`${basePath}/${item.slug}`}
-                className="group flex flex-col md:flex-row md:items-stretch gap-6 md:gap-10"
-              >
-                {/* ── BOX 1 · MEDIA — smaller box on one side ── */}
-                <div
-                  className={`relative w-full md:w-[40%] overflow-hidden ${mediaLeft ? 'md:order-1' : 'md:order-2'}`}
-                  style={{ aspectRatio: '4 / 3', backgroundColor: STONE, border: `1px solid ${BORDER}` }}
-                >
-                  {item.video ? (
-                    <video
-                      src={item.video}
-                      autoPlay muted loop playsInline
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.03]"
-                    />
-                  ) : (item.mediaImage || item.image) ? (
-                    <Image
-                      src={item.mediaImage || item.image}
-                      alt={item.name}
-                      fill
-                      className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.03]"
-                      sizes="40vw"
-                      priority={index < 2}
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#ccc' }}>No media</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* ── BOX 2 · PRODUCT — image, name and price all in one box ── */}
-                <div
-                  className={`relative flex-1 flex flex-col ${mediaLeft ? 'md:order-2' : 'md:order-1'}`}
-                  style={{ backgroundColor: '#ffffff', border: `1px solid ${BORDER}` }}
-                >
-                  {/* Product image */}
-                  <div className="relative flex-1" style={{ minHeight: 320 }}>
-                    {item.image ? (
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-contain p-10 transition-transform duration-[1400ms] ease-out group-hover:scale-[1.04]"
-                        sizes="50vw"
-                        priority={index < 2}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <p className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#ccc' }}>No image</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Name + price — together, same box, bottom-left */}
-                  <div style={{ padding: '24px 32px 32px' }}>
-                    <p
-                      className="font-display"
-                      style={{ fontSize: 'clamp(18px, 1.7vw, 24px)', fontWeight: 300, letterSpacing: '0.02em', color: G, lineHeight: 1.25 }}
-                    >
-                      {item.name}
-                    </p>
-                    <p
-                      className="font-sans"
-                      style={{ fontSize: 13, fontWeight: 300, color: '#777', letterSpacing: '0.02em', marginTop: 6 }}
-                    >
-                      {item.price}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+        <div
+          className="grid grid-cols-2 md:grid-cols-3"
+          style={{ padding: '56px clamp(24px, 6vw, 96px)', columnGap: 'clamp(16px, 3vw, 40px)', rowGap: 'clamp(40px, 5vw, 72px)' }}
+        >
+          {filtered.map((item, index) => (
+            <ProductCard key={item.id} item={item} basePath={basePath} priority={index < 3} />
+          ))}
         </div>
       )}
 
-      {/* ── FILTERS DRAWER ──────────────────────────────────────────────── */}
+      {/* ── FILTERS DRAWER ───────────────────────────────────────────────── */}
       {filtersOpen && (
         <div
           className="fixed inset-0 z-40"
@@ -298,11 +325,7 @@ export function EditorialListing({
           borderLeft: `1px solid ${BORDER}`,
         }}
       >
-        {/* Drawer header */}
-        <div
-          className="flex items-center justify-between px-7 py-6"
-          style={{ borderBottom: `1px solid ${BORDER}` }}
-        >
+        <div className="flex items-center justify-between px-7 py-6" style={{ borderBottom: `1px solid ${BORDER}` }}>
           <span className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.32em', color: G }}>
             Refine
           </span>
@@ -312,7 +335,6 @@ export function EditorialListing({
         </div>
 
         <div className="flex-1 overflow-y-auto px-7 py-8 space-y-10">
-          {/* Style filter */}
           {styles.length > 0 && (
             <div>
               <p className="font-sans uppercase mb-5" style={{ fontSize: 9, letterSpacing: '0.32em', color: '#bbb' }}>
@@ -323,7 +345,7 @@ export function EditorialListing({
                   key={s.id}
                   type="button"
                   onClick={() => setActiveStyle(prev => prev === s.id ? null : s.id)}
-                  className="flex items-center justify-between w-full py-3.5 font-sans"
+                  className="flex w-full items-center justify-between py-3.5 font-sans"
                   style={{
                     fontSize: 13, letterSpacing: '0.02em',
                     color: activeStyle === s.id ? G : '#666',
@@ -332,15 +354,12 @@ export function EditorialListing({
                   }}
                 >
                   {s.label}
-                  {activeStyle === s.id && (
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: G }} />
-                  )}
+                  {activeStyle === s.id && <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: G }} />}
                 </button>
               ))}
             </div>
           )}
 
-          {/* Metal filter */}
           {enableMetals && (
             <div>
               <p className="font-sans uppercase mb-5" style={{ fontSize: 9, letterSpacing: '0.32em', color: '#bbb' }}>
@@ -351,7 +370,7 @@ export function EditorialListing({
                   key={m.id}
                   type="button"
                   onClick={() => setActiveMetal(prev => prev === m.id ? null : m.id)}
-                  className="flex items-center justify-between w-full py-3.5 font-sans"
+                  className="flex w-full items-center justify-between py-3.5 font-sans"
                   style={{
                     fontSize: 13, letterSpacing: '0.02em',
                     color: activeMetal === m.id ? G : '#666',
@@ -360,9 +379,7 @@ export function EditorialListing({
                   }}
                 >
                   {m.label}
-                  {activeMetal === m.id && (
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: G }} />
-                  )}
+                  {activeMetal === m.id && <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: G }} />}
                 </button>
               ))}
             </div>

@@ -1,5 +1,6 @@
 import { EditorialListing, type EditorialItem } from '@/components/shared/EditorialListing';
 import type { RingSettingFull } from '@/lib/ring-settings/types';
+import { RING_STYLES } from '@/lib/catalog/styles';
 
 interface Props {
   settings: RingSettingFull[];
@@ -37,6 +38,7 @@ export function EngagementRingPage({ settings }: Props) {
       basePath="/engagement-rings"
       itemLabel="ring"
       enableMetals
+      styles={RING_STYLES}
       items={items}
     />
   );

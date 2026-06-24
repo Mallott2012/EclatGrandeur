@@ -1,6 +1,7 @@
 import { listRingSettings } from '@/lib/ring-settings/service';
 import { AdminProductGrid, type AdminProduct } from '@/components/admin/AdminProductGrid';
 import { METAL_LABELS } from '@/lib/ring-settings/types';
+import { RING_STYLES } from '@/lib/catalog/styles';
 
 export default async function AdminRingsPage() {
   const rings = await listRingSettings().catch(() => []);
@@ -24,6 +25,7 @@ export default async function AdminRingsPage() {
       addHref="/admin/rings/new"
       products={products}
       itemLabel="ring"
+      styles={RING_STYLES}
     />
   );
 }
