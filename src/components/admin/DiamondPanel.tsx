@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, Check, X, ChevronDown, ChevronUp } from 'lucide-r
 import type {
   DiamondCut, DiamondColour, DiamondClarity,
   DiamondGrade, DiamondFluorescence, DiamondStatus,
+  DiamondCategory, ColourFamily, ColourIntensity,
 } from '@/lib/diamonds/types';
 
 const G      = '#1a2b1a';
@@ -13,22 +14,28 @@ const BORDER = '#e8e8e8';
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface DiamondRow {
-  id:           string;
-  sku:          string;
-  cut:          DiamondCut;
-  carat:        number;
-  colour:       DiamondColour;
-  clarity:      DiamondClarity;
-  price_gbp:    number;
-  status:       DiamondStatus;
-  is_published: boolean;
-  fluorescence: DiamondFluorescence;
-  cut_grade:    DiamondGrade | null;
-  polish:       DiamondGrade | null;
-  symmetry:     DiamondGrade | null;
-  gia_report_number: string | null;
-  gia_report_url:    string | null;
-  notes:        string | null;
+  id:                  string;
+  sku:                 string;
+  cut:                 DiamondCut;
+  carat:               number;
+  colour:              DiamondColour;
+  clarity:             DiamondClarity;
+  price_gbp:           number;
+  status:              DiamondStatus;
+  is_published:        boolean;
+  fluorescence:        DiamondFluorescence;
+  cut_grade:           DiamondGrade | null;
+  polish:              DiamondGrade | null;
+  symmetry:            DiamondGrade | null;
+  gia_report_number:   string | null;
+  gia_report_url:      string | null;
+  notes:               string | null;
+  // Phase 2 — coloured-diamond identity and approval
+  diamond_category:    DiamondCategory;
+  colour_family:       ColourFamily | null;
+  colour_intensity:    ColourIntensity | null;
+  colour_description:  string | null;
+  eclat_approved:      boolean;
 }
 
 export interface DiamondPanelProps {
@@ -48,6 +55,9 @@ const COLOURS: DiamondColour[] = ['D','E','F','G','H','I','J'];
 const CLARITIES: DiamondClarity[] = ['FL','IF','VVS1','VVS2','VS1','VS2','SI1','SI2'];
 const GRADES: (DiamondGrade | '')[] = ['','excellent','very_good','good','fair','poor'];
 const FLUORESCENCES: DiamondFluorescence[] = ['none','faint','medium','strong','very_strong'];
+const COLOUR_FAMILIES: ColourFamily[] = ['yellow','pink'];
+const COLOUR_INTENSITIES: (ColourIntensity | '')[] = ['','fancy_light','fancy','fancy_intense','fancy_vivid'];
+const FANCY_SHAPES: DiamondCut[] = ['oval','cushion','emerald','pear','radiant','princess','marquise','asscher','heart'];
 
 const CUT_LABELS: Record<DiamondCut, string> = {
   round:'Round Brilliant', princess:'Princess', cushion:'Cushion', oval:'Oval',
@@ -62,6 +72,11 @@ const FLUORESCENCE_LABELS: Record<DiamondFluorescence, string> = {
   none:'None', faint:'Faint', medium:'Medium', strong:'Strong', very_strong:'Very Strong',
 };
 
+const COLOUR_FAMILY_LABELS: Record<string, string> = { yellow: 'Yellow', pink: 'Pink' };
+const COLOUR_INTENSITY_LABELS: Record<string, string> = {
+  '': '—', fancy_light:'Fancy Light', fancy:'Fancy', fancy_intense:'Fancy Intense', fancy_vivid:'Fancy Vivid',
+};
+
 // ── Blank diamond for "add new" ───────────────────────────────────────────────
 
 function blankDiamond(): Omit<DiamondRow, 'id' | 'sku'> {
@@ -70,6 +85,8 @@ function blankDiamond(): Omit<DiamondRow, 'id' | 'sku'> {
     price_gbp: 0, status: 'available', is_published: false,
     fluorescence: 'none', cut_grade: null, polish: null, symmetry: null,
     gia_report_number: null, gia_report_url: null, notes: null,
+    diamond_category: 'white', colour_family: null, colour_intensity: null,
+    colour_description: null, eclat_approved: false,
   };
 }
 
@@ -176,6 +193,29 @@ function DiamondModal({
         {/* Body */}
         <div className="px-8 py-6 space-y-6">
 
+          {/* Category toggle */}
+          <div>
+            <span className="font-sans uppercase block mb-1" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#aaa' }}>Diamond Type</span>
+            <div className="flex gap-0">
+              {(['white', 'coloured'] as DiamondCategory[]).map(cat => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => set('diamond_category', cat)}
+                  className="px-4 py-1.5 font-sans uppercase transition-colors"
+                  style={{
+                    fontSize: 10, letterSpacing: '0.14em',
+                    border: `1px solid ${data.diamond_category === cat ? G : BORDER}`,
+                    background: data.diamond_category === cat ? G : '#fff',
+                    color: data.diamond_category === cat ? '#fff' : '#888',
+                  }}
+                >
+                  {cat === 'white' ? 'White' : 'Coloured'}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Row 1: Cut, Carat */}
           <div className="grid grid-cols-2 gap-4">
             <Sel
@@ -186,11 +226,43 @@ function DiamondModal({
             <NumInput label="Carat" value={data.carat} step="0.01" min="0.01" onChange={v => set('carat', v)} />
           </div>
 
-          {/* Row 2: Colour, Clarity */}
+          {/* Row 2: Colour/Colour Family, Clarity */}
           <div className="grid grid-cols-2 gap-4">
-            <Sel label="Colour" value={data.colour} options={COLOURS} onChange={v => set('colour', v)} />
+            {data.diamond_category === 'white' ? (
+              <Sel label="Colour (D–I)" value={data.colour} options={COLOURS} onChange={v => set('colour', v)} />
+            ) : (
+              <Sel
+                label="Colour Family" value={data.colour_family ?? ''}
+                options={COLOUR_FAMILIES}
+                labels={COLOUR_FAMILY_LABELS}
+                onChange={v => set('colour_family', v as ColourFamily)}
+              />
+            )}
             <Sel label="Clarity" value={data.clarity} options={CLARITIES} onChange={v => set('clarity', v)} />
           </div>
+
+          {/* Coloured diamond extra fields */}
+          {data.diamond_category === 'coloured' && (
+            <div className="grid grid-cols-2 gap-4">
+              <Sel
+                label="Intensity" value={data.colour_intensity ?? ''}
+                options={COLOUR_INTENSITIES}
+                labels={COLOUR_INTENSITY_LABELS}
+                onChange={v => set('colour_intensity', (v as ColourIntensity) || null)}
+              />
+              <div className="flex flex-col gap-0.5">
+                <span className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#aaa' }}>Description</span>
+                <input
+                  type="text"
+                  value={data.colour_description ?? ''}
+                  onChange={e => set('colour_description', e.target.value || null)}
+                  className="font-sans border focus:outline-none"
+                  style={{ fontSize: 12, padding: '5px 8px', color: G, borderColor: BORDER }}
+                  placeholder="e.g. Fancy Intense Yellow"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Row 3: Price, Status */}
           <div className="grid grid-cols-2 gap-4">
@@ -202,12 +274,14 @@ function DiamondModal({
             />
           </div>
 
-          {/* Row 4: Cut grade, Polish, Symmetry */}
+          {/* Row 4: Cut grade (round only), Polish, Symmetry */}
           <div className="grid grid-cols-3 gap-4">
-            <Sel
-              label="Cut Grade" value={data.cut_grade ?? ''} options={GRADES}
-              labels={GRADE_LABELS} onChange={v => set('cut_grade', v as DiamondGrade | null)}
-            />
+            {!FANCY_SHAPES.includes(data.cut) && (
+              <Sel
+                label="Cut Grade" value={data.cut_grade ?? ''} options={GRADES}
+                labels={GRADE_LABELS} onChange={v => set('cut_grade', v as DiamondGrade | null)}
+              />
+            )}
             <Sel
               label="Polish" value={data.polish ?? ''} options={GRADES}
               labels={GRADE_LABELS} onChange={v => set('polish', v as DiamondGrade | null)}
@@ -490,10 +564,20 @@ export function DiamondPanel({
                   className="px-4 pb-4 grid grid-cols-3 gap-3"
                   style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 12 }}
                 >
+                  <div><span style={{ fontSize: 9, color: '#aaa', letterSpacing: '0.16em' }}>TYPE</span><p style={{ fontSize: 12, color: G }}>{d.diamond_category === 'coloured' ? 'Coloured' : 'White'}</p></div>
+                  {d.diamond_category === 'coloured' && d.colour_family && (
+                    <div><span style={{ fontSize: 9, color: '#aaa', letterSpacing: '0.16em' }}>FAMILY</span><p style={{ fontSize: 12, color: G }}>{COLOUR_FAMILY_LABELS[d.colour_family]}</p></div>
+                  )}
+                  {d.diamond_category === 'coloured' && d.colour_intensity && (
+                    <div><span style={{ fontSize: 9, color: '#aaa', letterSpacing: '0.16em' }}>INTENSITY</span><p style={{ fontSize: 12, color: G }}>{COLOUR_INTENSITY_LABELS[d.colour_intensity]}</p></div>
+                  )}
                   {d.cut_grade  && <div><span style={{ fontSize: 9, color: '#aaa', letterSpacing: '0.16em' }}>CUT</span><p style={{ fontSize: 12, color: G }}>{d.cut_grade}</p></div>}
                   {d.polish     && <div><span style={{ fontSize: 9, color: '#aaa', letterSpacing: '0.16em' }}>POLISH</span><p style={{ fontSize: 12, color: G }}>{d.polish}</p></div>}
                   {d.symmetry   && <div><span style={{ fontSize: 9, color: '#aaa', letterSpacing: '0.16em' }}>SYMMETRY</span><p style={{ fontSize: 12, color: G }}>{d.symmetry}</p></div>}
                   <div><span style={{ fontSize: 9, color: '#aaa', letterSpacing: '0.16em' }}>FLUORESCENCE</span><p style={{ fontSize: 12, color: G }}>{d.fluorescence}</p></div>
+                  {FANCY_SHAPES.includes(d.cut) && (
+                    <div><span style={{ fontSize: 9, color: '#aaa', letterSpacing: '0.16em' }}>ÉCLAT</span><p style={{ fontSize: 12, color: d.eclat_approved ? '#4a9e6b' : '#c9a84c' }}>{d.eclat_approved ? 'Approved' : 'Pending'}</p></div>
+                  )}
                   {d.gia_report_number && (
                     <div className="col-span-2">
                       <span style={{ fontSize: 9, color: '#aaa', letterSpacing: '0.16em' }}>GIA</span>

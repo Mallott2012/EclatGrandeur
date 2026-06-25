@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { listDiamonds } from '@/lib/diamonds/service';
+import { isEclatEligible } from '@/lib/diamonds/eligibility';
 import { CUT_LABELS, type Diamond, type DiamondStatus } from '@/lib/diamonds/types';
 
 const G      = '#1a2b1a';
@@ -65,7 +66,7 @@ export default async function AdminDiamondsPage() {
             <table className="w-full font-sans" style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
-                  {['SKU', 'Cut', 'Carat', 'Colour', 'Clarity', 'Price', 'Status', ''].map(h => (
+                  {['SKU', 'Type', 'Cut', 'Carat', 'Colour', 'Clarity', 'Price', 'Status', 'Éclat', ''].map(h => (
                     <th
                       key={h}
                       className="text-left pb-3"
@@ -77,34 +78,49 @@ export default async function AdminDiamondsPage() {
                 </tr>
               </thead>
               <tbody>
-                {diamonds.map(d => (
-                  <tr
-                    key={d.id}
-                    style={{ borderBottom: `1px solid ${BORDER}` }}
-                    className="transition-colors hover:bg-stone-50"
-                  >
-                    <td className="py-4 pr-6 font-mono" style={{ fontSize: 11, color: '#aaa' }}>{d.sku}</td>
-                    <td className="py-4 pr-6" style={{ fontSize: 13, color: G }}>{CUT_LABELS[d.cut]}</td>
-                    <td className="py-4 pr-6" style={{ fontSize: 13, color: G }}>{d.carat.toFixed(2)}ct</td>
-                    <td className="py-4 pr-6" style={{ fontSize: 13, color: '#666' }}>{d.colour}</td>
-                    <td className="py-4 pr-6" style={{ fontSize: 13, color: '#666' }}>{d.clarity}</td>
-                    <td className="py-4 pr-6" style={{ fontSize: 13, color: G, fontWeight: 400 }}>
-                      {new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(d.price_gbp)}
-                    </td>
-                    <td className="py-4 pr-6">
-                      <StatusBadge status={d.status} />
-                    </td>
-                    <td className="py-4 text-right">
-                      <Link
-                        href={`/admin/diamonds/${d.id}`}
-                        className="font-sans uppercase"
-                        style={{ fontSize: 10, letterSpacing: '0.16em', color: '#aaa' }}
-                      >
-                        Edit →
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                {diamonds.map(d => {
+                  const eligible = isEclatEligible(d);
+                  return (
+                    <tr
+                      key={d.id}
+                      style={{ borderBottom: `1px solid ${BORDER}` }}
+                      className="transition-colors hover:bg-stone-50"
+                    >
+                      <td className="py-4 pr-6 font-mono" style={{ fontSize: 11, color: '#aaa' }}>{d.sku}</td>
+                      <td className="py-4 pr-6" style={{ fontSize: 11, color: '#888' }}>
+                        {d.diamond_category === 'coloured'
+                          ? <span style={{ color: '#c9a84c' }}>Coloured</span>
+                          : 'White'}
+                      </td>
+                      <td className="py-4 pr-6" style={{ fontSize: 13, color: G }}>{CUT_LABELS[d.cut]}</td>
+                      <td className="py-4 pr-6" style={{ fontSize: 13, color: G }}>{d.carat.toFixed(2)}ct</td>
+                      <td className="py-4 pr-6" style={{ fontSize: 13, color: '#666' }}>
+                        {d.diamond_category === 'coloured'
+                          ? (d.colour_family ? d.colour_family.charAt(0).toUpperCase() + d.colour_family.slice(1) : '—')
+                          : d.colour}
+                      </td>
+                      <td className="py-4 pr-6" style={{ fontSize: 13, color: '#666' }}>{d.clarity}</td>
+                      <td className="py-4 pr-6" style={{ fontSize: 13, color: G, fontWeight: 400 }}>
+                        {new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(d.price_gbp)}
+                      </td>
+                      <td className="py-4 pr-6">
+                        <StatusBadge status={d.status} />
+                      </td>
+                      <td className="py-4 pr-6">
+                        <EligibilityBadge eligible={eligible} />
+                      </td>
+                      <td className="py-4 text-right">
+                        <Link
+                          href={`/admin/diamonds/${d.id}`}
+                          className="font-sans uppercase"
+                          style={{ fontSize: 10, letterSpacing: '0.16em', color: '#aaa' }}
+                        >
+                          Edit →
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -126,3 +142,14 @@ function StatusBadge({ status }: { status: DiamondStatus }) {
     </span>
   );
 }
+
+function EligibilityBadge({ eligible }: { eligible: boolean }) {
+  return (
+    <span className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.16em', color: eligible ? '#4a9e6b' : '#c9a84c' }}>
+      {eligible ? '✓' : '—'}
+    </span>
+  );
+}
+
+// Suppress unused import warning — Diamond type used in the table row
+export type { Diamond };

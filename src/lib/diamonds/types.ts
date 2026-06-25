@@ -14,7 +14,23 @@ export type DiamondGrade = 'excellent' | 'very_good' | 'good' | 'fair' | 'poor'
 
 export type DiamondFluorescence = 'none' | 'faint' | 'medium' | 'strong' | 'very_strong'
 
-export type DiamondStatus = 'available' | 'sold'
+export type DiamondStatus = 'available' | 'reserved' | 'sold'
+
+export type DiamondCategory  = 'white' | 'coloured'
+export type ColourFamily     = 'yellow' | 'pink'
+export type ColourIntensity  = 'fancy_light' | 'fancy' | 'fancy_intense' | 'fancy_vivid'
+
+export const COLOUR_FAMILY_LABELS: Record<ColourFamily, string> = {
+  yellow: 'Yellow',
+  pink:   'Pink',
+}
+
+export const COLOUR_INTENSITY_LABELS: Record<ColourIntensity, string> = {
+  fancy_light:   'Fancy Light',
+  fancy:         'Fancy',
+  fancy_intense: 'Fancy Intense',
+  fancy_vivid:   'Fancy Vivid',
+}
 
 export type MediaType = 'image' | 'video_360' | 'video' | 'certificate_pdf'
 
@@ -91,6 +107,15 @@ export interface DiamondRecord {
   status:               DiamondStatus
   is_published:         boolean
   notes:                string | null
+  // Phase 2 — coloured-diamond identity and Éclat approval
+  diamond_category:     DiamondCategory
+  colour_family:        ColourFamily | null
+  colour_intensity:     ColourIntensity | null
+  colour_description:   string | null
+  eclat_approved:       boolean
+  eclat_approved_at:    string | null
+  eclat_approved_by:    string | null
+  eclat_approval_note:  string | null
   created_by:           string | null
   updated_by:           string | null
   created_at:           string
@@ -161,6 +186,15 @@ export interface Diamond {
   status:               DiamondStatus
   is_published:         boolean
   notes:                string | null
+  // Phase 2 — coloured-diamond identity and Éclat approval
+  diamond_category:     DiamondCategory
+  colour_family:        ColourFamily | null
+  colour_intensity:     ColourIntensity | null
+  colour_description:   string | null
+  eclat_approved:       boolean
+  eclat_approved_at:    string | null
+  eclat_approved_by:    string | null
+  eclat_approval_note:  string | null
   created_at:           string
   updated_at:           string
   media:                DiamondMediaRecord[]
@@ -200,6 +234,15 @@ export function parseDiamond(r: DiamondRecord, media: DiamondMediaRecord[] = [])
     measurement_depth:  toNum(r.measurement_depth),
     depth_pct:          toNum(r.depth_pct),
     table_pct:          toNum(r.table_pct),
+    // Phase 2 fields have safe defaults for rows created before migration
+    diamond_category:   r.diamond_category  ?? 'white',
+    colour_family:      r.colour_family      ?? null,
+    colour_intensity:   r.colour_intensity   ?? null,
+    colour_description: r.colour_description ?? null,
+    eclat_approved:     r.eclat_approved     ?? false,
+    eclat_approved_at:  r.eclat_approved_at  ?? null,
+    eclat_approved_by:  r.eclat_approved_by  ?? null,
+    eclat_approval_note: r.eclat_approval_note ?? null,
     media,
   }
 }

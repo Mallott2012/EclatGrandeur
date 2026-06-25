@@ -22,20 +22,24 @@ export interface EnquiryRecord {
   status:                EnquiryStatus
   assigned_to:           string | null
   notes:                 string | null
+  /** Full ConfiguredEngagementRing snapshot stored at enquiry time (Phase 6). */
+  configuration:         Record<string, unknown> | null
   created_at:            string
   updated_at:            string
 }
 
 export interface CreateEnquiryInput {
-  customer_name:        string
-  customer_email:       string
-  customer_phone?:      string | null
-  subject?:             string | null
-  message:              string
-  ring_setting_id?:     string | null
-  diamond_id?:          string | null
+  customer_name:         string
+  customer_email:        string
+  customer_phone?:       string | null
+  subject?:              string | null
+  message:               string
+  ring_setting_id?:      string | null
+  diamond_id?:           string | null
   jewellery_product_id?: string | null
-  metal?:               string | null
+  metal?:                string | null
+  /** Full ConfiguredEngagementRing snapshot, stored as JSONB (Phase 6). */
+  configuration?:        Record<string, unknown> | null
 }
 
 // ── Queries ───────────────────────────────────────────────────────────────────
@@ -81,6 +85,7 @@ export async function createEnquiry(input: CreateEnquiryInput): Promise<EnquiryR
       diamond_id:           input.diamond_id ?? null,
       jewellery_product_id: input.jewellery_product_id ?? null,
       metal:                input.metal ?? null,
+      configuration:        input.configuration ?? null,
       status:               'new' as EnquiryStatus,
     })
     .select()

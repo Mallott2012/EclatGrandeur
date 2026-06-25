@@ -18,8 +18,11 @@ import {
   EMPTY_GALLERY, type GalleryData, type GallerySlot,
   type MetalVariant, type MetalKey,
   METAL_KEYS, METAL_DISPLAY,
-  buildDefaultVariants, variantToGalleryData, galleryDataToItems,
+  buildDefaultVariants, variantToGalleryData, galleryDataToItems, emptyMetalVariant,
 } from '@/lib/gallery/types';
+import {
+  ALL_DIAMOND_SHAPES, DIAMOND_SHAPE_LABELS, type DiamondShape,
+} from '@/lib/ring-settings/types';
 
 const isVideoUrl = (url: string) => url.toLowerCase().endsWith('.mp4');
 
@@ -145,6 +148,12 @@ function EditableListItem({ value, onSave, onDelete }: {
   );
 }
 
+const UK_RING_SIZES = [
+  'A',   'B',   'C',   'D',   'E',   'F',   'G',   'H',   'I',   'J',   'K',   'L',   'M',
+  'N',   'O',   'P',   'Q',   'R',   'S',   'T',   'U',   'V',   'W',   'X',   'Y',   'Z',
+  'Z+1', 'Z+2', 'Z+3', 'Z+4', 'Z+5', 'Z+6',
+];
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MediaItem {
   id:          string;
@@ -184,6 +193,32 @@ export interface AdminProductData {
   // metal variants (new system)
   metalVariants?:        MetalVariant[];
   onSaveMetalVariants?:  (variants: MetalVariant[]) => Promise<void>;
+  // diamond shapes (multi-select for storefront shape filtering)
+  diamondShapes?:        DiamondShape[];
+  onSaveDiamondShapes?:  (shapes: DiamondShape[]) => Promise<void>;
+  // compatible diamond counts (rings only — fetched server-side via getCompatibleDiamondCounts)
+  compatibleCounts?: { white: number; yellow: number; pink: number };
+  // engagement ring configuration (rings only)
+  engagementConfig?: {
+    minCarat?:                   number | null;
+    maxCarat?:                   number | null;
+    ringSizes?:                  string[];
+    requiresDiamondSelection?:   boolean;
+    requiresRingSizeSelection?:  boolean;
+    settingStyle?:               string | null;
+    bandStyle?:                  string | null;
+    headStyle?:                  string | null;
+  };
+  onSaveEngagementConfig?: (config: {
+    minCarat?:                   number | null;
+    maxCarat?:                   number | null;
+    ringSizes?:                  string[];
+    requiresDiamondSelection?:   boolean;
+    requiresRingSizeSelection?:  boolean;
+    settingStyle?:               string | null;
+    bandStyle?:                  string | null;
+    headStyle?:                  string | null;
+  }) => Promise<void>;
   // diamond management (full CRUD + assignment)
   assignedDiamondIds:  string[];
   allDiamonds:         DiamondRow[];
@@ -232,14 +267,32 @@ export function AdminProductEditor(props: AdminProductData) {
   const [galleryData,    setGalleryData]    = useState<GalleryData>(props.galleryConfig ?? EMPTY_GALLERY);
   const gallerySaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // metal variant state
-  const initVariants = props.metalVariants ?? buildDefaultVariants(props.galleryConfig);
+  // metal variant state — ensure every MetalKey has a slot even if not in saved DB data
+  const initVariants = (() => {
+    const base = props.metalVariants ?? buildDefaultVariants(props.galleryConfig);
+    return METAL_KEYS.map(key => base.find(v => v.metal === key) ?? emptyMetalVariant(key));
+  })();
   const [variants,       setVariants]       = useState<MetalVariant[]>(initVariants);
   const [activeMetalKey, setActiveMetalKey] = useState<MetalKey>(
     initVariants.find(v => v.enabled)?.metal ?? 'platinum'
   );
   const variantsSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeVariant = variants.find(v => v.metal === activeMetalKey) ?? variants[0];
+
+  const [localShapes, setLocalShapes] = useState<DiamondShape[]>(props.diamondShapes ?? []);
+  const [shapesOpen,  setShapesOpen]  = useState(false);
+
+  const _ec = props.engagementConfig ?? {};
+  const [localMinCarat,        setLocalMinCarat]        = useState<string>(_ec.minCarat != null ? String(_ec.minCarat) : '');
+  const [localMaxCarat,        setLocalMaxCarat]        = useState<string>(_ec.maxCarat != null ? String(_ec.maxCarat) : '');
+  const [localRingSizes,       setLocalRingSizes]       = useState<string[]>(_ec.ringSizes ?? []);
+  const [localRequiresDiamond, setLocalRequiresDiamond] = useState<boolean>(_ec.requiresDiamondSelection  ?? true);
+  const [localRequiresSize,    setLocalRequiresSize]    = useState<boolean>(_ec.requiresRingSizeSelection ?? true);
+  const [localSettingStyle,    setLocalSettingStyle]    = useState<string>(_ec.settingStyle ?? '');
+  const [localBandStyle,       setLocalBandStyle]       = useState<string>(_ec.bandStyle    ?? '');
+  const [localHeadStyle,       setLocalHeadStyle]       = useState<string>(_ec.headStyle    ?? '');
+  const [engConfigOpen,        setEngConfigOpen]        = useState(false);
+  const engConfigSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedMetal = metals[0] ?? 'Platinum';
   const metalMeta = ALL_METALS.find(m => m.label === selectedMetal || m.id === selectedMetal) ?? ALL_METALS[0];
@@ -258,6 +311,53 @@ export function AdminProductEditor(props: AdminProductData) {
       : [...metals, metalId];
     setMetals(next);
     save({ metals: next });
+  }
+
+  function toggleShape(shape: DiamondShape) {
+    const next = localShapes.includes(shape)
+      ? localShapes.filter(s => s !== shape)
+      : [...localShapes, shape];
+    setLocalShapes(next);
+    if (props.onSaveDiamondShapes) {
+      startTransition(async () => {
+        await props.onSaveDiamondShapes!(next);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2200);
+      });
+    }
+  }
+
+  type EngagementConfigOverride = {
+    minCarat?:                  number | null;
+    maxCarat?:                  number | null;
+    ringSizes?:                 string[];
+    requiresDiamondSelection?:  boolean;
+    requiresRingSizeSelection?: boolean;
+    settingStyle?:              string | null;
+    bandStyle?:                 string | null;
+    headStyle?:                 string | null;
+  };
+  function scheduleEngagementSave(overrides: EngagementConfigOverride = {}) {
+    if (!props.onSaveEngagementConfig) return;
+    const config: EngagementConfigOverride = {
+      minCarat:                 'minCarat'                 in overrides ? overrides.minCarat                 : (localMinCarat  === '' ? null : parseFloat(localMinCarat)  || null),
+      maxCarat:                 'maxCarat'                 in overrides ? overrides.maxCarat                 : (localMaxCarat  === '' ? null : parseFloat(localMaxCarat)  || null),
+      ringSizes:                'ringSizes'                in overrides ? overrides.ringSizes                : localRingSizes,
+      requiresDiamondSelection: 'requiresDiamondSelection' in overrides ? overrides.requiresDiamondSelection : localRequiresDiamond,
+      requiresRingSizeSelection:'requiresRingSizeSelection' in overrides ? overrides.requiresRingSizeSelection : localRequiresSize,
+      settingStyle:             'settingStyle'             in overrides ? overrides.settingStyle             : (localSettingStyle || null),
+      bandStyle:                'bandStyle'                in overrides ? overrides.bandStyle                : (localBandStyle    || null),
+      headStyle:                'headStyle'                in overrides ? overrides.headStyle                : (localHeadStyle    || null),
+      ...overrides,
+    };
+    if (engConfigSaveTimer.current) clearTimeout(engConfigSaveTimer.current);
+    engConfigSaveTimer.current = setTimeout(() => {
+      startTransition(async () => {
+        await props.onSaveEngagementConfig!(config);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2200);
+      });
+    }, 600);
   }
 
   function commitPrice() {
@@ -508,6 +608,29 @@ export function AdminProductEditor(props: AdminProductData) {
             })}
           </div>
 
+          {/* Default indicator / Set as default */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            {activeVariant.isDefault ? (
+              <span style={{ fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#4a9e6b' }}>
+                ★ Default listing media
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setVariants(prev => {
+                    const next = prev.map(v => ({ ...v, isDefault: v.metal === activeMetalKey }));
+                    scheduleVariantSave(next);
+                    return next;
+                  });
+                }}
+                style={{ fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#aaa', background: 'none', border: '1px solid #e8e8e8', padding: '3px 8px', cursor: 'pointer' }}
+              >
+                Set as default
+              </button>
+            )}
+          </div>
+
           {/* Enable toggle + price for active variant */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 10, padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
@@ -533,10 +656,11 @@ export function AdminProductEditor(props: AdminProductData) {
             </label>
           </div>
 
-          {/* Gallery for the active variant */}
+          {/* Gallery for the active variant — existingMedia allows reusing assets from other variants */}
           <ProductGallery
             data={variantToGalleryData(activeVariant)}
             editable={activeVariant.enabled}
+            existingMedia={variants.flatMap(v => v.gallery.items)}
             onUpload={handleVariantGalleryUpload}
             onChange={handleVariantGalleryChange}
           />
@@ -741,6 +865,267 @@ export function AdminProductEditor(props: AdminProductData) {
                   </button>
                 );
               })}
+            </div>
+          )}
+
+          {/* Diamond Shape row */}
+          {props.onSaveDiamondShapes !== undefined && (
+            <div style={{ borderBottom: `1px solid ${BORDER}` }}>
+              <button
+                type="button"
+                onClick={() => setShapesOpen(v => !v)}
+                className="flex items-center justify-between w-full py-4 text-left"
+              >
+                <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
+                  Compatible Centre-Stone Shapes
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="font-sans" style={{ fontSize: 13, color: G, fontWeight: 300 }}>
+                    {localShapes.length === 0
+                      ? 'None selected'
+                      : localShapes.length === 1
+                      ? DIAMOND_SHAPE_LABELS[localShapes[0]]
+                      : `${localShapes.length} shapes`}
+                  </span>
+                  <ChevronDown
+                    className="w-3.5 h-3.5"
+                    style={{ color: '#bbb', transition: 'transform 0.2s', transform: shapesOpen ? 'rotate(180deg)' : 'none' }}
+                    strokeWidth={1.5}
+                  />
+                </span>
+              </button>
+
+              {shapesOpen && (
+                <div style={{ paddingBottom: 8 }}>
+                  {ALL_DIAMOND_SHAPES.map(shape => {
+                    const active = localShapes.includes(shape);
+                    return (
+                      <button
+                        key={shape}
+                        type="button"
+                        onClick={() => toggleShape(shape)}
+                        className="flex items-center gap-3 w-full px-2 py-3 font-sans transition-colors hover:bg-stone-50"
+                        style={{
+                          fontSize: 13,
+                          color: active ? G : '#aaa',
+                          fontWeight: active ? 400 : 300,
+                          backgroundColor: active ? '#f9f9f9' : 'transparent',
+                        }}
+                      >
+                        <span className="flex-1 text-left">{DIAMOND_SHAPE_LABELS[shape]}</span>
+                        <span
+                          className="font-sans uppercase"
+                          style={{ fontSize: 8, letterSpacing: '0.15em', color: active ? '#4a9e6b' : '#ddd' }}
+                        >
+                          {active ? 'On' : 'Off'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Engagement Ring Configuration */}
+          {props.onSaveEngagementConfig !== undefined && (
+            <div style={{ borderBottom: `1px solid ${BORDER}` }}>
+              <button
+                type="button"
+                onClick={() => setEngConfigOpen(v => !v)}
+                className="flex items-center justify-between w-full py-4 text-left"
+              >
+                <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
+                  Engagement Ring Configuration
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="font-sans" style={{ fontSize: 13, color: G, fontWeight: 300 }}>
+                    {localRingSizes.length === 0 ? 'Not configured' : `${localRingSizes.length} size${localRingSizes.length === 1 ? '' : 's'}`}
+                  </span>
+                  <ChevronDown
+                    className="w-3.5 h-3.5"
+                    style={{ color: '#bbb', transition: 'transform 0.2s', transform: engConfigOpen ? 'rotate(180deg)' : 'none' }}
+                    strokeWidth={1.5}
+                  />
+                </span>
+              </button>
+
+              {engConfigOpen && (
+                <div style={{ paddingBottom: 16 }}>
+                  {/* Compatible diamond counts */}
+                  <div style={{ marginBottom: 16 }}>
+                    <span className="font-sans uppercase block mb-2" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#bbb' }}>
+                      Compatible Available Diamonds
+                    </span>
+                    {!props.compatibleCounts ? null : localShapes.length === 0 ? (
+                      <p className="font-sans" style={{ fontSize: 11, color: '#bbb', fontStyle: 'italic' }}>
+                        Add compatible diamond shapes to calculate availability.
+                      </p>
+                    ) : props.compatibleCounts.white === 0 && props.compatibleCounts.yellow === 0 && props.compatibleCounts.pink === 0 ? (
+                      <p className="font-sans" style={{ fontSize: 11, color: '#bbb', fontStyle: 'italic' }}>
+                        No compatible available diamonds yet.
+                      </p>
+                    ) : (
+                      <div className="flex gap-6">
+                        {[
+                          { label: 'White', count: props.compatibleCounts.white },
+                          { label: 'Yellow', count: props.compatibleCounts.yellow },
+                          { label: 'Pink', count: props.compatibleCounts.pink },
+                        ].map(({ label, count }) => (
+                          <div key={label}>
+                            <span className="font-sans block" style={{ fontSize: 9, letterSpacing: '0.15em', color: '#bbb', textTransform: 'uppercase' }}>{label}</span>
+                            <span className="font-sans" style={{ fontSize: 18, color: count > 0 ? '#1a2b1a' : '#bbb', fontWeight: 300 }}>{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Carat range */}
+                  <div className="flex items-end gap-4 mb-5">
+                    <div className="flex-1">
+                      <label className="font-sans uppercase block mb-1.5" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#bbb' }}>Min Carat</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={localMinCarat}
+                        onChange={e => {
+                          setLocalMinCarat(e.target.value);
+                          scheduleEngagementSave({ minCarat: e.target.value === '' ? null : (parseFloat(e.target.value) || null) });
+                        }}
+                        className="w-full border-b focus:outline-none bg-transparent font-sans"
+                        style={{ fontSize: 12, color: G, borderColor: '#e0e0e0', paddingBottom: 4 }}
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="font-sans uppercase block mb-1.5" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#bbb' }}>Max Carat</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={localMaxCarat}
+                        onChange={e => {
+                          setLocalMaxCarat(e.target.value);
+                          scheduleEngagementSave({ maxCarat: e.target.value === '' ? null : (parseFloat(e.target.value) || null) });
+                        }}
+                        className="w-full border-b focus:outline-none bg-transparent font-sans"
+                        style={{ fontSize: 12, color: G, borderColor: '#e0e0e0', paddingBottom: 4 }}
+                        placeholder="No max"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Ring sizes */}
+                  <div className="mb-5">
+                    <span className="font-sans uppercase block mb-2" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#bbb' }}>
+                      Ring Sizes ({localRingSizes.length} selected)
+                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {UK_RING_SIZES.map(size => {
+                        const active = localRingSizes.includes(size);
+                        return (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => {
+                              const next = active
+                                ? localRingSizes.filter(s => s !== size)
+                                : [...localRingSizes, size].sort((a, b) => UK_RING_SIZES.indexOf(a) - UK_RING_SIZES.indexOf(b));
+                              setLocalRingSizes(next);
+                              scheduleEngagementSave({ ringSizes: next });
+                            }}
+                            className="font-sans transition-colors"
+                            style={{
+                              fontSize: 9,
+                              letterSpacing: '0.06em',
+                              padding: '3px 6px',
+                              border: `1px solid ${active ? G : '#e0e0e0'}`,
+                              background: active ? G : 'transparent',
+                              color: active ? '#fff' : '#aaa',
+                              cursor: 'pointer',
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {size}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Fixed attribute fields */}
+                  <div className="flex flex-col gap-3 mb-4">
+                    <div>
+                      <label className="font-sans uppercase block mb-1.5" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#bbb' }}>Setting Style</label>
+                      <input
+                        type="text"
+                        value={localSettingStyle}
+                        onChange={e => { setLocalSettingStyle(e.target.value); scheduleEngagementSave({ settingStyle: e.target.value || null }); }}
+                        className="w-full border-b focus:outline-none bg-transparent font-sans"
+                        style={{ fontSize: 12, color: G, borderColor: '#e0e0e0', paddingBottom: 4 }}
+                        placeholder="Setting style (admin reference)"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-sans uppercase block mb-1.5" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#bbb' }}>Band Style</label>
+                      <input
+                        type="text"
+                        value={localBandStyle}
+                        onChange={e => { setLocalBandStyle(e.target.value); scheduleEngagementSave({ bandStyle: e.target.value || null }); }}
+                        className="w-full border-b focus:outline-none bg-transparent font-sans"
+                        style={{ fontSize: 12, color: G, borderColor: '#e0e0e0', paddingBottom: 4 }}
+                        placeholder="Band style (admin reference)"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-sans uppercase block mb-1.5" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#bbb' }}>Head Style</label>
+                      <input
+                        type="text"
+                        value={localHeadStyle}
+                        onChange={e => { setLocalHeadStyle(e.target.value); scheduleEngagementSave({ headStyle: e.target.value || null }); }}
+                        className="w-full border-b focus:outline-none bg-transparent font-sans"
+                        style={{ fontSize: 12, color: G, borderColor: '#e0e0e0', paddingBottom: 4 }}
+                        placeholder="Head style (admin reference)"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Boolean toggles */}
+                  <div>
+                    {(
+                      [
+                        { label: 'Requires Diamond Selection',  val: localRequiresDiamond, key: 'requiresDiamondSelection'  as const },
+                        { label: 'Requires Ring Size Selection', val: localRequiresSize,    key: 'requiresRingSizeSelection' as const },
+                      ] as const
+                    ).map(({ label, val, key }) => (
+                      <div key={key} className="flex items-center justify-between py-2.5" style={{ borderTop: `1px solid ${BORDER}` }}>
+                        <span className="font-sans" style={{ fontSize: 11, color: '#888', fontWeight: 300 }}>{label}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = !val;
+                            if (key === 'requiresDiamondSelection')  setLocalRequiresDiamond(next);
+                            if (key === 'requiresRingSizeSelection') setLocalRequiresSize(next);
+                            scheduleEngagementSave({ [key]: next });
+                          }}
+                          className="font-sans uppercase"
+                          style={{
+                            fontSize: 8,
+                            letterSpacing: '0.15em',
+                            color: val ? '#4a9e6b' : '#aaa',
+                            border: `1px solid ${val ? '#4a9e6b' : '#e0e0e0'}`,
+                            padding: '3px 10px',
+                          }}
+                        >
+                          {val ? 'On' : 'Off'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

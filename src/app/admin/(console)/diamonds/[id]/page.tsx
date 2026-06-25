@@ -3,19 +3,26 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaffRole } from '@/lib/staff'
 import { getDiamond } from '@/lib/diamonds/service'
+import { isEclatEligible } from '@/lib/diamonds/eligibility'
 import {
   CUT_LABELS,
   GRADE_LABELS,
   FLUORESCENCE_LABELS,
+  COLOUR_FAMILY_LABELS,
+  COLOUR_INTENSITY_LABELS,
   type DiamondStatus,
 } from '@/lib/diamonds/types'
-import { DeleteDiamondForm } from '@/components/admin/diamonds/DeleteDiamondForm'
-import { deleteDiamondAction } from './actions'
+import { DeleteDiamondForm }      from '@/components/admin/diamonds/DeleteDiamondForm'
+import { EclatApprovalSection }   from '@/components/admin/diamonds/EclatApprovalSection'
+import { deleteDiamondAction, approveEclatDiamondAction, revokeEclatApprovalAction } from './actions'
 
 export const metadata: Metadata = {
   title: 'Diamond — Éclat Grandeur Admin',
   robots: { index: false, follow: false },
 }
+
+// Fancy shapes — require eclat_approved
+const FANCY_SHAPES = ['oval','cushion','emerald','pear','radiant','princess','marquise','asscher','heart']
 
 interface Props {
   params: Promise<{ id: string }>
@@ -27,7 +34,12 @@ export default async function DiamondDetailPage({ params }: Props) {
   const diamond = await getDiamond(id)
   if (!diamond) notFound()
 
-  const deleteWithId = deleteDiamondAction.bind(null, id)
+  const deleteWithId  = deleteDiamondAction.bind(null, id)
+  const approveWithId = approveEclatDiamondAction.bind(null, id)
+  const revokeWithId  = revokeEclatApprovalAction.bind(null, id)
+
+  const isFancy  = FANCY_SHAPES.includes(diamond.cut)
+  const eligible = isEclatEligible(diamond)
 
   return (
     <div className="max-w-4xl">
@@ -43,11 +55,15 @@ export default async function DiamondDetailPage({ params }: Props) {
       <div className="mb-8 flex items-start justify-between">
         <div>
           <h1 className="font-display text-3xl font-light tracking-widest text-stone-900">{diamond.sku}</h1>
-          <div className="mt-2 flex items-center gap-3">
+          <div className="mt-2 flex items-center gap-3 flex-wrap">
             <StatusBadge status={diamond.status} />
             {diamond.is_published
               ? <span className="text-xs text-emerald-600">Published</span>
               : <span className="text-xs text-stone-400">Draft</span>}
+            <span className="text-xs text-stone-300">·</span>
+            <CategoryBadge category={diamond.diamond_category} />
+            <span className="text-xs text-stone-300">·</span>
+            <EligibilityBadge eligible={eligible} />
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -69,10 +85,29 @@ export default async function DiamondDetailPage({ params }: Props) {
             <Rows>
               <Row label="Cut"     value={CUT_LABELS[diamond.cut]} />
               <Row label="Carat"   value={`${diamond.carat.toFixed(2)} ct`} />
-              <Row label="Colour"  value={diamond.colour} />
+              {diamond.diamond_category === 'white' && (
+                <Row label="Colour"  value={diamond.colour} />
+              )}
               <Row label="Clarity" value={diamond.clarity} />
             </Rows>
           </Section>
+
+          {/* Coloured diamond identity */}
+          {diamond.diamond_category === 'coloured' && (
+            <Section title="Colour">
+              <Rows>
+                {diamond.colour_family && (
+                  <Row label="Family"      value={COLOUR_FAMILY_LABELS[diamond.colour_family]} />
+                )}
+                {diamond.colour_intensity && (
+                  <Row label="Intensity"   value={COLOUR_INTENSITY_LABELS[diamond.colour_intensity]} />
+                )}
+                {diamond.colour_description && (
+                  <Row label="Description" value={diamond.colour_description} />
+                )}
+              </Rows>
+            </Section>
+          )}
 
           <Section title="Cut grades">
             <Rows>
@@ -138,6 +173,18 @@ export default async function DiamondDetailPage({ params }: Props) {
             </Rows>
           </Section>
 
+          {/* Éclat Approval — fancy shapes only */}
+          {isFancy && (
+            <EclatApprovalSection
+              approveAction={approveWithId}
+              revokeAction={revokeWithId}
+              approved={diamond.eclat_approved}
+              approvedAt={diamond.eclat_approved_at}
+              approvedBy={diamond.eclat_approved_by}
+              approvalNote={diamond.eclat_approval_note}
+            />
+          )}
+
           {diamond.ring_setting_id && (
             <Section title="Ring setting">
               <Rows>
@@ -174,9 +221,24 @@ function fmtDate(iso: string): string {
 function StatusBadge({ status }: { status: DiamondStatus }) {
   switch (status) {
     case 'available': return <span className="text-xs text-emerald-600">Available</span>
+    case 'reserved':  return <span className="text-xs text-amber-600">Reserved</span>
     case 'sold':      return <span className="text-xs text-stone-400">Sold</span>
     default:          return <span className="text-xs text-stone-500">{status}</span>
   }
+}
+
+function CategoryBadge({ category }: { category: string }) {
+  return (
+    <span className="text-xs text-stone-500">
+      {category === 'coloured' ? 'Coloured' : 'White'}
+    </span>
+  )
+}
+
+function EligibilityBadge({ eligible }: { eligible: boolean }) {
+  return eligible
+    ? <span className="text-xs text-emerald-600">Éclat eligible</span>
+    : <span className="text-xs text-amber-600">Not eligible</span>
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

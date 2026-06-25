@@ -11,7 +11,10 @@ import {
   getRingSettingDiamonds,
   setRingSettingGallery,
   setRingSettingMetalVariants,
+  setRingSettingDiamondShapes,
+  setRingSettingEngagementConfig,
 } from '@/lib/ring-settings/service'
+import type { RingEngagementConfigPatch } from '@/lib/ring-settings/service'
 import {
   createDiamond,
   updateDiamond,
@@ -106,12 +109,28 @@ export async function saveRingMetalVariantsAction(id: string, metalVariants: unk
   revalidatePath(`/engagement-rings/[slug]`, 'page')
 }
 
+export async function saveRingDiamondShapesAction(id: string, diamond_shapes: string[]) {
+  await requireStaffRole([])
+  await setRingSettingDiamondShapes(id, diamond_shapes)
+  revalidatePath(`/admin/rings/${id}`)
+  revalidatePath('/engagement-rings')
+}
+
 export async function saveRingGalleryAction(id: string, galleryConfig: unknown) {
   await requireStaffRole([])
   await setRingSettingGallery(id, galleryConfig)
   revalidatePath(`/admin/rings/${id}`)
   revalidatePath('/engagement-rings')
   revalidatePath(`/engagement-rings/[slug]`, 'page')
+}
+
+export async function saveRingEngagementConfigAction(
+  id:     string,
+  config: RingEngagementConfigPatch,
+) {
+  await requireStaffRole([])
+  await setRingSettingEngagementConfig(id, config)
+  revalidatePath(`/admin/rings/${id}`)
 }
 
 export { listDiamonds }

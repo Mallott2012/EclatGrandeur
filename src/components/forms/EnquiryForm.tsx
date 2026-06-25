@@ -1,16 +1,27 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm }  from 'react-hook-form';
 import { useState } from 'react';
-import { Check } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import type { EnquiryInput } from '@/lib/validation';
+import { Check }    from 'lucide-react';
+import { Button }   from '@/components/ui/Button';
+import type { EnquiryInput }             from '@/lib/validation';
+import type { ConfiguredEngagementRing } from '@/types';
 
 const field =
   'w-full border-b border-ink/20 bg-transparent py-2.5 text-sm font-light text-ink placeholder:text-ink/40 focus:border-champagne focus:outline-none';
 const labelCls = 'text-[11px] uppercase tracking-luxe text-ink/55';
 
-export function EnquiryForm({ context, compact = false }: { context?: string; compact?: boolean }) {
+export function EnquiryForm({
+  context,
+  compact = false,
+  ringConfig,
+  cartToken,
+}: {
+  context?:    string;
+  compact?:    boolean;
+  ringConfig?: ConfiguredEngagementRing;
+  cartToken?:  string;
+}) {
   const {
     register,
     handleSubmit,
@@ -18,16 +29,24 @@ export function EnquiryForm({ context, compact = false }: { context?: string; co
     formState: { errors, isSubmitting },
   } = useForm<EnquiryInput>({ defaultValues: { context } });
   const [sent, setSent] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const onSubmit = async (data: EnquiryInput) => {
+    setSubmitError(null);
     const res = await fetch('/api/enquiry', {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...data, context }),
+      body:    JSON.stringify({ ...data, context, ringConfig, cartToken }),
     });
     if (res.ok) {
       setSent(true);
       reset();
+    } else {
+      const json = await res.json().catch(() => ({}));
+      setSubmitError(
+        (json as { error?: string }).error ??
+        'We could not send your enquiry at the moment. Please try again shortly.'
+      );
     }
   };
 
@@ -72,6 +91,9 @@ export function EnquiryForm({ context, compact = false }: { context?: string; co
         />
         {errors.message && <span className="text-xs text-red-700">Please tell us a little more</span>}
       </div>
+      {submitError && (
+        <p role="alert" className="text-xs text-red-700">{submitError}</p>
+      )}
       <Button type="submit" variant="primary" size="lg" disabled={isSubmitting} className="mt-1 w-full sm:w-auto">
         {isSubmitting ? 'Sending…' : 'Send Enquiry'}
       </Button>

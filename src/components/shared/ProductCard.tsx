@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -28,14 +28,35 @@ export function ProductCard({
   mainMedia, hoverMedia, hoverEnabled = true,
   priority = false,
 }: ProductCardProps) {
-  const videoRef    = useRef<HTMLVideoElement>(null);
-  const [hovered, setHovered] = useState(false);
+  const videoRef      = useRef<HTMLVideoElement>(null);
+  const containerRef  = useRef<HTMLDivElement>(null);
+  const [hovered,     setHovered]     = useState(false);
+  const [videoReady,  setVideoReady]  = useState(false); // near viewport
+  const [videoFailed, setVideoFailed] = useState(false);
 
-  const showHover = hoverEnabled && Boolean(hoverMedia?.url);
+  const hoverIsVideo = hoverMedia?.type === 'video'
+    || (hoverMedia?.url && /\.(mp4|mov|webm)(\?|$)/i.test(hoverMedia.url ?? ''));
+  const mainIsVideo = mainMedia?.type === 'video'
+    || (mainMedia?.url && /\.(mp4|mov|webm)(\?|$)/i.test(mainMedia?.url ?? ''));
+
+  const showHover = hoverEnabled && Boolean(hoverMedia?.url) && !videoFailed;
+
+  // Intersection observer: prime hover video preload once card is near viewport
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || !hoverIsVideo || !showHover) return;
+    const io = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVideoReady(true); io.disconnect(); } },
+      { rootMargin: '300px' }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function enter() {
     setHovered(true);
-    if (showHover && hoverMedia?.type === 'video') {
+    if (showHover && hoverIsVideo) {
       const v = videoRef.current;
       if (v) { v.currentTime = 0; v.play().catch(() => {}); }
     }
@@ -43,17 +64,11 @@ export function ProductCard({
 
   function leave() {
     setHovered(false);
-    if (hoverMedia?.type === 'video' && videoRef.current) {
+    if (hoverIsVideo && videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
     }
   }
-
-  const mainIsVideo = mainMedia?.type === 'video'
-    || (mainMedia?.url && /\.(mp4|mov|webm)(\?|$)/i.test(mainMedia.url));
-
-  const hoverIsVideo = hoverMedia?.type === 'video'
-    || (hoverMedia?.url && /\.(mp4|mov|webm)(\?|$)/i.test(hoverMedia.url ?? ''));
 
   return (
     <Link
@@ -64,6 +79,7 @@ export function ProductCard({
     >
       {/* ── Fixed square media region ───────────────────────────────────── */}
       <div
+        ref={containerRef}
         className="relative w-full overflow-hidden bg-white"
         style={{ aspectRatio: '1 / 1' }}
       >
@@ -96,14 +112,16 @@ export function ProductCard({
           </div>
         )}
 
-        {/* Hover media — desktop only (mobile never gets mouseenter) */}
+        {/* Hover media — desktop only; never rendered on mobile (mouseenter not fired on touch) */}
         {showHover && hoverMedia?.url && (
           hoverIsVideo ? (
             <video
               ref={videoRef}
               src={hoverMedia.url}
               poster={hoverMedia.posterUrl}
-              muted loop playsInline preload="none"
+              muted loop playsInline
+              preload={videoReady ? 'metadata' : 'none'}
+              onError={() => setVideoFailed(true)}
               className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-out"
               style={{ opacity: hovered ? 1 : 0 }}
             />

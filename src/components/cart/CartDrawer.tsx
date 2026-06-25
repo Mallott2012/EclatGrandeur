@@ -3,14 +3,15 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
-import { useCart } from '@/lib/store/cart';
-import { JewelArt } from '@/components/art/JewelArt';
-import { Button } from '@/components/ui/Button';
+import { useCart, type CartItem } from '@/lib/store/cart';
+import { JewelArt }    from '@/components/art/JewelArt';
+import { Button }      from '@/components/ui/Button';
 import { formatMoney } from '@/lib/utils';
-import { cn } from '@/lib/utils';
+import { cn }          from '@/lib/utils';
+import { trackEvent }  from '@/lib/analytics';
 
 export function CartDrawer() {
-  const { items, open, setOpen, remove, setQty } = useCart();
+  const { items, open, setOpen, remove, setQty, cartToken } = useCart();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -21,11 +22,26 @@ export function CartDrawer() {
     };
   }, [open]);
 
-  const list = mounted ? items : [];
+  const list     = mounted ? items : [];
   const subtotal = {
-    amount: list.reduce((s, i) => s + i.price.amount * i.qty, 0),
+    amount:   list.reduce((s, i) => s + i.price.amount * i.qty, 0),
     currency: list[0]?.price.currency ?? ('GBP' as const),
   };
+
+  function handleRemove(item: CartItem) {
+    if (item.ringConfig) {
+      fetch('/api/rings/release', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ diamondId: item.ringConfig.diamondId, cartToken }),
+      }).catch(console.error);
+      trackEvent('engagement_ring_removed_from_bag', {
+        settingId: item.ringConfig.settingId,
+        diamondId: item.ringConfig.diamondId,
+      });
+    }
+    remove(item.id);
+  }
 
   return (
     <div
@@ -55,41 +71,75 @@ export function CartDrawer() {
           <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 text-center">
             <ShoppingBag className="h-9 w-9 text-ink/30" strokeWidth={1} />
             <p className="font-light text-ink/60">Your selection is empty.</p>
-            <Button href="/engagement-rings" variant="outline" size="sm" >
+            <Button href="/engagement-rings" variant="outline" size="sm">
               Begin Exploring
             </Button>
           </div>
         ) : (
           <>
             <div className="flex-1 overflow-y-auto px-6 py-4">
-              {list.map((item) => (
-                <div key={item.id} className="flex gap-4 border-b border-ink/10 py-5">
-                  <Link href={item.href} onClick={() => setOpen(false)} className="h-24 w-20 shrink-0 overflow-hidden bg-ivory-deep">
-                    <JewelArt art={item.art} gid={`cart-${item.id}`} className="h-full w-full" />
-                  </Link>
-                  <div className="flex flex-1 flex-col">
-                    <Link href={item.href} onClick={() => setOpen(false)} className="font-display text-lg leading-tight hover:text-champagne-deep">
-                      {item.name}
+              {list.map((item) =>
+                item.ringConfig ? (
+                  /* ── Configured engagement ring ── */
+                  <div key={item.id} className="flex gap-4 border-b border-ink/10 py-5">
+                    <Link href={item.href} onClick={() => setOpen(false)} className="h-24 w-20 shrink-0 overflow-hidden bg-ivory-deep">
+                      <JewelArt art={item.art} gid={`cart-${item.id}`} className="h-full w-full" />
                     </Link>
-                    {item.meta && <span className="mt-0.5 text-xs font-light text-ink/50">{item.meta}</span>}
-                    <span className="mt-1 text-sm text-ink/80">{formatMoney(item.price)}</span>
-                    <div className="mt-auto flex items-center justify-between pt-3">
-                      <div className="flex items-center border border-ink/20">
-                        <button aria-label="Decrease" className="px-2 py-1.5 hover:text-champagne-deep" onClick={() => setQty(item.id, item.qty - 1)}>
-                          <Minus className="h-3 w-3" />
-                        </button>
-                        <span className="min-w-7 text-center text-xs">{item.qty}</span>
-                        <button aria-label="Increase" className="px-2 py-1.5 hover:text-champagne-deep" onClick={() => setQty(item.id, item.qty + 1)}>
-                          <Plus className="h-3 w-3" />
+                    <div className="flex flex-1 flex-col">
+                      <Link href={item.href} onClick={() => setOpen(false)} className="font-display text-lg leading-tight hover:text-champagne-deep">
+                        {item.name}
+                      </Link>
+                      <span className="mt-0.5 text-xs font-light text-ink/50">
+                        {item.ringConfig.diamondDescription}
+                      </span>
+                      <span className="mt-0.5 text-xs font-light text-ink/50">
+                        {item.ringConfig.metalLabel}
+                        {item.ringConfig.ringSize ? ` · Size ${item.ringConfig.ringSize}` : ''}
+                      </span>
+                      <span className="mt-1 text-sm text-ink/80">{formatMoney(item.price)}</span>
+                      <div className="mt-auto flex justify-end pt-3">
+                        <button
+                          className="text-[10px] uppercase tracking-luxe text-ink/40 hover:text-ink"
+                          onClick={() => handleRemove(item)}
+                        >
+                          Remove
                         </button>
                       </div>
-                      <button className="text-[10px] uppercase tracking-luxe text-ink/40 hover:text-ink" onClick={() => remove(item.id)}>
-                        Remove
-                      </button>
                     </div>
                   </div>
-                </div>
-              ))}
+                ) : (
+                  /* ── Standard item ── */
+                  <div key={item.id} className="flex gap-4 border-b border-ink/10 py-5">
+                    <Link href={item.href} onClick={() => setOpen(false)} className="h-24 w-20 shrink-0 overflow-hidden bg-ivory-deep">
+                      <JewelArt art={item.art} gid={`cart-${item.id}`} className="h-full w-full" />
+                    </Link>
+                    <div className="flex flex-1 flex-col">
+                      <Link href={item.href} onClick={() => setOpen(false)} className="font-display text-lg leading-tight hover:text-champagne-deep">
+                        {item.name}
+                      </Link>
+                      {item.meta && <span className="mt-0.5 text-xs font-light text-ink/50">{item.meta}</span>}
+                      <span className="mt-1 text-sm text-ink/80">{formatMoney(item.price)}</span>
+                      <div className="mt-auto flex items-center justify-between pt-3">
+                        <div className="flex items-center border border-ink/20">
+                          <button aria-label="Decrease" className="px-2 py-1.5 hover:text-champagne-deep" onClick={() => setQty(item.id, item.qty - 1)}>
+                            <Minus className="h-3 w-3" />
+                          </button>
+                          <span className="min-w-7 text-center text-xs">{item.qty}</span>
+                          <button aria-label="Increase" className="px-2 py-1.5 hover:text-champagne-deep" onClick={() => setQty(item.id, item.qty + 1)}>
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <button
+                          className="text-[10px] uppercase tracking-luxe text-ink/40 hover:text-ink"
+                          onClick={() => handleRemove(item)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              )}
             </div>
 
             <div className="border-t border-ink/10 px-6 py-5">

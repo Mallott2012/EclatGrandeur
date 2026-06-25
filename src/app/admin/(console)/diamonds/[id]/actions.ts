@@ -1,8 +1,9 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 import { requireStaffRole } from '@/lib/staff'
-import { updateDiamond, deleteDiamond } from '@/lib/diamonds/service'
+import { updateDiamond, deleteDiamond, approveEclatDiamond, revokeEclatApproval } from '@/lib/diamonds/service'
 import { UpdateDiamondSchema, parseDiamondFormData, zodErrors } from '@/lib/diamonds/schemas'
 import type { DiamondActionResult, DiamondSimpleResult } from '../types'
 
@@ -28,6 +29,39 @@ export async function updateDiamondAction(
     return { success: false, message: serviceMsg(err), fieldErrors: {} }
   }
   redirect(`/admin/diamonds/${id}`)
+}
+
+// ── Éclat approval ────────────────────────────────────────────────────────────
+
+export async function approveEclatDiamondAction(
+  id:       string,
+  _state:   DiamondSimpleResult,
+  formData: FormData,
+): Promise<DiamondSimpleResult> {
+  const actor = await requireStaffRole(['super_admin', 'diamond_buyer'])
+  const note  = (formData.get('approval_note') as string | null)?.trim() || null
+  try {
+    await approveEclatDiamond(actor, id, note)
+  } catch (err) {
+    return { success: false, message: serviceMsg(err) }
+  }
+  revalidatePath(`/admin/diamonds/${id}`)
+  return { success: true }
+}
+
+export async function revokeEclatApprovalAction(
+  id:     string,
+  _state: DiamondSimpleResult,
+  _fd:    FormData,
+): Promise<DiamondSimpleResult> {
+  const actor = await requireStaffRole(['super_admin', 'diamond_buyer'])
+  try {
+    await revokeEclatApproval(actor, id)
+  } catch (err) {
+    return { success: false, message: serviceMsg(err) }
+  }
+  revalidatePath(`/admin/diamonds/${id}`)
+  return { success: true }
 }
 
 // ── Delete ────────────────────────────────────────────────────────────────────

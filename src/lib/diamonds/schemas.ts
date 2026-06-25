@@ -13,15 +13,37 @@ export const DIAMOND_COLOURS    = ['D','E','F','G','H','I','J'] as const
 export const DIAMOND_CLARITIES  = ['FL','IF','VVS1','VVS2','VS1','VS2','SI1','SI2'] as const
 export const DIAMOND_GRADES     = ['excellent','very_good','good','fair','poor'] as const
 export const DIAMOND_FLUORESCENCES = ['none','faint','medium','strong','very_strong'] as const
-export const DIAMOND_STATUSES   = ['available','sold'] as const
+export const DIAMOND_STATUSES   = ['available','reserved','sold'] as const
 export const RING_METALS        = [
   'platinum','white_gold_18k','yellow_gold_18k','rose_gold_18k',
   'white_gold_9k','yellow_gold_9k',
 ] as const
 
+export const DIAMOND_CATEGORIES    = ['white', 'coloured'] as const
+export const COLOUR_FAMILIES       = ['yellow', 'pink'] as const
+export const COLOUR_INTENSITIES    = ['fancy_light', 'fancy', 'fancy_intense', 'fancy_vivid'] as const
+
+// Fancy shapes — GIA does not issue a formal cut grade for these
+export const FANCY_SHAPES = ['oval', 'cushion', 'emerald', 'pear', 'radiant', 'princess', 'marquise', 'asscher', 'heart'] as const
+
 // ── Diamond schemas ───────────────────────────────────────────────────────────
 
-export const CreateDiamondSchema = z.object({
+// superRefine callback — shared by create and update schemas
+function validateColourFamily(
+  data: { diamond_category?: string; colour_family?: string | null },
+  ctx: z.RefinementCtx,
+) {
+  if (data.diamond_category === 'coloured' && !data.colour_family) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['colour_family'], message: 'Colour family is required for coloured diamonds' });
+  }
+  if (data.colour_family && !(COLOUR_FAMILIES as readonly string[]).includes(data.colour_family)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['colour_family'], message: 'Only Yellow and Pink colour families are supported' });
+  }
+}
+
+// Base object shape — used to derive both Create and Update schemas without
+// wrapping in ZodEffects (which would prevent .partial() on UpdateDiamondSchema).
+const _DiamondFields = z.object({
   ring_setting_id:    z.string().uuid().nullable().optional(),
   cut:                z.enum(DIAMOND_CUTS),
   carat:              z.number().positive().max(50),
@@ -42,13 +64,20 @@ export const CreateDiamondSchema = z.object({
   price_gbp:          z.number().nonnegative(),
   is_published:       z.boolean().default(false),
   notes:              z.string().max(2000).nullable().optional(),
+  // Phase 2 — coloured-diamond identity
+  diamond_category:   z.enum(DIAMOND_CATEGORIES).default('white'),
+  colour_family:      z.enum(COLOUR_FAMILIES).nullable().optional(),
+  colour_intensity:   z.enum(COLOUR_INTENSITIES).nullable().optional(),
+  colour_description: z.string().max(500).nullable().optional(),
 })
+
+export const CreateDiamondSchema = _DiamondFields.superRefine(validateColourFamily)
 
 export type CreateDiamondInput = z.infer<typeof CreateDiamondSchema>
 
-export const UpdateDiamondSchema = CreateDiamondSchema.partial().extend({
+export const UpdateDiamondSchema = _DiamondFields.partial().extend({
   status: z.enum(DIAMOND_STATUSES).optional(),
-})
+}).superRefine(validateColourFamily)
 
 export type UpdateDiamondInput = z.infer<typeof UpdateDiamondSchema>
 
@@ -74,7 +103,13 @@ export type UpdateRingSettingInput  = z.infer<typeof UpdateRingSettingSchema>
 
 export function parseDiamondFormData(fd: FormData): Record<string, unknown> {
   const numFields  = ['carat','price_gbp','measurement_length','measurement_width','measurement_depth','depth_pct','table_pct']
-  const nullFields = ['ring_setting_id','cut_grade','polish','symmetry','gia_report_number','gia_report_date','gia_report_url','measurement_length','measurement_width','measurement_depth','depth_pct','table_pct','notes']
+  const nullFields = [
+    'ring_setting_id','cut_grade','polish','symmetry',
+    'gia_report_number','gia_report_date','gia_report_url',
+    'measurement_length','measurement_width','measurement_depth','depth_pct','table_pct',
+    'notes',
+    'colour_family','colour_intensity','colour_description',
+  ]
   const out: Record<string, unknown> = {}
   for (const [key, value] of fd.entries()) {
     if (key === 'is_published') continue

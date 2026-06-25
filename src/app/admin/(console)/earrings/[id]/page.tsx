@@ -42,6 +42,9 @@ export default async function AdminEARRINGEditPage({ params }: Props) {
     polish: d.polish, symmetry: d.symmetry,
     gia_report_number: d.gia_report_number,
     gia_report_url: d.gia_report_url, notes: d.notes,
+    diamond_category: d.diamond_category, colour_family: d.colour_family,
+    colour_intensity: d.colour_intensity, colour_description: d.colour_description,
+    eclat_approved: d.eclat_approved,
   }));
 
   const galleryConfig = parseGalleryConfig(product.gallery_config);
@@ -75,6 +78,9 @@ export default async function AdminEARRINGEditPage({ params }: Props) {
           polish: d.polish, symmetry: d.symmetry,
           gia_report_number: d.gia_report_number,
           gia_report_url: d.gia_report_url, notes: d.notes,
+          diamond_category: d.diamond_category, colour_family: d.colour_family,
+          colour_intensity: d.colour_intensity, colour_description: d.colour_description,
+          eclat_approved: d.eclat_approved,
         };
       }}
       onUpdateDiamond={async (dId, data) => { 'use server'; await updateDiamondAction(dId, data); }}

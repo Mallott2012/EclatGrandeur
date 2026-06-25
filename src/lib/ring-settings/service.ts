@@ -232,6 +232,45 @@ export async function setRingSettingMetalVariants(id: string, metalVariants: unk
   if (error) throw new ServiceException({ code: 'db_error', message: 'Failed to save metal variants', statusHint: 500 })
 }
 
+export async function setRingSettingDiamondShapes(id: string, diamond_shapes: string[]): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('ring_settings')
+    .update({ diamond_shapes })
+    .eq('id', id)
+  if (error) throw new ServiceException({ code: 'db_error', message: 'Failed to save diamond shapes', statusHint: 500 })
+}
+
+export interface RingEngagementConfigPatch {
+  min_carat?:                   number | null
+  max_carat?:                   number | null
+  ring_sizes?:                  string[]
+  requires_diamond_selection?:   boolean
+  requires_ring_size_selection?: boolean
+  setting_style?:               string | null
+  band_style?:                  string | null
+  head_style?:                  string | null
+}
+
+export async function setRingSettingEngagementConfig(
+  id:     string,
+  config: RingEngagementConfigPatch,
+): Promise<void> {
+  const admin = createAdminClient()
+  const patch: Record<string, unknown> = {}
+  if ('min_carat'                   in config) patch.min_carat                    = config.min_carat
+  if ('max_carat'                   in config) patch.max_carat                    = config.max_carat
+  if ('ring_sizes'                  in config) patch.ring_sizes                   = config.ring_sizes
+  if ('requires_diamond_selection'  in config) patch.requires_diamond_selection   = config.requires_diamond_selection
+  if ('requires_ring_size_selection' in config) patch.requires_ring_size_selection = config.requires_ring_size_selection
+  if ('setting_style'               in config) patch.setting_style                = config.setting_style
+  if ('band_style'                  in config) patch.band_style                   = config.band_style
+  if ('head_style'                  in config) patch.head_style                   = config.head_style
+  if (Object.keys(patch).length === 0) return
+  const { error } = await admin.from('ring_settings').update(patch).eq('id', id)
+  if (error) throw new ServiceException({ code: 'db_error', message: 'Failed to save engagement config', statusHint: 500 })
+}
+
 /** Remove a diamond from a ring setting + metal combo */
 export async function unassignDiamondFromRingSetting(
   ringSettingId: string,

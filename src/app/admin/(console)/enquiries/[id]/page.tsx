@@ -140,6 +140,39 @@ export default async function EnquiryDetailPage({ params }: Props) {
           </Section>
         )}
 
+        {/* Ring configuration snapshot (Phase 6) */}
+        {enquiry.configuration && (
+          <Section title="RING CONFIGURATION">
+            {(() => {
+              const c = enquiry.configuration as Record<string, unknown>
+              const fmt = (pence: unknown) =>
+                typeof pence === 'number'
+                  ? `£${(pence / 100).toLocaleString('en-GB', { minimumFractionDigits: 2 })}`
+                  : '—'
+              return (
+                <dl className="grid grid-cols-2 gap-4">
+                  <Field label="SETTING"    value={String(c.settingName ?? '—')} />
+                  <Field label="METAL"      value={String(c.metalLabel ?? '—')} />
+                  <Field label="DIAMOND"    value={String(c.diamondDescription ?? '—')} />
+                  <Field label="DIAMOND SKU" value={String(c.diamondSku ?? '—')} />
+                  <Field label="RING SIZE"  value={c.ringSize ? String(c.ringSize) : 'Not specified'} />
+                  <Field label="CATEGORY"  value={String(c.diamondCategory ?? '—')} />
+                  <Field label="SETTING PRICE" value={fmt(c.settingPrice)} />
+                  <Field label="DIAMOND PRICE" value={fmt(c.diamondPrice)} />
+                  <Field label="TOTAL"         value={fmt(c.totalPrice)} />
+                  <Field label="RESERVATION EXPIRES" value={
+                    c.reservationExpiresAt
+                      ? new Date(String(c.reservationExpiresAt)).toLocaleString('en-GB', {
+                          day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+                        })
+                      : '—'
+                  } />
+                </dl>
+              )
+            })()}
+          </Section>
+        )}
+
         {/* Internal notes */}
         <Section title="INTERNAL NOTES">
           <EnquiryNotesForm id={enquiry.id} current={enquiry.notes ?? ''} />

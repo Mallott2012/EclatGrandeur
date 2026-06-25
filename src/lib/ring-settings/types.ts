@@ -30,22 +30,61 @@ export const ALL_METALS: RingMetal[] = [
   'yellow_gold_9k',
 ]
 
+// ── Diamond shapes ────────────────────────────────────────────────────────────
+
+export type DiamondShape = 'round' | 'oval' | 'emerald' | 'cushion' | 'pear' | 'radiant';
+
+export const ALL_DIAMOND_SHAPES: DiamondShape[] = ['round', 'oval', 'emerald', 'cushion', 'pear', 'radiant'];
+
+export const DIAMOND_SHAPE_LABELS: Record<DiamondShape, string> = {
+  round:   'Round',
+  oval:    'Oval',
+  emerald: 'Emerald',
+  cushion: 'Cushion',
+  pear:    'Pear',
+  radiant: 'Radiant',
+};
+
+// ── Product status ────────────────────────────────────────────────────────────
+
+export type ProductStatus = 'available' | 'made_to_order' | 'discontinued'
+
+export const ALL_PRODUCT_STATUSES: ProductStatus[] = ['available', 'made_to_order', 'discontinued']
+
+export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
+  available:      'Available',
+  made_to_order:  'Made to Order',
+  discontinued:   'Discontinued',
+}
+
 export interface RingSettingRecord {
-  id:             string
-  name:           string
-  slug:           string
-  collection:     string | null
-  description:    string | null
-  metals:         RingMetal[]
-  base_price_gbp: string | null
-  is_published:   boolean
-  sort_order:     number
-  gallery_config:  unknown | null
-  metal_variants:  unknown | null
-  created_by:      string | null
-  updated_by:     string | null
-  created_at:     string
-  updated_at:     string
+  id:                        string
+  name:                      string
+  slug:                      string
+  collection:                string | null
+  short_description:         string | null
+  description:               string | null
+  metals:                    RingMetal[]
+  base_price_gbp:            string | null
+  status:                    ProductStatus | null
+  is_published:              boolean
+  sort_order:                number
+  gallery_config:            unknown | null
+  metal_variants:            unknown | null
+  diamond_shapes:            DiamondShape[]
+  // Engagement ring configuration (migration 0023)
+  min_carat:                 number | null
+  max_carat:                 number | null
+  ring_sizes:                string[]
+  requires_diamond_selection:   boolean
+  requires_ring_size_selection: boolean
+  setting_style:             string | null
+  band_style:                string | null
+  head_style:                string | null
+  created_by:                string | null
+  updated_by:                string | null
+  created_at:                string
+  updated_at:                string
 }
 
 export interface RingSettingMediaRecord {

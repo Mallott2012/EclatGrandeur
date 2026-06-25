@@ -1,34 +1,70 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { listCompatibleDiamonds } from '@/lib/diamonds/compatibility'
+import type { DiamondCategory, ColourFamily } from '@/lib/diamonds/types'
 
 /**
  * GET /api/diamonds
  *
- * Public route — returns only published diamonds for the DiamondSelector.
+ * Two paths:
  *
- * Query params:
- *  - shape (optional): filter by diamond shape (round, oval, etc.)
- *  - min_carat, max_carat, min_price, max_price (optional): range filters
- *  - ring_setting_id + metal (optional): restrict to diamonds assigned to this
- *    ring setting + metal combination via the ring_setting_diamonds join table
- *  - jewellery_id (optional): restrict to diamonds assigned to this jewellery
- *    product via the jewellery_diamonds join table
+ * 1. Compatibility path (Phase 3+): ring_setting_id without metal
+ *    Params: ring_setting_id, category (white|coloured), colour_family (yellow|pink)
+ *    Returns only compatible, published, available, Éclat-eligible diamonds.
+ *    Never exposes internal approval fields, hold data, or audit metadata.
+ *
+ * 2. Legacy path: ring_setting_id + metal  OR  jewellery_id
+ *    Restricts to diamonds manually assigned via the join table.
+ *    Kept for backward compatibility with existing jewellery-product pages.
  */
 export async function GET(request: Request) {
   try {
-    const supabase = await createServerSupabaseClient()
     const { searchParams } = new URL(request.url)
+    const ringSettingId  = searchParams.get('ring_setting_id')
+    const metal          = searchParams.get('metal')
+    const jewelleryId    = searchParams.get('jewellery_id')
 
-    const ringSettingId = searchParams.get('ring_setting_id')
-    const metal         = searchParams.get('metal')
-    const jewelleryId   = searchParams.get('jewellery_id')
+    // ── 1. Compatibility path ─────────────────────────────────────────────────
+    if (ringSettingId && !metal && !jewelleryId) {
+      const category     = searchParams.get('category')    as DiamondCategory | null
+      const colourFamily = searchParams.get('colour_family') as ColourFamily   | null
 
-    // ── If scoped, fetch assigned diamond IDs first ───────────────────────────
+      const diamonds = await listCompatibleDiamonds({
+        ringSettingId,
+        diamondCategory: category     ?? undefined,
+        colourFamily:    colourFamily ?? undefined,
+        limit:  200,
+        offset: 0,
+      })
+
+      // Return only customer-safe fields — no approval users, notes, or hold data
+      return NextResponse.json({
+        diamonds: diamonds.map(d => ({
+          id:               d.id,
+          sku:              d.sku,
+          carat:            d.carat,
+          shape:            d.cut,
+          color:            d.colour,
+          clarity:          d.clarity,
+          fluorescence:     d.fluorescence,
+          price:            d.price_gbp,
+          diamond_category: d.diamond_category,
+          colour_family:    d.colour_family,
+          colour_intensity: d.colour_intensity,
+          colour_description: d.colour_description,
+          gia_report_url:   d.gia_report_url,
+          cut_grade:        d.cut_grade,
+          polish:           d.polish,
+          symmetry:         d.symmetry,
+        })),
+      })
+    }
+
+    // ── 2. Legacy path ────────────────────────────────────────────────────────
+    const admin = createAdminClient()
     let assignedIds: string[] | null = null
 
     if (ringSettingId && metal) {
-      const admin = createAdminClient()
       const { data, error } = await admin
         .from('ring_setting_diamonds')
         .select('diamond_id')
@@ -36,12 +72,10 @@ export async function GET(request: Request) {
         .eq('metal', metal)
       if (error) return NextResponse.json({ error: 'Failed to fetch assigned diamonds' }, { status: 500 })
       const ids = (data ?? []).map((r: { diamond_id: string }) => r.diamond_id)
-      // Only scope if assignments exist; otherwise fall through to all published diamonds
       if (ids.length > 0) assignedIds = ids
     }
 
     if (jewelleryId) {
-      const admin = createAdminClient()
       const { data, error } = await admin
         .from('jewellery_diamonds')
         .select('diamond_id')
@@ -51,19 +85,14 @@ export async function GET(request: Request) {
       if (ids.length > 0) assignedIds = ids
     }
 
-    // ── Build main diamond query ──────────────────────────────────────────────
-    let query = supabase
+    let query = admin
       .from('diamonds')
       .select('id, sku, carat, cut, colour, clarity, fluorescence, price_gbp, is_published')
       .eq('is_published', true)
       .order('carat', { ascending: true })
 
-    // Scope to assigned IDs when filtering by product
-    if (assignedIds !== null) {
-      query = query.in('id', assignedIds)
-    }
+    if (assignedIds !== null) query = query.in('id', assignedIds)
 
-    // Optional range filters
     const shape = searchParams.get('shape')
     if (shape) query = query.eq('cut', shape)
 
@@ -80,25 +109,23 @@ export async function GET(request: Request) {
     if (maxPrice) query = query.lte('price_gbp', parseFloat(maxPrice))
 
     const { data, error } = await query
-
     if (error) {
       console.error('[api/diamonds] error:', error)
       return NextResponse.json({ error: 'Failed to fetch diamonds' }, { status: 500 })
     }
 
-    // Transform DB records to frontend shape
-    const diamonds = (data ?? []).map((d) => ({
-      id:           d.id,
-      sku:          d.sku,
-      carat:        parseFloat(d.carat as unknown as string),
-      shape:        d.cut,
-      color:        d.colour,
-      clarity:      d.clarity,
-      fluorescence: d.fluorescence,
-      price:        parseFloat(d.price_gbp as unknown as string),
-    }))
-
-    return NextResponse.json({ diamonds })
+    return NextResponse.json({
+      diamonds: (data ?? []).map(d => ({
+        id:           d.id,
+        sku:          d.sku,
+        carat:        parseFloat(d.carat as unknown as string),
+        shape:        d.cut,
+        color:        d.colour,
+        clarity:      d.clarity,
+        fluorescence: d.fluorescence,
+        price:        parseFloat(d.price_gbp as unknown as string),
+      })),
+    })
   } catch (err) {
     console.error('[api/diamonds] unexpected error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

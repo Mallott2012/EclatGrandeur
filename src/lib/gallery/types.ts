@@ -55,14 +55,21 @@ export function parseGalleryConfig(raw: unknown): GalleryData {
 
 // ── Metal-variant types ─────────────────────────────────────────────────────────
 
-export type MetalKey = 'platinum' | 'yellow-gold' | 'rose-gold';
+export type MetalKey = 'platinum' | 'white-gold-18k' | 'yellow-gold-18k' | 'rose-gold-14k';
 
-export const METAL_KEYS: MetalKey[] = ['platinum', 'yellow-gold', 'rose-gold'];
+export const METAL_KEYS: MetalKey[] = ['platinum', 'white-gold-18k', 'yellow-gold-18k', 'rose-gold-14k'];
 
 export const METAL_DISPLAY: Record<MetalKey, string> = {
-  'platinum':    'Platinum',
-  'yellow-gold': 'Yellow Gold',
-  'rose-gold':   'Rose Gold',
+  'platinum':       'Platinum',
+  'white-gold-18k': '18k White Gold',
+  'yellow-gold-18k':'18k Yellow Gold',
+  'rose-gold-14k':  '14k Rose Gold',
+};
+
+// Maps legacy 3-variant keys to new keys (for DB rows saved before the rename)
+const LEGACY_KEY_MAP: Record<string, MetalKey> = {
+  'yellow-gold': 'yellow-gold-18k',
+  'rose-gold':   'rose-gold-14k',
 };
 
 export interface ProductMediaItem {
@@ -84,12 +91,23 @@ export interface VariantGallery {
 }
 
 export interface MetalVariant {
-  id:      string;
-  metal:   MetalKey;
-  enabled: boolean;
-  price?:  number;
-  sku?:    string;
-  gallery: VariantGallery;
+  id:        string;
+  metal:     MetalKey;
+  enabled:   boolean;
+  isDefault?: boolean;   // true on the variant used for listing-card and ProductCard display
+  price?:    number;
+  sku?:      string;
+  gallery:   VariantGallery;
+}
+
+/** Returns the variant to use for listing cards / ProductCard.
+ *  Priority: explicit isDefault + enabled → first enabled → first in array */
+export function getDefaultVariant(variants: MetalVariant[]): MetalVariant | undefined {
+  return (
+    variants.find(v => v.isDefault && v.enabled) ??
+    variants.find(v => v.enabled) ??
+    variants[0]
+  );
 }
 
 export const EMPTY_VARIANT_GALLERY: VariantGallery = {
@@ -101,10 +119,11 @@ export const EMPTY_VARIANT_GALLERY: VariantGallery = {
 
 export function emptyMetalVariant(metal: MetalKey): MetalVariant {
   return {
-    id:      `variant-${metal}`,
+    id:        `variant-${metal}`,
     metal,
-    enabled: false,
-    gallery: { ...EMPTY_VARIANT_GALLERY, items: [] },
+    enabled:   false,
+    isDefault: false,
+    gallery:   { ...EMPTY_VARIANT_GALLERY, items: [] },
   };
 }
 
@@ -144,15 +163,17 @@ export function parseMetalVariants(raw: unknown): MetalVariant[] | null {
     .map((v): MetalVariant | null => {
       if (!v || typeof v !== 'object') return null;
       const mv = v as Record<string, unknown>;
-      const metal = mv.metal as MetalKey;
+      const rawMetal = mv.metal as string;
+      const metal: MetalKey = (LEGACY_KEY_MAP[rawMetal] ?? rawMetal) as MetalKey;
       if (!METAL_KEYS.includes(metal)) return null;
       return {
-        id:      typeof mv.id === 'string' ? mv.id : `variant-${metal}`,
+        id:        typeof mv.id === 'string' ? mv.id : `variant-${metal}`,
         metal,
-        enabled: Boolean(mv.enabled),
-        price:   typeof mv.price === 'number' ? mv.price : undefined,
-        sku:     typeof mv.sku   === 'string' ? mv.sku   : undefined,
-        gallery: parseVariantGallery(mv.gallery),
+        enabled:   Boolean(mv.enabled),
+        isDefault: Boolean(mv.isDefault),
+        price:     typeof mv.price === 'number' ? mv.price : undefined,
+        sku:       typeof mv.sku   === 'string' ? mv.sku   : undefined,
+        gallery:   parseVariantGallery(mv.gallery),
       };
     })
     .filter((x): x is MetalVariant => x !== null);
@@ -163,6 +184,7 @@ export function parseMetalVariants(raw: unknown): MetalVariant[] | null {
 export function buildDefaultVariants(galleryConfig?: GalleryData | null): MetalVariant[] {
   const platinum = emptyMetalVariant('platinum');
   platinum.enabled = true;
+  platinum.isDefault = true;
 
   if (galleryConfig) {
     platinum.gallery.items = SLOT_ORDER
@@ -187,7 +209,12 @@ export function buildDefaultVariants(galleryConfig?: GalleryData | null): MetalV
     }
   }
 
-  return [platinum, emptyMetalVariant('yellow-gold'), emptyMetalVariant('rose-gold')];
+  return [
+    platinum,
+    emptyMetalVariant('white-gold-18k'),
+    emptyMetalVariant('yellow-gold-18k'),
+    emptyMetalVariant('rose-gold-14k'),
+  ];
 }
 
 // ── Conversion: MetalVariant ↔ GalleryData ─────────────────────────────────────
@@ -213,6 +240,26 @@ export function variantToGalleryData(variant: MetalVariant): GalleryData {
     };
   });
   return result;
+}
+
+/** Extract card display media from a raw metal_variants JSONB value.
+ *  Gracefully returns empty values for products with no variants yet. */
+export function getCardMediaFromVariants(rawVariants: unknown): {
+  mainUrl:      string;
+  hoverUrl?:    string;
+  hoverEnabled: boolean;
+} {
+  const variants = parseMetalVariants(rawVariants);
+  if (!variants) return { mainUrl: '', hoverEnabled: false };
+  const def = getDefaultVariant(variants);
+  if (!def) return { mainUrl: '', hoverEnabled: false };
+  const mainItem  = def.gallery.items.find(it => it.id === def.gallery.cardMainMediaId);
+  const hoverItem = def.gallery.items.find(it => it.id === def.gallery.cardHoverMediaId);
+  return {
+    mainUrl:      mainItem?.url ?? '',
+    hoverUrl:     hoverItem?.url,
+    hoverEnabled: def.gallery.hoverMediaEnabled,
+  };
 }
 
 // Convert GalleryData → ProductMediaItem[], preserving stable IDs

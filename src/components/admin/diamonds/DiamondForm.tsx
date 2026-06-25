@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useFormState as useActionState } from 'react-dom'
 import { useFormStatus } from 'react-dom'
 import {
@@ -8,28 +9,40 @@ import {
   DIAMOND_CLARITIES,
   DIAMOND_GRADES,
   DIAMOND_FLUORESCENCES,
+  COLOUR_FAMILIES,
+  COLOUR_INTENSITIES,
   RING_METALS,
 } from '@/lib/diamonds/schemas'
 import {
   CUT_LABELS,
   GRADE_LABELS,
   FLUORESCENCE_LABELS,
+  COLOUR_FAMILY_LABELS,
+  COLOUR_INTENSITY_LABELS,
   METAL_LABELS,
   type DiamondCut,
   type DiamondColour,
   type DiamondClarity,
   type DiamondGrade,
   type DiamondFluorescence,
+  type DiamondCategory,
+  type ColourFamily,
+  type ColourIntensity,
 } from '@/lib/diamonds/types'
+import { isEclatEligible } from '@/lib/diamonds/eligibility'
 import type { DiamondActionResult } from '@/app/admin/(console)/diamonds/types'
 import { DIAMOND_ACTION_INITIAL } from '@/app/admin/(console)/diamonds/types'
 
 interface DefaultValues {
   ring_setting_id?:    string | null
+  diamond_category?:   DiamondCategory | null
   cut?:                DiamondCut | null
   carat?:              number | null
   colour?:             DiamondColour | null
   clarity?:            DiamondClarity | null
+  colour_family?:      ColourFamily | null
+  colour_intensity?:   ColourIntensity | null
+  colour_description?: string | null
   cut_grade?:          DiamondGrade | null
   polish?:             DiamondGrade | null
   symmetry?:           DiamondGrade | null
@@ -44,6 +57,7 @@ interface DefaultValues {
   table_pct?:          number | null
   price_gbp?:          number | null
   is_published?:       boolean
+  eclat_approved?:     boolean
   notes?:              string | null
 }
 
@@ -54,9 +68,31 @@ interface Props {
   cancelHref:     string
 }
 
+// Fancy shapes — no GIA cut grade, require eclat_approved for eligibility
+const FANCY_SHAPES: DiamondCut[] = ['oval','cushion','emerald','pear','radiant','princess','marquise','asscher','heart']
+
 export function DiamondForm({ action, defaultValues: dv = {}, submitLabel, cancelHref }: Props) {
   const [state, formAction] = useActionState(action, DIAMOND_ACTION_INITIAL)
   const fe = state.success ? {} : (state.fieldErrors ?? {})
+
+  const [category, setCategory]   = useState<DiamondCategory>(dv.diamond_category ?? 'white')
+  const [cut, setCut]             = useState<DiamondCut | ''>(dv.cut ?? '')
+  const [polish, setPolish]       = useState<DiamondGrade | ''>(dv.polish ?? '')
+  const [symmetry, setSymmetry]   = useState<DiamondGrade | ''>(dv.symmetry ?? '')
+  const [fluorescence, setFluo]   = useState<DiamondFluorescence>(dv.fluorescence ?? 'none')
+  const [cutGrade, setCutGrade]   = useState<DiamondGrade | ''>(dv.cut_grade ?? '')
+  const [eclatApproved]           = useState<boolean>(dv.eclat_approved ?? false)
+
+  const isFancy  = cut !== '' && FANCY_SHAPES.includes(cut as DiamondCut)
+  const isRound  = cut === 'round'
+  const eligible = cut !== '' ? isEclatEligible({
+    cut:            cut as DiamondCut,
+    cut_grade:      cutGrade  || null,
+    polish:         polish    || null,
+    symmetry:       symmetry  || null,
+    fluorescence:   fluorescence,
+    eclat_approved: eclatApproved,
+  }) : null
 
   return (
     <form action={formAction} className="space-y-8">
@@ -66,11 +102,33 @@ export function DiamondForm({ action, defaultValues: dv = {}, submitLabel, cance
         </div>
       )}
 
-      {/* ── 4Cs ── */}
+      {/* ── Diamond category ── */}
+      <Fieldset title="Diamond type">
+        <input type="hidden" name="diamond_category" value={category} />
+        <div className="flex gap-0">
+          {(['white', 'coloured'] as DiamondCategory[]).map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setCategory(cat)}
+              className={`px-5 py-2 text-xs font-medium tracking-widest uppercase border transition-colors ${
+                category === cat
+                  ? 'border-stone-900 bg-stone-900 text-white'
+                  : 'border-stone-300 bg-white text-stone-600 hover:border-stone-500'
+              }`}
+            >
+              {cat === 'white' ? 'White Diamond' : 'Coloured Diamond'}
+            </button>
+          ))}
+        </div>
+        {fe.diamond_category && <p className="mt-1 text-xs text-red-600">{fe.diamond_category}</p>}
+      </Fieldset>
+
+      {/* ── 4Cs (core) ── */}
       <Fieldset title="4Cs">
         <Grid>
-          <Field label="Cut" required error={fe.cut}>
-            <Select name="cut" defaultValue={dv.cut ?? ''} required>
+          <Field label="Cut (shape)" required error={fe.cut}>
+            <Select name="cut" value={cut} onChange={(e) => setCut(e.target.value as DiamondCut | '')} required>
               <option value="">— Select cut —</option>
               {DIAMOND_CUTS.map((c) => (
                 <option key={c} value={c}>{CUT_LABELS[c]}</option>
@@ -84,14 +142,47 @@ export function DiamondForm({ action, defaultValues: dv = {}, submitLabel, cance
               placeholder="e.g. 1.020" required />
           </Field>
 
-          <Field label="Colour" required error={fe.colour}>
-            <Select name="colour" defaultValue={dv.colour ?? ''} required>
-              <option value="">— Select colour —</option>
-              {DIAMOND_COLOURS.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </Select>
-          </Field>
+          {/* White diamonds: D–I colour scale */}
+          {category === 'white' && (
+            <Field label="Colour" required error={fe.colour}>
+              <Select name="colour" defaultValue={dv.colour ?? ''} required>
+                <option value="">— Select colour —</option>
+                {DIAMOND_COLOURS.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </Select>
+            </Field>
+          )}
+
+          {/* Coloured diamonds: colour_family (Yellow / Pink only) */}
+          {category === 'coloured' && (
+            <>
+              <input type="hidden" name="colour" value={dv.colour ?? 'D'} />
+              <Field label="Colour family" required error={fe.colour_family}>
+                <Select name="colour_family" defaultValue={dv.colour_family ?? ''} required>
+                  <option value="">— Yellow or Pink —</option>
+                  {COLOUR_FAMILIES.map((f) => (
+                    <option key={f} value={f}>{COLOUR_FAMILY_LABELS[f]}</option>
+                  ))}
+                </Select>
+              </Field>
+
+              <Field label="Intensity" error={fe.colour_intensity}>
+                <Select name="colour_intensity" defaultValue={dv.colour_intensity ?? ''}>
+                  <option value="">— Optional —</option>
+                  {COLOUR_INTENSITIES.map((i) => (
+                    <option key={i} value={i}>{COLOUR_INTENSITY_LABELS[i]}</option>
+                  ))}
+                </Select>
+              </Field>
+
+              <Field label="Full colour description" error={fe.colour_description} colSpan2>
+                <Input name="colour_description"
+                  defaultValue={dv.colour_description ?? ''}
+                  placeholder="e.g. Fancy Intense Yellow" />
+              </Field>
+            </>
+          )}
 
           <Field label="Clarity" required error={fe.clarity}>
             <Select name="clarity" defaultValue={dv.clarity ?? ''} required>
@@ -107,17 +198,26 @@ export function DiamondForm({ action, defaultValues: dv = {}, submitLabel, cance
       {/* ── Cut grades ── */}
       <Fieldset title="Cut grades">
         <Grid>
-          <Field label="Cut grade" error={fe.cut_grade}>
-            <Select name="cut_grade" defaultValue={dv.cut_grade ?? ''}>
-              <option value="">— Optional —</option>
-              {DIAMOND_GRADES.map((g) => (
-                <option key={g} value={g}>{GRADE_LABELS[g]}</option>
-              ))}
-            </Select>
-          </Field>
+          {/* Cut grade only shown for round brilliants */}
+          {(isRound || cut === '') && (
+            <Field label="Cut grade" error={fe.cut_grade}
+              hint={isFancy ? undefined : 'GIA cut grade — Round Brilliant only'}>
+              <Select name="cut_grade" value={cutGrade}
+                onChange={(e) => setCutGrade(e.target.value as DiamondGrade | '')}>
+                <option value="">— Optional —</option>
+                {DIAMOND_GRADES.map((g) => (
+                  <option key={g} value={g}>{GRADE_LABELS[g]}</option>
+                ))}
+              </Select>
+            </Field>
+          )}
+          {isFancy && (
+            <input type="hidden" name="cut_grade" value="" />
+          )}
 
           <Field label="Polish" error={fe.polish}>
-            <Select name="polish" defaultValue={dv.polish ?? ''}>
+            <Select name="polish" value={polish}
+              onChange={(e) => setPolish(e.target.value as DiamondGrade | '')}>
               <option value="">— Optional —</option>
               {DIAMOND_GRADES.map((g) => (
                 <option key={g} value={g}>{GRADE_LABELS[g]}</option>
@@ -126,7 +226,8 @@ export function DiamondForm({ action, defaultValues: dv = {}, submitLabel, cance
           </Field>
 
           <Field label="Symmetry" error={fe.symmetry}>
-            <Select name="symmetry" defaultValue={dv.symmetry ?? ''}>
+            <Select name="symmetry" value={symmetry}
+              onChange={(e) => setSymmetry(e.target.value as DiamondGrade | '')}>
               <option value="">— Optional —</option>
               {DIAMOND_GRADES.map((g) => (
                 <option key={g} value={g}>{GRADE_LABELS[g]}</option>
@@ -135,13 +236,30 @@ export function DiamondForm({ action, defaultValues: dv = {}, submitLabel, cance
           </Field>
 
           <Field label="Fluorescence" error={fe.fluorescence}>
-            <Select name="fluorescence" defaultValue={dv.fluorescence ?? 'none'}>
+            <Select name="fluorescence" value={fluorescence}
+              onChange={(e) => setFluo(e.target.value as DiamondFluorescence)}>
               {DIAMOND_FLUORESCENCES.map((f) => (
                 <option key={f} value={f}>{FLUORESCENCE_LABELS[f]}</option>
               ))}
             </Select>
           </Field>
         </Grid>
+
+        {/* Eligibility banner */}
+        {eligible !== null && (
+          <div className={`mt-4 rounded border px-4 py-3 text-xs ${
+            eligible
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+              : 'border-amber-200 bg-amber-50 text-amber-700'
+          }`}>
+            {eligible
+              ? '✓ Meets Éclat Standard — eligible for publication'
+              : isFancy
+                ? '✗ Fancy shape — Éclat approval required before publication (set grades, save, then approve from the detail page)'
+                : '✗ Does not meet Éclat Standard — cannot be published (requires Excellent Polish, Symmetry, Fluorescence None' + (isRound ? ', and Excellent Cut grade)' : ')')
+            }
+          </div>
+        )}
       </Fieldset>
 
       {/* ── GIA certification ── */}

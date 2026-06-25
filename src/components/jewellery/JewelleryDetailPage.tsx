@@ -27,6 +27,13 @@ const METALS = [
   { id: 'rose_gold_18k',   label: '18k Rose Gold',   swatch: '#c47d68' },
 ];
 
+const VARIANT_SWATCHES: Record<string, string> = {
+  'platinum':        '#d0d0d0',
+  'white-gold-18k':  '#c8c8c8',
+  'yellow-gold-18k': '#c9a84c',
+  'rose-gold-14k':   '#c47d68',
+};
+
 export interface JewelleryDetailProduct {
   name: string;
   subtitle: string;
@@ -59,20 +66,33 @@ interface Props {
 
 export function JewelleryDetailPage({ product, config, jewelleryId, galleryConfig, metalVariants }: Props) {
   const isVideo = (url: string) => url.toLowerCase().split('?')[0].match(/\.(mp4|mov|webm)$/) !== null;
-  const [selectedMetal,   setSelectedMetal]   = useState(product.materials[0]);
 
-  // Metal variant gallery switching
+  // Single source of truth for active metal — drives both Ring Style display and gallery
   const enabledVariants = metalVariants?.filter(v => v.enabled) ?? [];
+  const hasVariants = enabledVariants.length > 0;
   const [activeVariantMetal, setActiveVariantMetal] = useState<MetalKey | null>(
     enabledVariants[0]?.metal ?? null
   );
+  // Legacy: for products without metal_variants still use product.materials
+  const [selectedMetal, setSelectedMetal] = useState(product.materials[0]);
+
   const [galleryOpacity, setGalleryOpacity] = useState(1);
   const activeVariant = activeVariantMetal
     ? metalVariants?.find(v => v.metal === activeVariantMetal) ?? null
     : null;
-  const effectiveGalleryData = activeVariant
-    ? variantToGalleryData(activeVariant)
+  // 18k White Gold shares Platinum's images when it has no gallery of its own
+  const galleryVariant = (activeVariant?.metal === 'white-gold-18k' && activeVariant.gallery.items.length === 0)
+    ? (metalVariants?.find(v => v.metal === 'platinum') ?? activeVariant)
+    : activeVariant;
+  const effectiveGalleryData = galleryVariant
+    ? variantToGalleryData(galleryVariant)
     : (galleryConfig ?? EMPTY_GALLERY);
+
+  // Ring Style display
+  const ringStyleLabel  = hasVariants && activeVariantMetal ? METAL_DISPLAY[activeVariantMetal] : selectedMetal;
+  const ringStyleSwatch = hasVariants && activeVariantMetal
+    ? (VARIANT_SWATCHES[activeVariantMetal] ?? '#d0d0d0')
+    : (METALS.find(m => m.label === selectedMetal)?.swatch ?? '#d0d0d0');
 
   function switchVariantMetal(key: MetalKey) {
     if (key === activeVariantMetal) return;
@@ -125,7 +145,6 @@ export function JewelleryDetailPage({ product, config, jewelleryId, galleryConfi
     ? `£${totalPrice.toLocaleString('en-GB')}`
     : `Starting from £${product.basePrice.toLocaleString('en-GB')}`;
 
-  const metalMeta = METALS.find(m => m.label === selectedMetal) ?? METALS[0];
 
   const { toggle, has } = useShortlist();
   const shortlistId   = `${config.categoryPath.replace('/', '')}-${product.name.toLowerCase().replace(/\s+/g, '-')}`;
@@ -181,34 +200,11 @@ export function JewelleryDetailPage({ product, config, jewelleryId, galleryConfi
       {/* SPLIT LAYOUT */}
       <div className="flex flex-col lg:flex-row">
 
-        {/* LEFT — gallery with optional metal variant tabs */}
+        {/* LEFT — gallery only, no controls */}
         <div
           className="lg:w-[58%] lg:sticky lg:top-[80px]"
-          style={{ maxHeight: 'calc(100vh - 80px)', overflow: 'hidden', padding: 8, background: '#fff' }}
+          style={{ maxHeight: 'calc(100vh - 80px)', overflowY: 'auto', padding: 8, background: '#fff' }}
         >
-          {enabledVariants.length > 1 && (
-            <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
-              {enabledVariants.map(v => {
-                const act = v.metal === activeVariantMetal;
-                return (
-                  <button
-                    key={v.metal}
-                    type="button"
-                    onClick={() => switchVariantMetal(v.metal)}
-                    style={{
-                      fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.14em',
-                      textTransform: 'uppercase', padding: '4px 10px', cursor: 'pointer',
-                      border: `1px solid ${act ? G : '#e8e8e8'}`,
-                      background: act ? G : '#fff',
-                      color: act ? '#fff' : G,
-                    }}
-                  >
-                    {METAL_DISPLAY[v.metal]}
-                  </button>
-                );
-              })}
-            </div>
-          )}
           <div style={{ opacity: galleryOpacity, transition: 'opacity 0.2s ease' }}>
             <ProductGallery data={effectiveGalleryData} />
           </div>
@@ -238,12 +234,12 @@ export function JewelleryDetailPage({ product, config, jewelleryId, galleryConfi
 
           <div className="mt-8" style={{ height: 1, backgroundColor: BORDER }} />
 
-          {/* Ring Style / Metal row */}
+          {/* Metal row — single selector, drives gallery */}
           <button
             type="button"
             onClick={() => setMetalOpen(v => !v)}
             className="flex items-center justify-between w-full py-4 text-left"
-            style={{ borderBottom: `1px solid ${BORDER}` }}
+            style={{ borderBottom: metalOpen ? 'none' : `1px solid ${BORDER}` }}
           >
             <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
               Metal
@@ -252,12 +248,12 @@ export function JewelleryDetailPage({ product, config, jewelleryId, galleryConfi
               <span
                 style={{
                   width: 12, height: 12, borderRadius: '50%',
-                  backgroundColor: metalMeta.swatch,
+                  backgroundColor: ringStyleSwatch,
                   border: '1px solid #ddd', flexShrink: 0,
                 }}
               />
               <span className="font-sans" style={{ fontSize: 13, color: G, fontWeight: 300 }}>
-                {selectedMetal}
+                {ringStyleLabel}
               </span>
               <ChevronDown
                 className="w-3.5 h-3.5"
@@ -270,25 +266,50 @@ export function JewelleryDetailPage({ product, config, jewelleryId, galleryConfi
           {/* Metal dropdown */}
           {metalOpen && (
             <div style={{ borderBottom: `1px solid ${BORDER}` }}>
-              {product.materials.map(m => {
-                const meta = METALS.find(x => x.label === m) ?? METALS[0];
-                return (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => { setSelectedMetal(m); setMetalOpen(false); }}
-                    className="flex items-center gap-3 w-full px-2 py-3 font-sans"
-                    style={{
-                      fontSize: 13, color: selectedMetal === m ? G : '#666',
-                      fontWeight: selectedMetal === m ? 400 : 300,
-                      backgroundColor: selectedMetal === m ? '#f9f9f9' : 'transparent',
-                    }}
-                  >
-                    <span style={{ width: 14, height: 14, borderRadius: '50%', backgroundColor: meta.swatch, border: '1px solid #ddd', flexShrink: 0 }} />
-                    {m}
-                  </button>
-                );
-              })}
+              {hasVariants ? (
+                enabledVariants.map(v => {
+                  const active = v.metal === activeVariantMetal;
+                  return (
+                    <button
+                      key={v.metal}
+                      type="button"
+                      onClick={() => { switchVariantMetal(v.metal); setMetalOpen(false); }}
+                      className="flex items-center gap-3 w-full px-2 py-3 font-sans transition-colors hover:bg-stone-50"
+                      style={{
+                        fontSize: 13, color: active ? G : '#666',
+                        fontWeight: active ? 400 : 300,
+                        backgroundColor: active ? '#f9f9f9' : 'transparent',
+                      }}
+                    >
+                      <span style={{ width: 14, height: 14, borderRadius: '50%', backgroundColor: VARIANT_SWATCHES[v.metal] ?? '#d0d0d0', border: '1px solid #ddd', flexShrink: 0 }} />
+                      {METAL_DISPLAY[v.metal]}
+                      {active && <span style={{ marginLeft: 'auto', fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#4a9e6b' }}>Selected</span>}
+                    </button>
+                  );
+                })
+              ) : (
+                product.materials.map(m => {
+                  const meta = METALS.find(x => x.label === m) ?? METALS[0];
+                  const active = selectedMetal === m;
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => { setSelectedMetal(m); setMetalOpen(false); }}
+                      className="flex items-center gap-3 w-full px-2 py-3 font-sans transition-colors hover:bg-stone-50"
+                      style={{
+                        fontSize: 13, color: active ? G : '#666',
+                        fontWeight: active ? 400 : 300,
+                        backgroundColor: active ? '#f9f9f9' : 'transparent',
+                      }}
+                    >
+                      <span style={{ width: 14, height: 14, borderRadius: '50%', backgroundColor: meta.swatch, border: '1px solid #ddd', flexShrink: 0 }} />
+                      {m}
+                      {active && <span style={{ marginLeft: 'auto', fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#4a9e6b' }}>Selected</span>}
+                    </button>
+                  );
+                })
+              )}
             </div>
           )}
 

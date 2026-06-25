@@ -187,3 +187,30 @@ export interface Setting {
   /** Shapes this setting can accept. */
   shapes: DiamondShape[];
 }
+
+/**
+ * A fully validated, server-locked engagement ring configuration.
+ * All prices are in MINOR units (pence) to match CartItem.price: Money.
+ * Created by the reserve server action and stored in CartItem.ringConfig.
+ */
+export interface ConfiguredEngagementRing {
+  settingId:            string;
+  settingName:          string;
+  settingSlug:          string;
+  metalVariantId:       string;
+  metal:                string;
+  metalLabel:           string;
+  diamondId:            string;
+  diamondSku:           string;
+  diamondDescription:   string;
+  diamondCategory:      'white' | 'coloured';
+  diamondShape:         string;
+  diamondCarat:         number;
+  colourFamily?:        'yellow' | 'pink';
+  colourIntensity?:     string;
+  ringSize:             string | null;
+  settingPrice:         number;   // pence (minor units)
+  diamondPrice:         number;   // pence (minor units)
+  totalPrice:           number;   // pence (minor units)
+  reservationExpiresAt: string;   // ISO timestamp
+}

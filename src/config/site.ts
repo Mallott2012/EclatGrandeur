@@ -136,4 +136,4 @@ export const testimonials = [
 ];
 
 /** Threshold (minor units) under which a built ring may be bought online. */
-export const BUYABLE_THRESHOLD = 5_000_000;
+export const BUYABLE_THRESHOLD = 3_000_000;

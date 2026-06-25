@@ -42,7 +42,7 @@ export default async function EditRingSettingPage({ params }: Props) {
           description:       setting.description ?? '',
           metals:            setting.metals,
           base_price_gbp:    setting.base_price_gbp ? String(setting.base_price_gbp) : '',
-          status:            setting.status,
+          status:            setting.status ?? 'available',
           is_published:      setting.is_published,
           sort_order:        setting.sort_order,
         }}

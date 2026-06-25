@@ -39,10 +39,14 @@ export default async function DiamondEditPage({ params }: Props) {
           action={boundUpdate}
           defaultValues={{
             ring_setting_id:    diamond.ring_setting_id,
+            diamond_category:   diamond.diamond_category,
             cut:                diamond.cut,
             carat:              diamond.carat,
             colour:             diamond.colour,
             clarity:            diamond.clarity,
+            colour_family:      diamond.colour_family,
+            colour_intensity:   diamond.colour_intensity,
+            colour_description: diamond.colour_description,
             cut_grade:          diamond.cut_grade,
             polish:             diamond.polish,
             symmetry:           diamond.symmetry,
@@ -57,6 +61,7 @@ export default async function DiamondEditPage({ params }: Props) {
             table_pct:          diamond.table_pct,
             price_gbp:          diamond.price_gbp,
             is_published:       diamond.is_published,
+            eclat_approved:     diamond.eclat_approved,
             notes:              diamond.notes,
           }}
           submitLabel="Save changes"

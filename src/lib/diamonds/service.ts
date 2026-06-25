@@ -18,6 +18,15 @@ import type {
   CreateRingSettingInput,
   UpdateRingSettingInput,
 } from './schemas'
+import { isEclatEligible } from './eligibility'
+
+// Fields whose change auto-invalidates Éclat approval (mirrors DB trigger).
+const APPROVAL_TRIGGER_FIELDS: ReadonlyArray<string> = [
+  'cut', 'diamond_category', 'colour_family', 'colour_intensity', 'colour_description',
+  'carat', 'colour', 'clarity', 'cut_grade', 'polish', 'symmetry', 'fluorescence',
+  'gia_report_number', 'measurement_length', 'measurement_width', 'measurement_depth',
+  'depth_pct', 'table_pct',
+]
 
 // ── Audit helper ──────────────────────────────────────────────────────────────
 
@@ -90,6 +99,32 @@ export async function updateDiamond(
   id:    string,
   patch: UpdateDiamondInput,
 ): Promise<Diamond> {
+  // Publishing gate: if is_published is being set to true, the effective diamond
+  // (current merged with proposed changes) must pass the Éclat eligibility check.
+  // If any trigger field is changing, the DB trigger will reset eclat_approved — so
+  // we pre-clear it here to get the correct eligibility outcome.
+  if (patch.is_published === true) {
+    const admin = createAdminClient()
+    const { data: current } = await admin.from('diamonds').select('*').eq('id', id).maybeSingle()
+    if (!current) throw new Error('Diamond not found')
+
+    const patchMap   = patch   as Record<string, unknown>
+    const currentMap = current as Record<string, unknown>
+    const triggerFieldChanging = APPROVAL_TRIGGER_FIELDS.some(
+      (f) => f in patchMap && patchMap[f] !== currentMap[f]
+    )
+    const effectiveApproved = triggerFieldChanging ? false : (current as DiamondRecord).eclat_approved
+
+    const effective = {
+      ...(current as DiamondRecord),
+      ...patch,
+      eclat_approved: effectiveApproved,
+    }
+    if (!isEclatEligible(effective)) {
+      throw new Error('This diamond does not meet Éclat eligibility requirements and cannot be published.')
+    }
+  }
+
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('diamonds')
@@ -99,6 +134,60 @@ export async function updateDiamond(
     .single()
   if (error || !data) throw new Error(error?.message ?? 'Failed to update diamond')
   await writeAudit(actor.id, 'diamond.update', 'diamond', id)
+  return parseDiamond(data as DiamondRecord)
+}
+
+export async function approveEclatDiamond(
+  actor: StaffUser,
+  id:    string,
+  note:  string | null = null,
+): Promise<Diamond> {
+  // Verify the diamond is currently eligible before approving.
+  // We do not change any grade fields here — this is an isolated approval UPDATE
+  // that the auto-invalidation trigger will not reset.
+  const admin = createAdminClient()
+  const { data: current } = await admin.from('diamonds').select('*').eq('id', id).maybeSingle()
+  if (!current) throw new Error('Diamond not found')
+
+  const candidate = { ...(current as DiamondRecord), eclat_approved: true }
+  if (!isEclatEligible(candidate)) {
+    throw new Error('This diamond does not meet grade requirements for Éclat approval.')
+  }
+
+  const now = new Date().toISOString()
+  const { data, error } = await admin
+    .from('diamonds')
+    .update({
+      eclat_approved:      true,
+      eclat_approved_at:   now,
+      eclat_approved_by:   actor.id,
+      eclat_approval_note: note,
+      updated_by:          actor.id,
+    })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error || !data) throw new Error(error?.message ?? 'Failed to approve diamond')
+  await writeAudit(actor.id, 'diamond.eclat_approve', 'diamond', id, { note: note ?? undefined })
+  return parseDiamond(data as DiamondRecord)
+}
+
+export async function revokeEclatApproval(actor: StaffUser, id: string): Promise<Diamond> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('diamonds')
+    .update({
+      eclat_approved:      false,
+      eclat_approved_at:   null,
+      eclat_approved_by:   null,
+      eclat_approval_note: null,
+      updated_by:          actor.id,
+    })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error || !data) throw new Error(error?.message ?? 'Failed to revoke approval')
+  await writeAudit(actor.id, 'diamond.eclat_revoke', 'diamond', id)
   return parseDiamond(data as DiamondRecord)
 }
 

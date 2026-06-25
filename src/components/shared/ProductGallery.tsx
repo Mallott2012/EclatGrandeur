@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
-import type { GallerySlot, TileData, GalleryData } from '@/lib/gallery/types';
+import type { GallerySlot, TileData, GalleryData, ProductMediaItem } from '@/lib/gallery/types';
 
 export type { GallerySlot, TileData, GalleryData };
 
@@ -27,8 +27,7 @@ function SliderRow({ label, min, max, step, value, onChange }: {
         {label}
       </span>
       <input
-        type="range"
-        min={min} max={max} step={step} value={value}
+        type="range" min={min} max={max} step={step} value={value}
         onChange={e => onChange(Number(e.target.value))}
         style={{ flex: 1, cursor: 'pointer', accentColor: '#1a2b1a' }}
       />
@@ -46,27 +45,32 @@ const MENU_BTN: React.CSSProperties = {
 };
 
 // ── Single tile ─────────────────────────────────────────────────────────────────
+type TileMode = 'idle' | 'menu' | 'adjust' | 'uploading' | 'choose';
+
 function GalleryTile({
-  slot, tile, editable,
+  slot, tile, editable, existingMedia,
   dragSource, onDragStart, onDrop,
   onUpload, onChange,
 }: {
-  slot:        GallerySlot;
-  tile:        TileData;
-  editable:    boolean;
-  dragSource:  GallerySlot | null;
-  onDragStart: (slot: GallerySlot) => void;
-  onDrop:      (slot: GallerySlot) => void;
-  onUpload?:   (slot: GallerySlot, fd: FormData) => Promise<string>;
-  onChange?:   (updates: Partial<TileData>) => void;
+  slot:           GallerySlot;
+  tile:           TileData;
+  editable:       boolean;
+  existingMedia?: ProductMediaItem[];
+  dragSource:     GallerySlot | null;
+  onDragStart:    (slot: GallerySlot) => void;
+  onDrop:         (slot: GallerySlot) => void;
+  onUpload?:      (slot: GallerySlot, fd: FormData) => Promise<string>;
+  onChange?:      (updates: Partial<TileData>) => void;
 }) {
-  const [mode, setMode] = useState<'idle' | 'menu' | 'adjust' | 'uploading'>('idle');
-  const fileRef = useRef<HTMLInputElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const isEmpty = !tile.url;
+  const [mode, setMode] = useState<TileMode>('idle');
+  const fileRef  = useRef<HTMLInputElement>(null);
+  const isEmpty  = !tile.url;
   const isDragOver = dragSource !== null && dragSource !== slot;
 
-  const isVideo = tile.type === 'video' || tile.url.toLowerCase().match(/\.(mp4|mov|webm)(\?|$)/);
+  const isVideo = tile.type === 'video' || Boolean(tile.url && tile.url.toLowerCase().match(/\.(mp4|mov|webm)(\?|$)/));
+
+  // Media reuse: excludes the current tile's own URL to avoid duplicate listing
+  const otherMedia = (existingMedia ?? []).filter(it => it.url !== tile.url);
 
   async function handleFile(file: File) {
     if (!onUpload) return;
@@ -74,10 +78,24 @@ function GalleryTile({
     try {
       const fd = new FormData();
       fd.append('file', file);
-      const url = await onUpload(slot, fd);
+      const url  = await onUpload(slot, fd);
       const type: 'image' | 'video' = file.type.startsWith('video') ? 'video' : 'image';
       onChange?.({ url, type });
     } catch { /* silent */ }
+    setMode('idle');
+  }
+
+  function chooseExisting(item: ProductMediaItem) {
+    onChange?.({
+      id:       item.id,
+      url:      item.url,
+      type:     item.type,
+      posterUrl: item.posterUrl,
+      alt:      item.alt ?? '',
+      scale:    1,
+      offsetX:  0,
+      offsetY:  0,
+    });
     setMode('idle');
   }
 
@@ -116,15 +134,14 @@ function GalleryTile({
       onDragOver={e => { if (editable) e.preventDefault(); }}
       onDrop={e => { e.preventDefault(); if (editable) onDrop(slot); }}
     >
-
-      {/* ── Media (image or video) ────────────────────────────────────────── */}
+      {/* ── Media ───────────────────────────────────────────────────────── */}
       {tile.url && (
         isVideo ? (
           <video
-            ref={videoRef}
             src={tile.url}
             poster={tile.posterUrl}
             autoPlay muted loop playsInline
+            preload="metadata"
             style={mediaStyle as React.CSSProperties}
           />
         ) : (
@@ -139,19 +156,25 @@ function GalleryTile({
       )}
 
       {/* ── Editable empty: upload ───────────────────────────────────────── */}
-      {isEmpty && editable && mode !== 'uploading' && (
+      {isEmpty && editable && mode !== 'uploading' && mode !== 'choose' && (
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
           style={{
             position: 'absolute', inset: 0,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
-            background: 'transparent', border: '1px dashed #ccc', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+            background: '#f0f0f0', border: '1.5px dashed #c8c8c8', cursor: 'pointer',
+            transition: 'background 0.15s',
           }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#e8e8e8'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f0f0f0'; }}
         >
-          <Upload style={{ width: 18, height: 18, color: '#ccc' }} strokeWidth={1.5} />
-          <span style={{ fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#ccc' }}>
-            Upload
+          <Upload style={{ width: 20, height: 20, color: '#999' }} strokeWidth={1.5} />
+          <span style={{ fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#888' }}>
+            Add media
+          </span>
+          <span style={{ fontFamily: 'sans-serif', fontSize: 8, letterSpacing: '0.1em', color: '#bbb' }}>
+            Image or video
           </span>
         </button>
       )}
@@ -173,21 +196,85 @@ function GalleryTile({
         />
       )}
 
-      {/* ── Menu: Replace / Adjust / Remove ─────────────────────────────── */}
+      {/* ── Menu: Replace / Choose / Adjust / Remove ────────────────────── */}
       {mode === 'menu' && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 10,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 7,
           background: 'rgba(255,255,255,0.93)',
         }}>
-          <button type="button" onClick={() => { setMode('idle'); fileRef.current?.click(); }} style={MENU_BTN}>Replace</button>
+          <button type="button" onClick={() => { setMode('idle'); fileRef.current?.click(); }} style={MENU_BTN}>
+            Upload New
+          </button>
+          {otherMedia.length > 0 && (
+            <button type="button" onClick={() => setMode('choose')} style={MENU_BTN}>
+              Choose Existing
+            </button>
+          )}
           <button type="button" onClick={() => setMode('adjust')} style={MENU_BTN}>Adjust</button>
-          <button type="button" onClick={() => { onChange?.({ url: '', alt: '', scale: 1, offsetX: 0, offsetY: 0, type: undefined }); setMode('idle'); }} style={{ ...MENU_BTN, color: '#e05050', borderColor: '#fcc' }}>Remove</button>
-          <button type="button" onClick={() => setMode('idle')} style={{ fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#bbb', background: 'none', border: 'none', cursor: 'pointer', marginTop: 2 }}>Cancel</button>
+          <button
+            type="button"
+            onClick={() => { onChange?.({ url: '', alt: '', scale: 1, offsetX: 0, offsetY: 0, type: undefined, id: undefined }); setMode('idle'); }}
+            style={{ ...MENU_BTN, color: '#e05050', borderColor: '#fcc' }}
+          >
+            Remove
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('idle')}
+            style={{ fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#bbb', background: 'none', border: 'none', cursor: 'pointer', marginTop: 2 }}
+          >
+            Cancel
+          </button>
         </div>
       )}
 
-      {/* ── Adjust: scale + X + Y sliders ───────────────────────────────── */}
+      {/* ── Choose Existing ─────────────────────────────────────────────── */}
+      {mode === 'choose' && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 10,
+          background: 'rgba(255,255,255,0.97)',
+          display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 8px 6px', flexShrink: 0 }}>
+            <span style={{ fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#888' }}>
+              Choose Existing
+            </span>
+            <button type="button" onClick={() => setMode(isEmpty ? 'idle' : 'menu')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+              <X style={{ width: 12, height: 12, color: '#bbb' }} strokeWidth={2} />
+            </button>
+          </div>
+          {/* Upload New option always at top */}
+          <button
+            type="button"
+            onClick={() => { setMode('idle'); fileRef.current?.click(); }}
+            style={{ margin: '0 8px 6px', border: '1px dashed #ddd', background: 'none', cursor: 'pointer', padding: '6px 0', fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#aaa', flexShrink: 0 }}
+          >
+            + Upload New
+          </button>
+          {/* Existing thumbnails */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px 8px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
+            {otherMedia.map(item => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => chooseExisting(item)}
+                title="Reuse this asset"
+                style={{ aspectRatio: '1/1', overflow: 'hidden', padding: 0, cursor: 'pointer', border: '1px solid #e8e8e8', background: '#f8f8f8', position: 'relative' }}
+              >
+                {item.type === 'video'
+                  ? <video src={item.url} poster={item.posterUrl} muted preload="metadata" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  : <img src={item.url} alt={item.alt ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                }
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Adjust sliders ──────────────────────────────────────────────── */}
       {mode === 'adjust' && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 10,
@@ -232,11 +319,12 @@ function GalleryTile({
 }
 
 // ── Public component ────────────────────────────────────────────────────────────
-export function ProductGallery({ data, editable = false, onUpload, onChange }: {
-  data:      GalleryData;
-  editable?: boolean;
-  onUpload?: (slot: GallerySlot, fd: FormData) => Promise<string>;
-  onChange?: (data: GalleryData) => void;
+export function ProductGallery({ data, editable = false, existingMedia, onUpload, onChange }: {
+  data:            GalleryData;
+  editable?:       boolean;
+  existingMedia?:  ProductMediaItem[];
+  onUpload?:       (slot: GallerySlot, fd: FormData) => Promise<string>;
+  onChange?:       (data: GalleryData) => void;
 }) {
   const [dragSource, setDragSource] = useState<GallerySlot | null>(null);
 
@@ -246,7 +334,6 @@ export function ProductGallery({ data, editable = false, onUpload, onChange }: {
 
   function handleDrop(targetSlot: GallerySlot) {
     if (!dragSource || dragSource === targetSlot) { setDragSource(null); return; }
-    // Swap the two slots
     onChange?.({ ...data, [dragSource]: data[targetSlot], [targetSlot]: data[dragSource] });
     setDragSource(null);
   }
@@ -267,6 +354,7 @@ export function ProductGallery({ data, editable = false, onUpload, onChange }: {
           slot={key}
           tile={data[key]}
           editable={editable}
+          existingMedia={existingMedia}
           dragSource={dragSource}
           onDragStart={setDragSource}
           onDrop={handleDrop}

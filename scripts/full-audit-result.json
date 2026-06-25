@@ -1,0 +1,1818 @@
+{
+  "auditedAt": "2026-06-25T14:44:01.489Z",
+  "old": {
+    "url": "https://ieezorhsddcmjqlzxiai.supabase.co",
+    "tables": {
+      "ring_settings": {
+        "error": null,
+        "count": 2,
+        "data": [
+          {
+            "id": "72915e4c-40ac-4729-b0ba-c4d87576f8da",
+            "name": "test",
+            "slug": "test",
+            "collection": null,
+            "description": "test",
+            "metals": [
+              "platinum"
+            ],
+            "base_price_gbp": 5000,
+            "is_published": false,
+            "sort_order": 0,
+            "created_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "updated_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "created_at": "2026-06-23T16:06:24.542611+00:00",
+            "updated_at": "2026-06-23T16:06:24.542611+00:00",
+            "gallery_config": null,
+            "metal_variants": null
+          },
+          {
+            "id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "name": "Éclat Classic Round Brilliant",
+            "slug": "lumiere-halo",
+            "collection": "",
+            "description": "A round brilliant diamond surrounded by a shimmering pavé halo, set in polished platinum. Handcrafted in our London atelier.",
+            "metals": [
+              "platinum",
+              "white_gold_18k",
+              "yellow_gold_18k",
+              "rose_gold_18k"
+            ],
+            "base_price_gbp": 12500,
+            "is_published": true,
+            "sort_order": 0,
+            "created_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "updated_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "created_at": "2026-06-23T16:31:55.184069+00:00",
+            "updated_at": "2026-06-25T06:39:03.093+00:00",
+            "gallery_config": {
+              "topLeft": {
+                "alt": "",
+                "url": "",
+                "scale": 1,
+                "offsetX": 0,
+                "offsetY": 0
+              },
+              "topRight": {
+                "alt": "",
+                "url": "",
+                "scale": 1,
+                "offsetX": 0,
+                "offsetY": 0
+              },
+              "bottomLeft": {
+                "alt": "",
+                "url": "",
+                "scale": 1,
+                "offsetX": 0,
+                "offsetY": 0
+              },
+              "bottomRight": {
+                "alt": "",
+                "url": "",
+                "scale": 1,
+                "offsetX": 0,
+                "offsetY": 0
+              }
+            },
+            "metal_variants": [
+              {
+                "id": "variant-platinum",
+                "metal": "platinum",
+                "enabled": true,
+                "gallery": {
+                  "items": [
+                    {
+                      "id": "item-topLeft-1782367046914",
+                      "alt": "",
+                      "url": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/04e75f78-550c-4abe-bf51-2040b2fb308f.mp4",
+                      "type": "video",
+                      "scale": 1,
+                      "offsetX": 0,
+                      "offsetY": 0
+                    },
+                    {
+                      "id": "item-topRight-1782367136413",
+                      "alt": "",
+                      "url": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/c42f8d05-2d2c-4ac9-99ed-a2d55c51533f.png",
+                      "type": "image",
+                      "scale": 1,
+                      "offsetX": 0,
+                      "offsetY": 0
+                    },
+                    {
+                      "id": "item-bottomLeft-1782367150671",
+                      "alt": "",
+                      "url": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/42bb85d9-dffb-4ab3-9961-a8b14d35c537.png",
+                      "type": "image",
+                      "scale": 1,
+                      "offsetX": 0,
+                      "offsetY": 0
+                    },
+                    {
+                      "id": "item-bottomRight-1782367163092",
+                      "alt": "",
+                      "url": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/13b252ad-e2c4-4a27-961d-ea8d427d17d7.png",
+                      "type": "image",
+                      "scale": 1,
+                      "offsetX": 0,
+                      "offsetY": 0
+                    }
+                  ],
+                  "cardMainMediaId": "item-topRight-1782367136413",
+                  "cardHoverMediaId": "item-topLeft-1782367046914",
+                  "hoverMediaEnabled": true
+                },
+                "isDefault": true
+              },
+              {
+                "id": "variant-white-gold-18k",
+                "metal": "white-gold-18k",
+                "enabled": true,
+                "gallery": {
+                  "items": [],
+                  "cardMainMediaId": null,
+                  "cardHoverMediaId": null,
+                  "hoverMediaEnabled": false
+                },
+                "isDefault": false
+              },
+              {
+                "id": "variant-yellow-gold",
+                "metal": "yellow-gold-18k",
+                "enabled": true,
+                "gallery": {
+                  "items": [
+                    {
+                      "id": "item-topLeft-1782369446935",
+                      "alt": "",
+                      "url": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/cb4529a6-993c-435e-8090-8c342b879d8a.mp4",
+                      "type": "video",
+                      "scale": 1,
+                      "offsetX": 0,
+                      "offsetY": 0
+                    },
+                    {
+                      "id": "item-topRight-1782369467673",
+                      "alt": "",
+                      "url": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/3d2aae8d-39e0-420e-943b-54a1ed87fdb5.png",
+                      "type": "image",
+                      "scale": 1,
+                      "offsetX": 0,
+                      "offsetY": 0
+                    },
+                    {
+                      "id": "item-bottomLeft-1782369477728",
+                      "alt": "",
+                      "url": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/ee58ade7-d761-41d2-8992-ec6c25014c5c.png",
+                      "type": "image",
+                      "scale": 1,
+                      "offsetX": 0,
+                      "offsetY": 0
+                    },
+                    {
+                      "id": "item-bottomRight-1782369486350",
+                      "alt": "",
+                      "url": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/49cb5c9b-e305-4b1b-9b99-050d06e1bd07.png",
+                      "type": "image",
+                      "scale": 1,
+                      "offsetX": 0,
+                      "offsetY": 0
+                    }
+                  ],
+                  "cardMainMediaId": "item-topRight-1782369467673",
+                  "cardHoverMediaId": "item-topLeft-1782369446935",
+                  "hoverMediaEnabled": false
+                },
+                "isDefault": false
+              },
+              {
+                "id": "variant-rose-gold",
+                "metal": "rose-gold-14k",
+                "enabled": true,
+                "gallery": {
+                  "items": [
+                    {
+                      "id": "item-topLeft-1782369672412",
+                      "alt": "",
+                      "url": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/efba6b5c-56d7-4b68-ad23-21618ce0fbae.mp4",
+                      "type": "video",
+                      "scale": 1,
+                      "offsetX": 0,
+                      "offsetY": 0
+                    },
+                    {
+                      "id": "item-topRight-1782369686238",
+                      "alt": "",
+                      "url": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/ce953013-78cf-4044-8439-091600e853b8.png",
+                      "type": "image",
+                      "scale": 1,
+                      "offsetX": 0,
+                      "offsetY": 0
+                    },
+                    {
+                      "id": "item-bottomLeft-1782369690601",
+                      "alt": "",
+                      "url": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/171847c4-5f71-4741-868f-c9e78f023071.png",
+                      "type": "image",
+                      "scale": 1,
+                      "offsetX": 0,
+                      "offsetY": 0
+                    },
+                    {
+                      "id": "item-bottomRight-1782369694410",
+                      "alt": "",
+                      "url": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/b67b9f42-92d7-4cc8-a5aa-0ae637a55316.png",
+                      "type": "image",
+                      "scale": 1,
+                      "offsetX": 0,
+                      "offsetY": 0
+                    }
+                  ],
+                  "cardMainMediaId": "item-topRight-1782369686238",
+                  "cardHoverMediaId": "item-topLeft-1782369672412",
+                  "hoverMediaEnabled": false
+                },
+                "isDefault": false
+              }
+            ]
+          }
+        ]
+      },
+      "ring_setting_media": {
+        "error": null,
+        "count": 19,
+        "data": [
+          {
+            "id": "a5792310-df87-4bca-bbf7-78e05f4f803f",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/156ee67c-e464-4219-8271-c338a684b11f.png",
+            "display_order": 2,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-24T13:35:36.719604+00:00"
+          },
+          {
+            "id": "22b44fa8-2b5b-4403-978a-3d71e22472ea",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/d6ac3733-262c-4e75-b554-1bff0318e73a.png",
+            "display_order": 3,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-24T13:35:41.104824+00:00"
+          },
+          {
+            "id": "3f503e4a-6ae3-4426-ab6b-337881e3dd9d",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/9e1d5cb3-7836-4d0b-a739-c0770e3f6d2f.png",
+            "display_order": 0,
+            "alt_text": null,
+            "is_primary": true,
+            "created_at": "2026-06-24T13:35:45.794014+00:00"
+          },
+          {
+            "id": "a561a92a-a7a0-4d88-b019-b3a83e231728",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "video_360",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/51a3df9a-91ca-456c-8eed-bd04744ab535.mp4",
+            "display_order": 1,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-24T14:48:59.542876+00:00"
+          },
+          {
+            "id": "d2cbae7b-6c7f-4d1b-bc2c-3ee84d3ff2cb",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/72e363f3-270c-4c16-b888-8cd0c468a016.png",
+            "display_order": 4,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-24T18:30:58.395434+00:00"
+          },
+          {
+            "id": "25728056-3123-4cfd-a2db-cc472dc8cc5f",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "video_360",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/f311f624-530e-484d-a44b-d62bd971f1d6.mp4",
+            "display_order": 5,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T05:56:42.635023+00:00"
+          },
+          {
+            "id": "d6fee89f-91bb-423f-8928-e655e047b13f",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "video_360",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/869f9fdc-d66f-418d-a762-97368c01bd87.mp4",
+            "display_order": 6,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T05:57:06.525649+00:00"
+          },
+          {
+            "id": "89e3dc17-53ac-4bfd-8358-720dc320022f",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "video_360",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/04e75f78-550c-4abe-bf51-2040b2fb308f.mp4",
+            "display_order": 7,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T05:57:26.587811+00:00"
+          },
+          {
+            "id": "16195155-64ac-4a3f-b53c-6ba640480fc8",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/c42f8d05-2d2c-4ac9-99ed-a2d55c51533f.png",
+            "display_order": 8,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T05:58:56.04538+00:00"
+          },
+          {
+            "id": "c531a0ec-91f8-4d0f-88de-9cfc154781f4",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/42bb85d9-dffb-4ab3-9961-a8b14d35c537.png",
+            "display_order": 9,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T05:59:10.344088+00:00"
+          },
+          {
+            "id": "48fdad55-84cc-46c2-83b1-99d6e96edd8e",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/13b252ad-e2c4-4a27-961d-ea8d427d17d7.png",
+            "display_order": 10,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T05:59:21.930724+00:00"
+          },
+          {
+            "id": "d8fd4112-3212-4410-a5cd-87532ebbe85d",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "video_360",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/cb4529a6-993c-435e-8090-8c342b879d8a.mp4",
+            "display_order": 11,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T06:37:26.639114+00:00"
+          },
+          {
+            "id": "33003872-05c9-4599-8390-8c45239f6c8e",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/3d2aae8d-39e0-420e-943b-54a1ed87fdb5.png",
+            "display_order": 12,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T06:37:47.411417+00:00"
+          },
+          {
+            "id": "daf9f260-71cc-40f3-99fd-306467bc7e8e",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/ee58ade7-d761-41d2-8992-ec6c25014c5c.png",
+            "display_order": 13,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T06:37:57.462816+00:00"
+          },
+          {
+            "id": "d4588702-95f3-453f-8c29-6de845f78a9b",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/49cb5c9b-e305-4b1b-9b99-050d06e1bd07.png",
+            "display_order": 14,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T06:38:06.085012+00:00"
+          },
+          {
+            "id": "e1e55a2a-d668-4156-9354-13b21e7bf44f",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "video_360",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/efba6b5c-56d7-4b68-ad23-21618ce0fbae.mp4",
+            "display_order": 15,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T06:41:12.146366+00:00"
+          },
+          {
+            "id": "5c32b514-547d-48b1-af50-e3d0d71bb33a",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/ce953013-78cf-4044-8439-091600e853b8.png",
+            "display_order": 16,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T06:41:25.91892+00:00"
+          },
+          {
+            "id": "1e8d6f9a-c71f-4c33-8cd5-e1d8028c4059",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/171847c4-5f71-4741-868f-c9e78f023071.png",
+            "display_order": 17,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T06:41:30.328619+00:00"
+          },
+          {
+            "id": "334d0286-67d7-4335-88a5-b24efd1c1c16",
+            "ring_setting_id": "42ef6109-7a38-4063-a03a-caab6f6aef48",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/b67b9f42-92d7-4cc8-a5aa-0ae637a55316.png",
+            "display_order": 18,
+            "alt_text": null,
+            "is_primary": false,
+            "created_at": "2026-06-25T06:41:34.156132+00:00"
+          }
+        ]
+      },
+      "diamonds": {
+        "error": null,
+        "count": 6,
+        "data": [
+          {
+            "id": "b57e5f1b-dc7b-4dff-aabb-fed6b9e48cb5",
+            "sku": "EGD-2026-000001",
+            "ring_setting_id": null,
+            "cut": "round",
+            "carat": 1,
+            "colour": "D",
+            "clarity": "FL",
+            "cut_grade": "excellent",
+            "polish": "excellent",
+            "symmetry": "excellent",
+            "fluorescence": "none",
+            "gia_report_number": null,
+            "gia_report_date": null,
+            "gia_report_url": null,
+            "measurement_length": null,
+            "measurement_width": null,
+            "measurement_depth": null,
+            "depth_pct": null,
+            "table_pct": null,
+            "price_gbp": 20000,
+            "status": "available",
+            "is_published": true,
+            "notes": null,
+            "created_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "updated_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "created_at": "2026-06-24T13:03:09.743032+00:00",
+            "updated_at": "2026-06-24T13:03:09.743032+00:00"
+          },
+          {
+            "id": "8a5cbce0-6715-4f55-9bba-d514afb37724",
+            "sku": "EGD-2026-000002",
+            "ring_setting_id": null,
+            "cut": "round",
+            "carat": 1,
+            "colour": "D",
+            "clarity": "IF",
+            "cut_grade": "excellent",
+            "polish": "excellent",
+            "symmetry": "excellent",
+            "fluorescence": "none",
+            "gia_report_number": null,
+            "gia_report_date": null,
+            "gia_report_url": null,
+            "measurement_length": null,
+            "measurement_width": null,
+            "measurement_depth": null,
+            "depth_pct": null,
+            "table_pct": null,
+            "price_gbp": 18500,
+            "status": "available",
+            "is_published": true,
+            "notes": null,
+            "created_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "updated_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "created_at": "2026-06-24T13:03:29.329716+00:00",
+            "updated_at": "2026-06-24T13:03:29.329716+00:00"
+          },
+          {
+            "id": "ec98c4c7-bb0f-4416-a7da-461ed54ab929",
+            "sku": "EGD-2026-000003",
+            "ring_setting_id": null,
+            "cut": "round",
+            "carat": 1,
+            "colour": "D",
+            "clarity": "VVS1",
+            "cut_grade": "excellent",
+            "polish": "excellent",
+            "symmetry": "excellent",
+            "fluorescence": "none",
+            "gia_report_number": null,
+            "gia_report_date": null,
+            "gia_report_url": null,
+            "measurement_length": null,
+            "measurement_width": null,
+            "measurement_depth": null,
+            "depth_pct": null,
+            "table_pct": null,
+            "price_gbp": 17500,
+            "status": "available",
+            "is_published": true,
+            "notes": null,
+            "created_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "updated_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "created_at": "2026-06-24T13:03:46.676861+00:00",
+            "updated_at": "2026-06-24T13:03:46.676861+00:00"
+          },
+          {
+            "id": "0f7edfa9-6031-4325-b140-26deb771d24c",
+            "sku": "EGD-2026-000004",
+            "ring_setting_id": null,
+            "cut": "round",
+            "carat": 1,
+            "colour": "D",
+            "clarity": "VVS2",
+            "cut_grade": "excellent",
+            "polish": "excellent",
+            "symmetry": "excellent",
+            "fluorescence": "none",
+            "gia_report_number": null,
+            "gia_report_date": null,
+            "gia_report_url": null,
+            "measurement_length": null,
+            "measurement_width": null,
+            "measurement_depth": null,
+            "depth_pct": null,
+            "table_pct": null,
+            "price_gbp": 17000,
+            "status": "available",
+            "is_published": true,
+            "notes": null,
+            "created_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "updated_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "created_at": "2026-06-24T13:04:08.418962+00:00",
+            "updated_at": "2026-06-24T13:04:08.418962+00:00"
+          },
+          {
+            "id": "17b7d242-8b73-417b-b2bf-f371eec8468f",
+            "sku": "EGD-2026-000005",
+            "ring_setting_id": null,
+            "cut": "round",
+            "carat": 1,
+            "colour": "D",
+            "clarity": "VS2",
+            "cut_grade": "excellent",
+            "polish": "excellent",
+            "symmetry": "excellent",
+            "fluorescence": "none",
+            "gia_report_number": null,
+            "gia_report_date": null,
+            "gia_report_url": null,
+            "measurement_length": null,
+            "measurement_width": null,
+            "measurement_depth": null,
+            "depth_pct": null,
+            "table_pct": null,
+            "price_gbp": 17000,
+            "status": "available",
+            "is_published": true,
+            "notes": null,
+            "created_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "updated_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "created_at": "2026-06-24T13:04:27.736435+00:00",
+            "updated_at": "2026-06-24T13:04:27.736435+00:00"
+          },
+          {
+            "id": "32f2efaa-1706-46f6-a849-37ff68a65073",
+            "sku": "EGD-2026-000006",
+            "ring_setting_id": null,
+            "cut": "round",
+            "carat": 2,
+            "colour": "D",
+            "clarity": "FL",
+            "cut_grade": "excellent",
+            "polish": "excellent",
+            "symmetry": "excellent",
+            "fluorescence": "none",
+            "gia_report_number": null,
+            "gia_report_date": null,
+            "gia_report_url": null,
+            "measurement_length": null,
+            "measurement_width": null,
+            "measurement_depth": null,
+            "depth_pct": null,
+            "table_pct": null,
+            "price_gbp": 17500,
+            "status": "available",
+            "is_published": true,
+            "notes": null,
+            "created_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "updated_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "created_at": "2026-06-24T13:04:54.653846+00:00",
+            "updated_at": "2026-06-24T13:04:54.653846+00:00"
+          }
+        ]
+      },
+      "diamond_media": {
+        "error": null,
+        "count": 0,
+        "data": []
+      },
+      "ring_setting_diamonds": {
+        "error": null,
+        "count": 0,
+        "data": []
+      },
+      "jewellery_products": {
+        "error": null,
+        "count": 3,
+        "data": [
+          {
+            "id": "70a8f53a-c4c1-4985-8e04-414156b2a0c1",
+            "slug": "soleil-solitaire",
+            "category": "necklaces",
+            "name": "Soleil Solitaire Pendant",
+            "subtitle": "Soleil Collection",
+            "description": "A single round brilliant diamond suspended on a fine platinum chain. The purest expression of diamond beauty.",
+            "base_price_gbp": 4200,
+            "metals": [
+              "platinum",
+              "white_gold_18k"
+            ],
+            "show_diamond": true,
+            "is_total_carat": false,
+            "is_pair": false,
+            "is_published": true,
+            "sort_order": 0,
+            "created_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "updated_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "created_at": "2026-06-23T16:31:55.784435+00:00",
+            "updated_at": "2026-06-23T16:31:55.784435+00:00",
+            "gallery_config": null,
+            "metal_variants": null
+          },
+          {
+            "id": "ad9918a3-6178-49ab-948e-f0f3c01d0a9d",
+            "slug": "riviere-tennis",
+            "category": "bracelets",
+            "name": "Rivière Tennis Bracelet",
+            "subtitle": "Rivière Collection",
+            "description": "Hand-articulated platinum tennis bracelet set with matched round brilliant diamonds from end to end.",
+            "base_price_gbp": 9500,
+            "metals": [
+              "platinum",
+              "white_gold_18k",
+              "yellow_gold_18k"
+            ],
+            "show_diamond": true,
+            "is_total_carat": false,
+            "is_pair": false,
+            "is_published": true,
+            "sort_order": 0,
+            "created_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "updated_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "created_at": "2026-06-23T16:31:56.166874+00:00",
+            "updated_at": "2026-06-23T16:31:56.166874+00:00",
+            "gallery_config": null,
+            "metal_variants": null
+          },
+          {
+            "id": "5459b592-17dc-4bb1-ba1f-f584cc35d761",
+            "slug": "aura-halo-studs",
+            "category": "earrings",
+            "name": "Aura Halo Studs",
+            "subtitle": "Aura Collection",
+            "description": "Perfectly matched round brilliant diamonds, each crowned with a micro-pavé halo. Crafted in platinum for a timeless look.",
+            "base_price_gbp": 3600,
+            "metals": [
+              "platinum",
+              "white_gold_18k"
+            ],
+            "show_diamond": true,
+            "is_total_carat": false,
+            "is_pair": true,
+            "is_published": true,
+            "sort_order": 0,
+            "created_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "updated_by": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "created_at": "2026-06-23T16:31:56.650574+00:00",
+            "updated_at": "2026-06-23T16:31:56.650574+00:00",
+            "gallery_config": null,
+            "metal_variants": null
+          }
+        ]
+      },
+      "jewellery_product_media": {
+        "error": null,
+        "count": 6,
+        "data": [
+          {
+            "id": "bac09d99-335f-470e-bcaf-817b7d9a3494",
+            "jewellery_product_id": "70a8f53a-c4c1-4985-8e04-414156b2a0c1",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/seed/necklace-soleil.png",
+            "display_order": 1,
+            "alt_text": "Soleil Solitaire pendant",
+            "is_primary": true,
+            "created_at": "2026-06-23T16:31:55.851093+00:00"
+          },
+          {
+            "id": "250f1ab0-7d93-425d-b045-d5741ffbfd4a",
+            "jewellery_product_id": "ad9918a3-6178-49ab-948e-f0f3c01d0a9d",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/seed/bracelet-riviere.png",
+            "display_order": 1,
+            "alt_text": "Rivière Tennis Bracelet",
+            "is_primary": true,
+            "created_at": "2026-06-23T16:31:56.212299+00:00"
+          },
+          {
+            "id": "16e459d5-80f3-4bb2-a0c0-394e9c1c6bb5",
+            "jewellery_product_id": "5459b592-17dc-4bb1-ba1f-f584cc35d761",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/seed/earrings-aura.png",
+            "display_order": 1,
+            "alt_text": "Aura Halo Studs",
+            "is_primary": true,
+            "created_at": "2026-06-23T16:31:56.701236+00:00"
+          },
+          {
+            "id": "dd539db4-38f2-4555-9dc9-2352fd7bda11",
+            "jewellery_product_id": "70a8f53a-c4c1-4985-8e04-414156b2a0c1",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/seed/media-necklace.png",
+            "display_order": 0,
+            "alt_text": "Soleil Solitaire editorial",
+            "is_primary": false,
+            "created_at": "2026-06-23T16:48:52.438892+00:00"
+          },
+          {
+            "id": "8c5e213e-2b2f-4cba-9770-933da2231974",
+            "jewellery_product_id": "ad9918a3-6178-49ab-948e-f0f3c01d0a9d",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/seed/media-bracelet.png",
+            "display_order": 0,
+            "alt_text": "Rivière Tennis editorial",
+            "is_primary": false,
+            "created_at": "2026-06-23T16:48:52.760591+00:00"
+          },
+          {
+            "id": "c146f31a-5b02-46bd-91cc-2f4aac49077e",
+            "jewellery_product_id": "5459b592-17dc-4bb1-ba1f-f584cc35d761",
+            "media_type": "image",
+            "storage_path": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/seed/media-earrings.png",
+            "display_order": 0,
+            "alt_text": "Aura Halo Studs editorial",
+            "is_primary": false,
+            "created_at": "2026-06-23T16:48:53.041092+00:00"
+          }
+        ]
+      },
+      "jewellery_diamonds": {
+        "error": null,
+        "count": 0,
+        "data": []
+      },
+      "hero_media": {
+        "error": null,
+        "count": 0,
+        "data": []
+      },
+      "enquiries": {
+        "error": null,
+        "count": 0,
+        "data": []
+      },
+      "orders": {
+        "error": null,
+        "count": 0,
+        "data": []
+      },
+      "profiles": {
+        "error": null,
+        "count": 1,
+        "data": [
+          {
+            "id": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "full_name": null,
+            "email": "matthew@eclatgrandeur.com",
+            "created_at": "2026-06-23T09:33:04.791419+00:00",
+            "updated_at": "2026-06-23T09:33:04.791419+00:00"
+          }
+        ]
+      },
+      "staff_roles": {
+        "error": null,
+        "count": 1,
+        "data": [
+          {
+            "id": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "user_id": "e02d6201-39c3-45b8-850d-06548449c4a6",
+            "role": "super_admin",
+            "created_at": "2026-06-23T09:33:22.908712+00:00",
+            "updated_at": "2026-06-23T09:33:22.908712+00:00"
+          }
+        ]
+      },
+      "suppliers": {
+        "error": "Could not find the table 'public.suppliers' in the schema cache",
+        "count": null,
+        "data": []
+      }
+    },
+    "buckets": {
+      "diamond-certificates": {
+        "id": "diamond-certificates",
+        "public": false,
+        "fileSizeLimit": 20971520,
+        "allowedMimeTypes": [
+          "application/pdf"
+        ],
+        "objects": [],
+        "objectCount": 0,
+        "totalBytes": 0
+      },
+      "diamond-media": {
+        "id": "diamond-media",
+        "public": false,
+        "fileSizeLimit": 104857600,
+        "allowedMimeTypes": [
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "image/avif",
+          "video/mp4"
+        ],
+        "objects": [],
+        "objectCount": 0,
+        "totalBytes": 0
+      },
+      "jewellery-media": {
+        "id": "jewellery-media",
+        "public": true,
+        "fileSizeLimit": null,
+        "allowedMimeTypes": null,
+        "objects": [
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/04e75f78-550c-4abe-bf51-2040b2fb308f.mp4",
+            "size": 12876057,
+            "type": "video/mp4",
+            "updated_at": "2026-06-25T05:57:26.060Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/13b252ad-e2c4-4a27-961d-ea8d427d17d7.png",
+            "size": 310738,
+            "type": "image/png",
+            "updated_at": "2026-06-25T05:59:21.414Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/156ee67c-e464-4219-8271-c338a684b11f.png",
+            "size": 310738,
+            "type": "image/png",
+            "updated_at": "2026-06-24T13:35:36.155Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/171847c4-5f71-4741-868f-c9e78f023071.png",
+            "size": 292854,
+            "type": "image/png",
+            "updated_at": "2026-06-25T06:41:29.782Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/3d2aae8d-39e0-420e-943b-54a1ed87fdb5.png",
+            "size": 368391,
+            "type": "image/png",
+            "updated_at": "2026-06-25T06:37:46.930Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/42bb85d9-dffb-4ab3-9961-a8b14d35c537.png",
+            "size": 250527,
+            "type": "image/png",
+            "updated_at": "2026-06-25T05:59:09.866Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/49cb5c9b-e305-4b1b-9b99-050d06e1bd07.png",
+            "size": 269098,
+            "type": "image/png",
+            "updated_at": "2026-06-25T06:38:05.562Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/51a3df9a-91ca-456c-8eed-bd04744ab535.mp4",
+            "size": 3436660,
+            "type": "video/mp4",
+            "updated_at": "2026-06-24T14:48:59.074Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/72e363f3-270c-4c16-b888-8cd0c468a016.png",
+            "size": 1223641,
+            "type": "image/png",
+            "updated_at": "2026-06-24T18:30:57.729Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/869f9fdc-d66f-418d-a762-97368c01bd87.mp4",
+            "size": 10851694,
+            "type": "video/mp4",
+            "updated_at": "2026-06-25T05:57:05.951Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/8f0989c6-855a-499f-b3d7-fd33b4b33647.avif",
+            "size": 25482,
+            "type": "image/avif",
+            "updated_at": "2026-06-24T12:57:10.413Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/9e1d5cb3-7836-4d0b-a739-c0770e3f6d2f.png",
+            "size": 265813,
+            "type": "image/png",
+            "updated_at": "2026-06-24T13:35:45.283Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/b67b9f42-92d7-4cc8-a5aa-0ae637a55316.png",
+            "size": 278244,
+            "type": "image/png",
+            "updated_at": "2026-06-25T06:41:33.697Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/c42f8d05-2d2c-4ac9-99ed-a2d55c51533f.png",
+            "size": 265813,
+            "type": "image/png",
+            "updated_at": "2026-06-25T05:58:55.557Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/cb4529a6-993c-435e-8090-8c342b879d8a.mp4",
+            "size": 14943210,
+            "type": "video/mp4",
+            "updated_at": "2026-06-25T06:37:26.035Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/ce953013-78cf-4044-8439-091600e853b8.png",
+            "size": 377481,
+            "type": "image/png",
+            "updated_at": "2026-06-25T06:41:25.426Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/d6ac3733-262c-4e75-b554-1bff0318e73a.png",
+            "size": 250527,
+            "type": "image/png",
+            "updated_at": "2026-06-24T13:35:40.563Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/ee58ade7-d761-41d2-8992-ec6c25014c5c.png",
+            "size": 286777,
+            "type": "image/png",
+            "updated_at": "2026-06-25T06:37:56.980Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/efba6b5c-56d7-4b68-ad23-21618ce0fbae.mp4",
+            "size": 13531875,
+            "type": "video/mp4",
+            "updated_at": "2026-06-25T06:41:11.574Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/f311f624-530e-484d-a44b-d62bd971f1d6.mp4",
+            "size": 2665407,
+            "type": "video/mp4",
+            "updated_at": "2026-06-25T05:56:42.111Z"
+          },
+          {
+            "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/fc160385-ca20-46fa-a5e9-87f9ea40283d.avif",
+            "size": 11448,
+            "type": "image/avif",
+            "updated_at": "2026-06-24T12:57:19.572Z"
+          },
+          {
+            "path": "seed/bracelet-riviere.png",
+            "size": 946974,
+            "type": "image/png",
+            "updated_at": "2026-06-23T16:31:56.105Z"
+          },
+          {
+            "path": "seed/earrings-aura.png",
+            "size": 1525125,
+            "type": "image/png",
+            "updated_at": "2026-06-23T16:31:56.608Z"
+          },
+          {
+            "path": "seed/media-bracelet.png",
+            "size": 1446036,
+            "type": "image/png",
+            "updated_at": "2026-06-23T16:48:52.615Z"
+          },
+          {
+            "path": "seed/media-earrings.png",
+            "size": 1362417,
+            "type": "image/png",
+            "updated_at": "2026-06-23T16:48:52.933Z"
+          },
+          {
+            "path": "seed/media-necklace.png",
+            "size": 1489364,
+            "type": "image/png",
+            "updated_at": "2026-06-23T16:48:52.281Z"
+          },
+          {
+            "path": "seed/necklace-soleil.png",
+            "size": 1170277,
+            "type": "image/png",
+            "updated_at": "2026-06-23T16:31:55.709Z"
+          },
+          {
+            "path": "styles/01f886c8-36c2-4745-895d-d48c3edb8305.avif",
+            "size": 11375,
+            "type": "image/avif",
+            "updated_at": "2026-06-24T12:44:10.967Z"
+          },
+          {
+            "path": "styles/0788e9ad-ebe0-4b70-b94b-e4b1294d1a63.avif",
+            "size": 19622,
+            "type": "image/avif",
+            "updated_at": "2026-06-24T12:43:37.567Z"
+          },
+          {
+            "path": "styles/07bee046-c500-4b89-9e62-4c00bc020664.avif",
+            "size": 11448,
+            "type": "image/avif",
+            "updated_at": "2026-06-24T12:46:04.830Z"
+          },
+          {
+            "path": "styles/10e251bb-e019-4bcd-b211-e5b7c3e93512.avif",
+            "size": 14129,
+            "type": "image/avif",
+            "updated_at": "2026-06-24T12:42:41.378Z"
+          },
+          {
+            "path": "styles/358c7f78-49f0-4185-bb88-3a0c964f46f8.png",
+            "size": 459373,
+            "type": "image/png",
+            "updated_at": "2026-06-25T07:17:52.797Z"
+          },
+          {
+            "path": "styles/5e93bf73-bf5d-4307-8ef4-1cb66b0a0332.avif",
+            "size": 25482,
+            "type": "image/avif",
+            "updated_at": "2026-06-24T12:46:16.393Z"
+          },
+          {
+            "path": "styles/6f5ca262-4bec-4bc0-8c56-6b25dc3f21df.avif",
+            "size": 21921,
+            "type": "image/avif",
+            "updated_at": "2026-06-24T12:44:35.802Z"
+          },
+          {
+            "path": "styles/f2f7b4d9-7f38-4c7c-8c2b-a00140047264.avif",
+            "size": 25180,
+            "type": "image/avif",
+            "updated_at": "2026-06-24T12:45:06.361Z"
+          }
+        ],
+        "objectCount": 35,
+        "totalBytes": 71621198
+      }
+    },
+    "auth": {
+      "error": null,
+      "count": 1,
+      "users": [
+        {
+          "id": "e02d6201-39c3-45b8-850d-06548449c4a6",
+          "email": "matthew@eclatgrandeur.com",
+          "role": "authenticated",
+          "created_at": "2026-06-23T09:33:04.79242Z",
+          "last_sign_in_at": "2026-06-24T15:00:32.133799Z",
+          "app_metadata": {
+            "provider": "email",
+            "providers": [
+              "email"
+            ]
+          },
+          "user_metadata": {
+            "email_verified": true
+          }
+        }
+      ]
+    },
+    "schemaProbe": {
+      "diamonds": {
+        "id": true,
+        "cut": true,
+        "carat": true,
+        "colour": true,
+        "clarity": true,
+        "polish": true,
+        "symmetry": true,
+        "fluorescence": true,
+        "cut_grade": true,
+        "price_gbp": true,
+        "status": true,
+        "is_published": true,
+        "diamond_category": false,
+        "colour_family": false,
+        "colour_intensity": false,
+        "colour_description": false,
+        "eclat_approved": false,
+        "eclat_approved_at": false,
+        "eclat_approved_by": false,
+        "eclat_approval_note": false,
+        "held_until": false,
+        "held_by_cart": false
+      },
+      "ring_settings": {
+        "id": true,
+        "name": true,
+        "slug": true,
+        "is_published": true,
+        "base_price_gbp": true,
+        "metal_variants": true,
+        "gallery_config": true,
+        "status": false,
+        "diamond_shapes": false,
+        "min_carat": false,
+        "max_carat": false,
+        "ring_sizes": false,
+        "requires_diamond_selection": false,
+        "requires_ring_size_selection": false,
+        "setting_style": false,
+        "band_style": false,
+        "head_style": false
+      },
+      "enquiries": {
+        "id": true,
+        "customer_name": false,
+        "customer_email": false,
+        "customer_phone": false,
+        "subject": false,
+        "message": true,
+        "ring_setting_id": false,
+        "diamond_id": false,
+        "metal": false,
+        "configuration": false
+      }
+    }
+  },
+  "new": {
+    "url": "https://fiseoqdajptkyxaymkli.supabase.co",
+    "tables": {
+      "ring_settings": {
+        "error": null,
+        "count": 1,
+        "data": [
+          {
+            "id": "e7a66a71-e5cb-4f2c-baa2-9ce211dbb1fa",
+            "name": "The Éclat Solitaire",
+            "slug": "the-eclat-solitaire",
+            "collection": "Éclat Classics",
+            "metals": [
+              "platinum"
+            ],
+            "base_price_gbp": 4200,
+            "short_description": "A timeless six-claw platinum solitaire.",
+            "description": null,
+            "status": "available",
+            "is_published": true,
+            "sort_order": 0,
+            "created_at": "2026-06-22T14:09:32.213908+00:00",
+            "updated_at": "2026-06-25T14:23:00.986778+00:00",
+            "created_by": null,
+            "updated_by": null,
+            "diamond_shapes": [
+              "round"
+            ],
+            "min_carat": null,
+            "max_carat": null,
+            "ring_sizes": [
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q"
+            ],
+            "requires_diamond_selection": true,
+            "requires_ring_size_selection": true,
+            "setting_style": null,
+            "band_style": null,
+            "head_style": null,
+            "gallery_config": null,
+            "metal_variants": [
+              {
+                "id": "mv-platinum-1",
+                "sku": "ES-PT-01",
+                "metal": "platinum",
+                "price": 3500,
+                "enabled": true,
+                "gallery": {
+                  "slots": []
+                }
+              },
+              {
+                "id": "mv-yellow-gold-1",
+                "sku": "ES-YG-01",
+                "metal": "yellow-gold",
+                "price": 3200,
+                "enabled": true,
+                "gallery": {
+                  "slots": []
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "ring_setting_media": {
+        "error": null,
+        "count": 0,
+        "data": []
+      },
+      "diamonds": {
+        "error": null,
+        "count": 1,
+        "data": [
+          {
+            "id": "63ea44a1-4590-46f5-90fc-860d9f192760",
+            "sku": "EGD-2026-000001",
+            "ring_setting_id": "e7a66a71-e5cb-4f2c-baa2-9ce211dbb1fa",
+            "cut": "round",
+            "carat": 1.01,
+            "colour": "F",
+            "clarity": "VS1",
+            "cut_grade": "excellent",
+            "polish": "excellent",
+            "symmetry": "excellent",
+            "fluorescence": "none",
+            "gia_report_number": null,
+            "gia_report_date": null,
+            "gia_report_url": null,
+            "measurement_length": null,
+            "measurement_width": null,
+            "measurement_depth": null,
+            "depth_pct": null,
+            "table_pct": null,
+            "price_gbp": 8200,
+            "status": "reserved",
+            "is_published": true,
+            "notes": null,
+            "created_at": "2026-06-22T14:51:03.436109+00:00",
+            "updated_at": "2026-06-25T14:31:03.250598+00:00",
+            "created_by": null,
+            "updated_by": null,
+            "diamond_category": "white",
+            "colour_family": null,
+            "colour_intensity": null,
+            "colour_description": null,
+            "eclat_approved": false,
+            "eclat_approved_at": null,
+            "eclat_approved_by": null,
+            "eclat_approval_note": null,
+            "held_until": "2026-06-25T15:31:03.45+00:00",
+            "held_by_cart": "e2e-enquiry-1782397862"
+          }
+        ]
+      },
+      "diamond_media": {
+        "error": null,
+        "count": 0,
+        "data": []
+      },
+      "ring_setting_diamonds": {
+        "error": null,
+        "count": 0,
+        "data": []
+      },
+      "jewellery_products": {
+        "error": null,
+        "count": 0,
+        "data": []
+      },
+      "jewellery_product_media": {
+        "error": null,
+        "count": 0,
+        "data": []
+      },
+      "jewellery_diamonds": {
+        "error": null,
+        "count": 0,
+        "data": []
+      },
+      "hero_media": {
+        "error": null,
+        "count": 0,
+        "data": []
+      },
+      "enquiries": {
+        "error": null,
+        "count": 2,
+        "data": [
+          {
+            "id": "642c6ed9-01fd-4e95-977c-1899b1619819",
+            "enquiry_number": "EQ-00004",
+            "customer_name": "Test",
+            "customer_email": "test@example.com",
+            "customer_phone": null,
+            "subject": null,
+            "message": "E2E test message here",
+            "ring_setting_id": "e7a66a71-e5cb-4f2c-baa2-9ce211dbb1fa",
+            "diamond_id": "63ea44a1-4590-46f5-90fc-860d9f192760",
+            "jewellery_product_id": null,
+            "metal": "platinum",
+            "status": "new",
+            "assigned_to": null,
+            "notes": null,
+            "created_at": "2026-06-25T14:31:06.004023+00:00",
+            "updated_at": "2026-06-25T14:31:06.004023+00:00",
+            "configuration": {
+              "metal": "platinum",
+              "ringSize": "M",
+              "diamondId": "63ea44a1-4590-46f5-90fc-860d9f192760",
+              "settingId": "e7a66a71-e5cb-4f2c-baa2-9ce211dbb1fa",
+              "diamondSku": "EGD-2026-000001",
+              "metalLabel": "Platinum",
+              "totalPrice": 1170000,
+              "settingName": "The Eclat Solitaire",
+              "settingSlug": "the-eclat-solitaire",
+              "diamondCarat": 1.01,
+              "diamondPrice": 820000,
+              "diamondShape": "round",
+              "settingPrice": 350000,
+              "metalVariantId": "mv-platinum-1",
+              "diamondCategory": "white",
+              "diamondDescription": "1.01ct Round F VS1",
+              "reservationExpiresAt": "2026-06-25T20:00:00.000Z"
+            }
+          },
+          {
+            "id": "7a56ea30-8413-47a7-9ce0-169a5216670a",
+            "enquiry_number": "EQ-00005",
+            "customer_name": "E2E Test",
+            "customer_email": "e2e@test.com",
+            "customer_phone": null,
+            "subject": null,
+            "message": "End-to-end test enquiry for Phase 6 verification",
+            "ring_setting_id": "e7a66a71-e5cb-4f2c-baa2-9ce211dbb1fa",
+            "diamond_id": "63ea44a1-4590-46f5-90fc-860d9f192760",
+            "jewellery_product_id": null,
+            "metal": "platinum",
+            "status": "new",
+            "assigned_to": null,
+            "notes": null,
+            "created_at": "2026-06-25T14:32:01.556286+00:00",
+            "updated_at": "2026-06-25T14:32:01.556286+00:00",
+            "configuration": {
+              "metal": "platinum",
+              "ringSize": "M",
+              "diamondId": "63ea44a1-4590-46f5-90fc-860d9f192760",
+              "settingId": "e7a66a71-e5cb-4f2c-baa2-9ce211dbb1fa",
+              "diamondSku": "EGD-2026-000001",
+              "metalLabel": "Platinum",
+              "totalPrice": 1170000,
+              "settingName": "The Eclat Solitaire",
+              "settingSlug": "the-eclat-solitaire",
+              "diamondCarat": 1.01,
+              "diamondPrice": 820000,
+              "diamondShape": "round",
+              "settingPrice": 350000,
+              "metalVariantId": "mv-platinum-1",
+              "diamondCategory": "white",
+              "diamondDescription": "1.01ct Round F VS1",
+              "reservationExpiresAt": "2026-06-25T20:00:00.000Z"
+            }
+          }
+        ]
+      },
+      "orders": {
+        "error": "Could not find the table 'public.orders' in the schema cache",
+        "count": null,
+        "data": []
+      },
+      "profiles": {
+        "error": null,
+        "count": 2,
+        "data": [
+          {
+            "id": "859d3ac1-f30b-482f-9a16-36899ee516b4",
+            "full_name": null,
+            "email": "maria@eclatgrandeur.com",
+            "created_at": "2026-06-22T06:01:27.86757+00:00",
+            "updated_at": "2026-06-22T06:01:27.86757+00:00"
+          },
+          {
+            "id": "7ae17606-d51d-472c-b926-b5be4e331d94",
+            "full_name": null,
+            "email": "matthew@eclatgrandeur.com",
+            "created_at": "2026-06-23T06:07:32.212689+00:00",
+            "updated_at": "2026-06-23T06:07:32.212689+00:00"
+          }
+        ]
+      },
+      "staff_roles": {
+        "error": null,
+        "count": 1,
+        "data": [
+          {
+            "id": "7ae17606-d51d-472c-b926-b5be4e331d94",
+            "user_id": "7ae17606-d51d-472c-b926-b5be4e331d94",
+            "role": "super_admin",
+            "created_at": "2026-06-23T06:09:34.999719+00:00",
+            "updated_at": "2026-06-23T06:09:34.999719+00:00"
+          }
+        ]
+      },
+      "suppliers": {
+        "error": null,
+        "count": 0,
+        "data": []
+      }
+    },
+    "buckets": {
+      "diamond-certificates": {
+        "id": "diamond-certificates",
+        "public": false,
+        "fileSizeLimit": 20971520,
+        "allowedMimeTypes": [
+          "application/pdf"
+        ],
+        "objects": [],
+        "objectCount": 0,
+        "totalBytes": 0
+      },
+      "diamond-media": {
+        "id": "diamond-media",
+        "public": false,
+        "fileSizeLimit": 104857600,
+        "allowedMimeTypes": [
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "image/avif",
+          "video/mp4"
+        ],
+        "objects": [],
+        "objectCount": 0,
+        "totalBytes": 0
+      }
+    },
+    "auth": {
+      "error": null,
+      "count": 2,
+      "users": [
+        {
+          "id": "7ae17606-d51d-472c-b926-b5be4e331d94",
+          "email": "matthew@eclatgrandeur.com",
+          "role": "authenticated",
+          "created_at": "2026-06-23T06:07:32.213611Z",
+          "app_metadata": {
+            "provider": "email",
+            "providers": [
+              "email"
+            ]
+          },
+          "user_metadata": {
+            "email_verified": true
+          }
+        },
+        {
+          "id": "859d3ac1-f30b-482f-9a16-36899ee516b4",
+          "email": "maria@eclatgrandeur.com",
+          "role": "authenticated",
+          "created_at": "2026-06-22T06:01:27.867967Z",
+          "last_sign_in_at": "2026-06-22T06:01:41.533992Z",
+          "app_metadata": {
+            "provider": "email",
+            "providers": [
+              "email"
+            ]
+          },
+          "user_metadata": {
+            "email_verified": true
+          }
+        }
+      ]
+    },
+    "schemaProbe": {
+      "diamonds": {
+        "id": true,
+        "cut": true,
+        "carat": true,
+        "colour": true,
+        "clarity": true,
+        "polish": true,
+        "symmetry": true,
+        "fluorescence": true,
+        "cut_grade": true,
+        "price_gbp": true,
+        "status": true,
+        "is_published": true,
+        "diamond_category": true,
+        "colour_family": true,
+        "colour_intensity": true,
+        "colour_description": true,
+        "eclat_approved": true,
+        "eclat_approved_at": true,
+        "eclat_approved_by": true,
+        "eclat_approval_note": true,
+        "held_until": true,
+        "held_by_cart": true
+      },
+      "ring_settings": {
+        "id": true,
+        "name": true,
+        "slug": true,
+        "is_published": true,
+        "base_price_gbp": true,
+        "metal_variants": true,
+        "gallery_config": true,
+        "status": true,
+        "diamond_shapes": true,
+        "min_carat": true,
+        "max_carat": true,
+        "ring_sizes": true,
+        "requires_diamond_selection": true,
+        "requires_ring_size_selection": true,
+        "setting_style": true,
+        "band_style": true,
+        "head_style": true
+      },
+      "enquiries": {
+        "id": true,
+        "customer_name": true,
+        "customer_email": true,
+        "customer_phone": true,
+        "subject": true,
+        "message": true,
+        "ring_setting_id": true,
+        "diamond_id": true,
+        "metal": true,
+        "configuration": true
+      }
+    }
+  },
+  "crossRef": {
+    "oldStoragePaths": [
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/04e75f78-550c-4abe-bf51-2040b2fb308f.mp4",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/13b252ad-e2c4-4a27-961d-ea8d427d17d7.png",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/156ee67c-e464-4219-8271-c338a684b11f.png",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/171847c4-5f71-4741-868f-c9e78f023071.png",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/3d2aae8d-39e0-420e-943b-54a1ed87fdb5.png",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/42bb85d9-dffb-4ab3-9961-a8b14d35c537.png",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/49cb5c9b-e305-4b1b-9b99-050d06e1bd07.png",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/51a3df9a-91ca-456c-8eed-bd04744ab535.mp4",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/72e363f3-270c-4c16-b888-8cd0c468a016.png",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/869f9fdc-d66f-418d-a762-97368c01bd87.mp4",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/8f0989c6-855a-499f-b3d7-fd33b4b33647.avif",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/9e1d5cb3-7836-4d0b-a739-c0770e3f6d2f.png",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/b67b9f42-92d7-4cc8-a5aa-0ae637a55316.png",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/c42f8d05-2d2c-4ac9-99ed-a2d55c51533f.png",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/cb4529a6-993c-435e-8090-8c342b879d8a.mp4",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/ce953013-78cf-4044-8439-091600e853b8.png",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/d6ac3733-262c-4e75-b554-1bff0318e73a.png",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/ee58ade7-d761-41d2-8992-ec6c25014c5c.png",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/efba6b5c-56d7-4b68-ad23-21618ce0fbae.mp4",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/f311f624-530e-484d-a44b-d62bd971f1d6.mp4",
+      "42ef6109-7a38-4063-a03a-caab6f6aef48/fc160385-ca20-46fa-a5e9-87f9ea40283d.avif",
+      "seed/bracelet-riviere.png",
+      "seed/earrings-aura.png",
+      "seed/media-bracelet.png",
+      "seed/media-earrings.png",
+      "seed/media-necklace.png",
+      "seed/necklace-soleil.png",
+      "styles/01f886c8-36c2-4745-895d-d48c3edb8305.avif",
+      "styles/0788e9ad-ebe0-4b70-b94b-e4b1294d1a63.avif",
+      "styles/07bee046-c500-4b89-9e62-4c00bc020664.avif",
+      "styles/10e251bb-e019-4bcd-b211-e5b7c3e93512.avif",
+      "styles/358c7f78-49f0-4185-bb88-3a0c964f46f8.png",
+      "styles/5e93bf73-bf5d-4307-8ef4-1cb66b0a0332.avif",
+      "styles/6f5ca262-4bec-4bc0-8c56-6b25dc3f21df.avif",
+      "styles/f2f7b4d9-7f38-4c7c-8c2b-a00140047264.avif"
+    ],
+    "newStoragePaths": [],
+    "referencedByOldDB": [
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/04e75f78-550c-4abe-bf51-2040b2fb308f.mp4",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/04e75f78-550c-4abe-bf51-2040b2fb308f.mp4",
+        "table": "ring_setting_media",
+        "rowId": "89e3dc17-53ac-4bfd-8358-720dc320022f",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/c42f8d05-2d2c-4ac9-99ed-a2d55c51533f.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/c42f8d05-2d2c-4ac9-99ed-a2d55c51533f.png",
+        "table": "ring_setting_media",
+        "rowId": "16195155-64ac-4a3f-b53c-6ba640480fc8",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/42bb85d9-dffb-4ab3-9961-a8b14d35c537.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/42bb85d9-dffb-4ab3-9961-a8b14d35c537.png",
+        "table": "ring_setting_media",
+        "rowId": "c531a0ec-91f8-4d0f-88de-9cfc154781f4",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/13b252ad-e2c4-4a27-961d-ea8d427d17d7.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/13b252ad-e2c4-4a27-961d-ea8d427d17d7.png",
+        "table": "ring_setting_media",
+        "rowId": "48fdad55-84cc-46c2-83b1-99d6e96edd8e",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/cb4529a6-993c-435e-8090-8c342b879d8a.mp4",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/cb4529a6-993c-435e-8090-8c342b879d8a.mp4",
+        "table": "ring_setting_media",
+        "rowId": "d8fd4112-3212-4410-a5cd-87532ebbe85d",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/3d2aae8d-39e0-420e-943b-54a1ed87fdb5.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/3d2aae8d-39e0-420e-943b-54a1ed87fdb5.png",
+        "table": "ring_setting_media",
+        "rowId": "33003872-05c9-4599-8390-8c45239f6c8e",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/ee58ade7-d761-41d2-8992-ec6c25014c5c.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/ee58ade7-d761-41d2-8992-ec6c25014c5c.png",
+        "table": "ring_setting_media",
+        "rowId": "daf9f260-71cc-40f3-99fd-306467bc7e8e",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/49cb5c9b-e305-4b1b-9b99-050d06e1bd07.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/49cb5c9b-e305-4b1b-9b99-050d06e1bd07.png",
+        "table": "ring_setting_media",
+        "rowId": "d4588702-95f3-453f-8c29-6de845f78a9b",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/efba6b5c-56d7-4b68-ad23-21618ce0fbae.mp4",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/efba6b5c-56d7-4b68-ad23-21618ce0fbae.mp4",
+        "table": "ring_setting_media",
+        "rowId": "e1e55a2a-d668-4156-9354-13b21e7bf44f",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/ce953013-78cf-4044-8439-091600e853b8.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/ce953013-78cf-4044-8439-091600e853b8.png",
+        "table": "ring_setting_media",
+        "rowId": "5c32b514-547d-48b1-af50-e3d0d71bb33a",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/171847c4-5f71-4741-868f-c9e78f023071.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/171847c4-5f71-4741-868f-c9e78f023071.png",
+        "table": "ring_setting_media",
+        "rowId": "1e8d6f9a-c71f-4c33-8cd5-e1d8028c4059",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/b67b9f42-92d7-4cc8-a5aa-0ae637a55316.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/b67b9f42-92d7-4cc8-a5aa-0ae637a55316.png",
+        "table": "ring_setting_media",
+        "rowId": "334d0286-67d7-4335-88a5-b24efd1c1c16",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/156ee67c-e464-4219-8271-c338a684b11f.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/156ee67c-e464-4219-8271-c338a684b11f.png",
+        "table": "ring_setting_media",
+        "rowId": "a5792310-df87-4bca-bbf7-78e05f4f803f",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/d6ac3733-262c-4e75-b554-1bff0318e73a.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/d6ac3733-262c-4e75-b554-1bff0318e73a.png",
+        "table": "ring_setting_media",
+        "rowId": "22b44fa8-2b5b-4403-978a-3d71e22472ea",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/9e1d5cb3-7836-4d0b-a739-c0770e3f6d2f.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/9e1d5cb3-7836-4d0b-a739-c0770e3f6d2f.png",
+        "table": "ring_setting_media",
+        "rowId": "3f503e4a-6ae3-4426-ab6b-337881e3dd9d",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/51a3df9a-91ca-456c-8eed-bd04744ab535.mp4",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/51a3df9a-91ca-456c-8eed-bd04744ab535.mp4",
+        "table": "ring_setting_media",
+        "rowId": "a561a92a-a7a0-4d88-b019-b3a83e231728",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/72e363f3-270c-4c16-b888-8cd0c468a016.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/72e363f3-270c-4c16-b888-8cd0c468a016.png",
+        "table": "ring_setting_media",
+        "rowId": "d2cbae7b-6c7f-4d1b-bc2c-3ee84d3ff2cb",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/f311f624-530e-484d-a44b-d62bd971f1d6.mp4",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/f311f624-530e-484d-a44b-d62bd971f1d6.mp4",
+        "table": "ring_setting_media",
+        "rowId": "25728056-3123-4cfd-a2db-cc472dc8cc5f",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "42ef6109-7a38-4063-a03a-caab6f6aef48/869f9fdc-d66f-418d-a762-97368c01bd87.mp4",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/42ef6109-7a38-4063-a03a-caab6f6aef48/869f9fdc-d66f-418d-a762-97368c01bd87.mp4",
+        "table": "ring_setting_media",
+        "rowId": "d6fee89f-91bb-423f-8928-e655e047b13f",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "seed/necklace-soleil.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/seed/necklace-soleil.png",
+        "table": "jewellery_product_media",
+        "rowId": "bac09d99-335f-470e-bcaf-817b7d9a3494",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "seed/bracelet-riviere.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/seed/bracelet-riviere.png",
+        "table": "jewellery_product_media",
+        "rowId": "250f1ab0-7d93-425d-b045-d5741ffbfd4a",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "seed/earrings-aura.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/seed/earrings-aura.png",
+        "table": "jewellery_product_media",
+        "rowId": "16e459d5-80f3-4bb2-a0c0-394e9c1c6bb5",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "seed/media-necklace.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/seed/media-necklace.png",
+        "table": "jewellery_product_media",
+        "rowId": "dd539db4-38f2-4555-9dc9-2352fd7bda11",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "seed/media-bracelet.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/seed/media-bracelet.png",
+        "table": "jewellery_product_media",
+        "rowId": "8c5e213e-2b2f-4cba-9770-933da2231974",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      },
+      {
+        "bucket": "jewellery-media",
+        "path": "seed/media-earrings.png",
+        "full": "https://ieezorhsddcmjqlzxiai.supabase.co/storage/v1/object/public/jewellery-media/seed/media-earrings.png",
+        "table": "jewellery_product_media",
+        "rowId": "c146f31a-5b02-46bd-91cc-2f4aac49077e",
+        "existsInOldStorage": true,
+        "existsInNewStorage": false
+      }
+    ]
+  }
+}

@@ -4,6 +4,7 @@ import { getRingSetting, getRingSettingDiamonds, addRingSettingMedia, deleteRing
 import { uploadJewelleryMedia, deleteJewelleryMedia } from '@/lib/storage/jewellery';
 import { requireStaffRole } from '@/lib/staff';
 import { listDiamonds } from '@/lib/diamonds/service';
+import { getCompatibleDiamondCounts } from '@/lib/diamonds/compatibility';
 import { AdminProductEditor } from '@/components/admin/AdminProductEditor';
 import {
   updateRingAction,
@@ -16,7 +17,10 @@ import {
   deleteDiamondAction,
   saveRingGalleryAction,
   saveRingMetalVariantsAction,
+  saveRingDiamondShapesAction,
+  saveRingEngagementConfigAction,
 } from './actions';
+import type { DiamondShape } from '@/lib/ring-settings/types';
 import { parseGalleryConfig, parseMetalVariants } from '@/lib/gallery/types';
 import type { DiamondRow } from '@/components/admin/DiamondPanel';
 
@@ -24,9 +28,10 @@ interface Props { params: Promise<{ id: string }> }
 
 export default async function AdminRingEditPage({ params }: Props) {
   const { id } = await params;
-  const [ring, allDiamonds] = await Promise.all([
+  const [ring, allDiamonds, compatibleCounts] = await Promise.all([
     getRingSetting(id).catch(() => null),
     listDiamonds().catch(() => []),
+    getCompatibleDiamondCounts(id).catch(() => ({ white: 0, yellow: 0, pink: 0 })),
   ]);
 
   if (!ring) notFound();
@@ -61,6 +66,11 @@ export default async function AdminRingEditPage({ params }: Props) {
     gia_report_number: d.gia_report_number,
     gia_report_url:   d.gia_report_url,
     notes:            d.notes,
+    diamond_category:  d.diamond_category,
+    colour_family:     d.colour_family,
+    colour_intensity:  d.colour_intensity,
+    colour_description: d.colour_description,
+    eclat_approved:    d.eclat_approved,
   }));
 
   const galleryConfig  = parseGalleryConfig(ring.gallery_config);
@@ -109,6 +119,9 @@ export default async function AdminRingEditPage({ params }: Props) {
           polish: d.polish, symmetry: d.symmetry,
           gia_report_number: d.gia_report_number,
           gia_report_url: d.gia_report_url, notes: d.notes,
+          diamond_category: d.diamond_category, colour_family: d.colour_family,
+          colour_intensity: d.colour_intensity, colour_description: d.colour_description,
+          eclat_approved: d.eclat_approved,
         };
       }}
       onUpdateDiamond={async (diamondId, data) => {
@@ -173,6 +186,35 @@ export default async function AdminRingEditPage({ params }: Props) {
       onSaveMetalVariants={async (variants) => {
         'use server';
         await saveRingMetalVariantsAction(id, variants);
+      }}
+      diamondShapes={(ring.diamond_shapes ?? []) as DiamondShape[]}
+      onSaveDiamondShapes={async (shapes) => {
+        'use server';
+        await saveRingDiamondShapesAction(id, shapes);
+      }}
+      compatibleCounts={compatibleCounts}
+      engagementConfig={{
+        minCarat:                    ring.min_carat  ?? null,
+        maxCarat:                    ring.max_carat  ?? null,
+        ringSizes:                   ring.ring_sizes ?? [],
+        requiresDiamondSelection:    ring.requires_diamond_selection   ?? true,
+        requiresRingSizeSelection:   ring.requires_ring_size_selection ?? true,
+        settingStyle:                ring.setting_style ?? null,
+        bandStyle:                   ring.band_style    ?? null,
+        headStyle:                   ring.head_style    ?? null,
+      }}
+      onSaveEngagementConfig={async (config) => {
+        'use server';
+        await saveRingEngagementConfigAction(id, {
+          min_carat:                   config.minCarat,
+          max_carat:                   config.maxCarat,
+          ring_sizes:                  config.ringSizes,
+          requires_diamond_selection:  config.requiresDiamondSelection,
+          requires_ring_size_selection: config.requiresRingSizeSelection,
+          setting_style:               config.settingStyle,
+          band_style:                  config.bandStyle,
+          head_style:                  config.headStyle,
+        });
       }}
       categoryLabel="Engagement Rings"
       categoryHref="/engagement-rings"
