@@ -1,22 +1,19 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useState, useMemo, useEffect } from 'react';
+import useSWR from 'swr';
 import Link from 'next/link';
-import { ChevronRight, ChevronDown } from 'lucide-react';
-import { Heart } from 'lucide-react';
+import { ChevronRight, ChevronDown, Heart } from 'lucide-react';
 import { ProductGallery } from '@/components/shared/ProductGallery';
-import { EarringPairSelector } from './EarringPairSelector';
 import { useShortlist, type ShortlistItem } from '@/hooks/useShortlist';
 import { useCart } from '@/lib/store/cart';
-import { validateAndReserveEarringConfiguration } from '@/app/earrings/[slug]/actions';
-import { buildEarringCartLineId } from '@/lib/earrings/cart-helpers';
-import type { GalleryData, MetalVariant, MetalKey } from '@/lib/gallery/types';
+import { validateAndReserveEarringVariant } from '@/app/earrings/[slug]/actions';
+import { buildEarringCartLineId, clarityLabel } from '@/lib/earrings/cart-helpers';
+import { trackEvent } from '@/lib/analytics';
 import { METAL_DISPLAY, EMPTY_GALLERY, variantToGalleryData } from '@/lib/gallery/types';
+import type { GalleryData, MetalVariant, MetalKey } from '@/lib/gallery/types';
 import type { JewelleryDetailConfig } from '@/components/jewellery/JewelleryDetailPage';
-import type { CompatiblePairCard, EarringConfigurationPrice } from '@/lib/earrings/types';
-import type { JewelleryStoneSlot } from '@/lib/pairs/types';
-import { isConfigurationComplete, getRequiredSelectorSlots, wouldCreateDuplicatePair } from '@/lib/earrings/validation';
+import type { PublicEarringVariant } from '@/lib/earrings/types';
 
 const G      = '#1a2b1a';
 const BORDER = '#e8e8e8';
@@ -28,575 +25,308 @@ const VARIANT_SWATCHES: Record<string, string> = {
   'rose-gold-14k':   '#c47d68',
 };
 
+const CLARITY_ORDER = ['VS2', 'VS1', 'VVS2', 'VVS1', 'IF', 'FL'];
+
+const fetcher = (url: string): Promise<PublicEarringVariant[]> =>
+  fetch(url).then(r => r.json()).then(d => Array.isArray(d?.variants) ? d.variants : []);
+
 export interface EarringDetailPageProps {
   productId:          string;
   productSlug:        string;
   productName:        string;
   productSubtitle:    string;
   productDescription: string;
-  basePrice:          number;
   earringType:        string;
-  slots:              JewelleryStoneSlot[];
+  /** Short fixed-design note (e.g. halo) — shown only when provided by real product data. */
+  fixedDesignNote:    string | null;
   galleryConfig:      GalleryData;
   metalVariants:      MetalVariant[] | null;
   config:             JewelleryDetailConfig;
 }
 
-type AddToCartState = 'idle' | 'reserving' | 'success' | 'error';
+type AddState = 'idle' | 'reserving' | 'success' | 'error';
 
 export function EarringDetailPage({
   productId, productSlug, productName, productSubtitle, productDescription,
-  basePrice, earringType, slots, galleryConfig, metalVariants, config,
+  fixedDesignNote, galleryConfig, metalVariants, config,
 }: EarringDetailPageProps) {
-  const router       = useRouter();
-  const pathname     = usePathname();
-  const searchParams = useSearchParams();
-
-  // ── Metal state ─────────────────────────────────────────────────────────────
-  const enabledVariants = metalVariants?.filter(v => v.enabled) ?? [];
-  const hasVariants     = enabledVariants.length > 0;
-  const initialMetal    = (() => {
-    const urlMetal = searchParams.get('metal') as MetalKey | null;
-    if (urlMetal && enabledVariants.some(v => v.metal === urlMetal)) return urlMetal;
-    return enabledVariants[0]?.metal ?? null;
-  })();
-  const [activeVariantMetal, setActiveVariantMetal] = useState<MetalKey | null>(initialMetal);
-  const [galleryOpacity, setGalleryOpacity]         = useState(1);
-  const [metalOpen, setMetalOpen]                   = useState(false);
-
-  const activeVariant    = activeVariantMetal ? metalVariants?.find(v => v.metal === activeVariantMetal) ?? null : null;
-  const galleryVariant   = (activeVariant?.metal === 'white-gold-18k' && activeVariant.gallery.items.length === 0)
-    ? (metalVariants?.find(v => v.metal === 'platinum') ?? activeVariant)
-    : activeVariant;
-  const effectiveGallery = galleryVariant ? variantToGalleryData(galleryVariant) : (galleryConfig ?? EMPTY_GALLERY);
-
-  const ringStyleLabel  = hasVariants && activeVariantMetal ? METAL_DISPLAY[activeVariantMetal] : 'Select metal';
-  const ringStyleSwatch = hasVariants && activeVariantMetal ? (VARIANT_SWATCHES[activeVariantMetal] ?? '#d0d0d0') : '#d0d0d0';
-
-  function switchVariantMetal(key: MetalKey) {
-    if (key === activeVariantMetal) return;
-    setGalleryOpacity(0);
-    setTimeout(() => { setActiveVariantMetal(key); setGalleryOpacity(1); }, 200);
-    updateUrl({ metal: key });
-  }
-
-  // ── Pair selection state ─────────────────────────────────────────────────────
-  const matchedPairSlots = getRequiredSelectorSlots(
-    slots.map(s => ({ slot_key: s.slot_key, selection_mode: s.selection_mode, required: s.required }))
-  );
-  const fixedSlots = slots.filter(s => s.selection_mode === 'fixed');
-  const isSingleSlot = matchedPairSlots.length === 1;
-
-  const [selectedPairs, setSelectedPairs] = useState<Map<string, CompatiblePairCard>>(new Map());
-  const [activeSelectorSlot, setActiveSelectorSlot] = useState<string | null>(null);
-  const [configPrice, setConfigPrice] = useState<EarringConfigurationPrice | null>(null);
-  const [priceLoading, setPriceLoading] = useState(false);
-  const [addToCartState, setAddToCartState] = useState<AddToCartState>('idle');
-  const [addToCartError, setAddToCartError] = useState<string | null>(null);
-  const validatedOnce = useRef(false);
-
   const { add: addToCart, cartToken, setOpen: setCartOpen } = useCart();
 
-  const selectedPairIds = new Map([...selectedPairs.entries()].map(([k, p]) => [k, p.id]));
-  const slotDescriptors = slots.map(s => ({
-    slot_key: s.slot_key, selection_mode: s.selection_mode, required: s.required,
-  }));
-  const isComplete = isConfigurationComplete(slotDescriptors, selectedPairIds);
+  const { data: variants = [], isLoading } = useSWR<PublicEarringVariant[]>(
+    `/api/earrings/${productId}/variants`, fetcher, { revalidateOnFocus: false },
+  );
 
-  // ── URL state helpers ────────────────────────────────────────────────────────
-  const updateUrl = useCallback((updates: Record<string, string>) => {
-    const next = new URLSearchParams(searchParams.toString());
-    for (const [k, v] of Object.entries(updates)) {
-      if (v) next.set(k, v); else next.delete(k);
-    }
-    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
-  }, [router, pathname, searchParams]);
+  // ── Selection state ───────────────────────────────────────────────────────────
+  const [metal,   setMetal]   = useState<string | null>(null);
+  const [carat,   setCarat]   = useState<number | null>(null);
+  const [colour,  setColour]  = useState<string | null>(null);
+  const [clarity, setClarity] = useState<string | null>(null);
+  const [metalOpen, setMetalOpen] = useState(false);
+  const [addState, setAddState] = useState<AddState>('idle');
+  const [addError, setAddError] = useState<string | null>(null);
 
-  // ── Initialise pair state from URL, then validate ───────────────────────────
+  // ── Option derivation (only genuinely configured combinations) ─────────────────
+  const metals = useMemo(
+    () => [...new Set(variants.map(v => v.metal))],
+    [variants],
+  );
+  const carats = useMemo(
+    () => [...new Set(variants.filter(v => v.metal === metal).map(v => v.total_carat))].sort((a, b) => a - b),
+    [variants, metal],
+  );
+  const colours = useMemo(
+    () => [...new Set(variants.filter(v => v.metal === metal && v.total_carat === carat).map(v => v.colour))]
+            .sort((a, b) => 'DEF'.indexOf(a) - 'DEF'.indexOf(b)),
+    [variants, metal, carat],
+  );
+  const clarities = useMemo(
+    () => [...new Set(variants.filter(v => v.metal === metal && v.total_carat === carat && v.colour === colour).map(v => v.clarity))]
+            .sort((a, b) => CLARITY_ORDER.indexOf(a) - CLARITY_ORDER.indexOf(b)),
+    [variants, metal, carat, colour],
+  );
+
+  // Default the metal once variants arrive.
   useEffect(() => {
-    if (validatedOnce.current) return;
-    validatedOnce.current = true;
+    if (metal === null && metals.length > 0) setMetal(metals[0]);
+  }, [metals, metal]);
 
-    const urlPairs: Array<{ slotKey: string; pairId: string }> = [];
-    for (const slot of matchedPairSlots) {
-      const pairId = searchParams.get(slot.slot_key);
-      if (pairId) urlPairs.push({ slotKey: slot.slot_key, pairId });
-    }
-    if (urlPairs.length === 0) return;
+  // Clear invalid downstream selections when an upstream option changes.
+  useEffect(() => { if (carat !== null && !carats.includes(carat)) { setCarat(null); setColour(null); setClarity(null); } }, [carats, carat]);
+  useEffect(() => { if (colour !== null && !(colours as string[]).includes(colour)) { setColour(null); setClarity(null); } }, [colours, colour]);
+  useEffect(() => { if (clarity !== null && !(clarities as string[]).includes(clarity)) setClarity(null); }, [clarities, clarity]);
 
-    // Validate the URL-provided pairs via server
-    fetch(`/api/earrings/${productId}/configuration`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
-        metalVariantId: activeVariantMetal ?? undefined,
-        selectedPairs:  urlPairs,
-      }),
-    })
-      .then(r => r.json())
-      .then((data: { valid: boolean; errors: Array<{ code: string; slotKey?: string }>; price?: EarringConfigurationPrice }) => {
-        if (data.valid && data.price) {
-          // All URL pairs are valid — we can't reconstruct full CompatiblePairCard from just an ID,
-          // so we leave selectedPairs empty and let the user re-select if they open a selector.
-          // The URL params remain; pairs will auto-validate when the summary re-fetches.
-          setConfigPrice(data.price);
-        } else {
-          // Clear invalid pair URL params silently
-          const invalidSlotKeys = new Set(data.errors?.map(e => e.slotKey).filter(Boolean));
-          const next = new URLSearchParams(searchParams.toString());
-          for (const slotKey of invalidSlotKeys) next.delete(slotKey!);
-          router.replace(`${pathname}?${next.toString()}`, { scroll: false });
-        }
-      })
-      .catch(() => {
-        // Network error: clear all pair params silently
-        const next = new URLSearchParams(searchParams.toString());
-        for (const slot of matchedPairSlots) next.delete(slot.slot_key);
-        router.replace(`${pathname}?${next.toString()}`, { scroll: false });
-      });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const selectedVariant = useMemo(
+    () => variants.find(v => v.metal === metal && v.total_carat === carat && v.colour === colour && v.clarity === clarity) ?? null,
+    [variants, metal, carat, colour, clarity],
+  );
 
-  // ── Fetch server-validated price when configuration is complete ──────────────
-  useEffect(() => {
-    if (!isComplete) { setConfigPrice(null); return; }
-    setPriceLoading(true);
-    const body = {
-      metalVariantId: activeVariantMetal ?? undefined,
-      selectedPairs:  [...selectedPairIds.entries()].map(([slotKey, pairId]) => ({ slotKey, pairId })),
-    };
-    fetch(`/api/earrings/${productId}/configuration`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(body),
-    })
-      .then(r => r.json())
-      .then((data: { valid: boolean; price?: EarringConfigurationPrice }) => {
-        if (data.valid && data.price) setConfigPrice(data.price);
-        else setConfigPrice(null);
-      })
-      .catch(() => setConfigPrice(null))
-      .finally(() => setPriceLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isComplete, activeVariantMetal, productId, JSON.stringify([...selectedPairIds.entries()])]);
+  function resetAdd() { setAddState('idle'); setAddError(null); }
 
-  // ── Pair selection handler ───────────────────────────────────────────────────
-  function handlePairSelect(pair: CompatiblePairCard) {
-    if (!activeSelectorSlot) return;
-    if (wouldCreateDuplicatePair(selectedPairIds, activeSelectorSlot, pair.id)) return;
-    setSelectedPairs(prev => { const n = new Map(prev); n.set(activeSelectorSlot!, pair); return n; });
-    updateUrl({ [activeSelectorSlot]: pair.id });
-    setActiveSelectorSlot(null);
-    // Reset CTA state so the updated configuration can be added fresh
-    setAddToCartState('idle');
-    setAddToCartError(null);
-  }
+  // ── Metal / gallery ────────────────────────────────────────────────────────────
+  const activeVariant  = metal ? metalVariants?.find(v => v.metal === metal) ?? null : null;
+  const effectiveGallery = activeVariant ? variantToGalleryData(activeVariant) : (galleryConfig ?? EMPTY_GALLERY);
+  const metalLabel  = metal ? (METAL_DISPLAY[metal as MetalKey] ?? metal) : 'Select metal';
+  const metalSwatch = metal ? (VARIANT_SWATCHES[metal] ?? '#d0d0d0') : '#d0d0d0';
 
-  // ── Add to Cart ──────────────────────────────────────────────────────────────
-  async function handleAddToCart() {
-    if (!isComplete || addToCartState === 'reserving') return;
-    setAddToCartState('reserving');
-    setAddToCartError(null);
+  // ── Price / availability ───────────────────────────────────────────────────────
+  const priceLabel = selectedVariant
+    ? `£${selectedVariant.price_gbp.toLocaleString('en-GB')}`
+    : variants.length > 0
+      ? `From £${Math.min(...variants.map(v => v.price_gbp)).toLocaleString('en-GB')}`
+      : '';
+  const isMadeToOrder = selectedVariant?.availability === 'made_to_order';
 
-    const pairs = [...selectedPairIds.entries()].map(([slotKey, pairId]) => ({ slotKey, pairId }));
-    const result = await validateAndReserveEarringConfiguration(
-      productId,
-      activeVariantMetal ?? null,
-      pairs,
-      cartToken,
-    );
+  // ── Add to Bag ─────────────────────────────────────────────────────────────────
+  async function handleAdd() {
+    if (!selectedVariant || addState === 'reserving') return;
+    setAddState('reserving'); setAddError(null);
+    trackEvent('earring_add_to_bag_initiated', { productId });
 
+    const result = await validateAndReserveEarringVariant(productId, selectedVariant.id, cartToken);
     if (!result.ok) {
-      setAddToCartState('error');
-      setAddToCartError(result.error);
+      setAddState('error'); setAddError(result.error);
+      trackEvent('earring_reservation_failed', { productId });
       return;
     }
-
     const { earring } = result;
-    const cartLineId = buildEarringCartLineId(productId, pairs.map(p => p.pairId));
-
     addToCart({
-      id:            cartLineId,
-      name:          earring.productName,
-      href:          `${config.categoryPath}/${productSlug}`,
-      price:         { amount: earring.totalPrice, currency: 'GBP' },
-      meta:          earring.metalLabel,
-      art:           { kind: 'stud-earrings', shape: 'round', metal: 'platinum' },
+      id:    buildEarringCartLineId(productId, earring.variantId),
+      name:  earring.productName,
+      href:  `${config.categoryPath}/${productSlug}`,
+      price: { amount: earring.totalPrice, currency: 'GBP' },
+      meta:  earring.metalLabel,
+      art:   { kind: 'stud-earrings', shape: 'round', metal: 'platinum' },
       earringConfig: earring,
     });
-
-    setAddToCartState('success');
+    setAddState('success');
+    trackEvent('earring_added_to_bag', { productId });
   }
 
-  // ── Shortlist ────────────────────────────────────────────────────────────────
+  // ── Shortlist ──────────────────────────────────────────────────────────────────
   const { toggle, has } = useShortlist();
   const shortlistId   = `${config.categoryPath.replace('/', '')}-${productName.toLowerCase().replace(/\s+/g, '-')}`;
   const isShortlisted = has(shortlistId);
-
   function buildShortlistItem(): ShortlistItem {
     return {
-      id:        shortlistId,
-      category:  config.categoryLabel,
-      name:      productName,
-      subtitle:  productSubtitle,
-      image:     effectiveGallery.topLeft?.url ?? '',
-      href:      `${config.categoryPath}/${productName.toLowerCase().replace(/\s+/g, '-')}`,
-      metal:     ringStyleLabel,
-      basePrice,
-      totalPrice: configPrice?.totalPrice ?? basePrice,
-      savedAt:   Date.now(),
+      id: shortlistId, category: config.categoryLabel, name: productName, subtitle: productSubtitle,
+      image: effectiveGallery.topLeft?.url ?? '', href: `${config.categoryPath}/${productSlug}`,
+      metal: metalLabel, basePrice: variants.length ? Math.min(...variants.map(v => v.price_gbp)) : 0,
+      totalPrice: selectedVariant?.price_gbp ?? 0, savedAt: Date.now(),
     };
   }
 
-  // ── Price display ────────────────────────────────────────────────────────────
-  const displayPrice = configPrice
-    ? `£${configPrice.totalPrice.toLocaleString('en-GB')}`
-    : `Starting from £${basePrice.toLocaleString('en-GB')}`;
-
-  // ── Disabled pair IDs for duplicate prevention ───────────────────────────────
-  const activeDisabledIds = useMemo(() => {
-    if (!activeSelectorSlot) return new Set<string>();
-    const disabled = new Set<string>();
-    for (const [slotKey, pair] of selectedPairs.entries()) {
-      if (slotKey !== activeSelectorSlot) disabled.add(pair.id);
-    }
-    return disabled;
-  }, [activeSelectorSlot, selectedPairs]);
+  const Step = ({ n, label }: { n: number; label: string }) => (
+    <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
+      <span style={{ color: '#cbb78a' }}>{n}.</span> {label}
+    </span>
+  );
 
   return (
     <div className="min-h-screen bg-white pb-10 lg:pb-20" style={{ color: G }}>
-
       {/* BREADCRUMB */}
-      <nav
-        className="flex items-center gap-2 px-8 lg:px-14 pt-24 pb-5"
-        style={{ borderBottom: `1px solid ${BORDER}` }}
-        aria-label="Breadcrumb"
-      >
-        <Link href="/" className="font-sans" style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          Home
-        </Link>
-        <ChevronRight className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#ddd' }} strokeWidth={1.5} />
-        <Link href={config.categoryPath} className="font-sans" style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          {config.categoryLabel}
-        </Link>
-        <ChevronRight className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#ddd' }} strokeWidth={1.5} />
-        <span className="font-sans" style={{ fontSize: 11, color: G, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          {productName}
-        </span>
+      <nav className="flex items-center gap-2 px-8 lg:px-14 pt-24 pb-5" style={{ borderBottom: `1px solid ${BORDER}` }} aria-label="Breadcrumb">
+        <Link href="/" className="font-sans" style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Home</Link>
+        <ChevronRight className="w-2.5 h-2.5" style={{ color: '#ddd' }} strokeWidth={1.5} />
+        <Link href={config.categoryPath} className="font-sans" style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{config.categoryLabel}</Link>
+        <ChevronRight className="w-2.5 h-2.5" style={{ color: '#ddd' }} strokeWidth={1.5} />
+        <span className="font-sans" style={{ fontSize: 11, color: G, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{productName}</span>
       </nav>
 
-      {/* SPLIT LAYOUT */}
       <div className="flex flex-col lg:flex-row">
-
         {/* LEFT — gallery */}
-        <div
-          className="lg:w-[58%] lg:sticky lg:top-[80px]"
-          style={{ maxHeight: 'calc(100vh - 80px)', overflowY: 'auto', padding: 8, background: '#fff' }}
-        >
-          <div style={{ opacity: galleryOpacity, transition: 'opacity 0.2s ease' }}>
-            <ProductGallery data={effectiveGallery} />
-          </div>
+        <div className="lg:w-[58%] lg:sticky lg:top-[80px]" style={{ maxHeight: 'calc(100vh - 80px)', overflowY: 'auto', padding: 8, background: '#fff' }}>
+          <ProductGallery data={effectiveGallery} />
         </div>
 
-        {/* RIGHT — configuration panel */}
+        {/* RIGHT — configurator */}
         <div className="lg:w-[42%] lg:sticky lg:top-[80px] lg:h-[calc(100vh-80px)] lg:overflow-y-auto px-8 lg:px-12 pt-12 pb-20 flex flex-col">
-
-          {/* Name */}
-          <h1
-            className="font-display"
-            style={{ fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 300, letterSpacing: '0.04em', color: G, lineHeight: 1.15 }}
-          >
-            {productName}
-          </h1>
-
-          {/* Subtitle + price */}
+          <h1 className="font-display" style={{ fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 300, letterSpacing: '0.04em', color: G, lineHeight: 1.15 }}>{productName}</h1>
           <div className="flex items-baseline justify-between mt-2 gap-4">
-            <p className="font-sans" style={{ fontSize: 13, color: '#999', fontWeight: 300, letterSpacing: '0.03em' }}>
-              {productSubtitle}
-            </p>
-            <p className="font-sans flex-shrink-0" style={{ fontSize: 14, color: G, fontWeight: 400 }}>
-              {displayPrice}
-            </p>
+            <p className="font-sans" style={{ fontSize: 13, color: '#999', fontWeight: 300, letterSpacing: '0.03em' }}>{productSubtitle}</p>
+            <p className="font-sans flex-shrink-0" style={{ fontSize: 14, color: G, fontWeight: 400 }}>{priceLabel}</p>
           </div>
 
           <div className="mt-8" style={{ height: 1, backgroundColor: BORDER }} />
 
-          {/* Metal selector */}
-          <button
-            type="button"
-            onClick={() => setMetalOpen(v => !v)}
-            className="flex items-center justify-between w-full py-4 text-left"
-            style={{ borderBottom: metalOpen ? 'none' : `1px solid ${BORDER}` }}
-          >
-            <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
-              Metal
-            </span>
+          {/* 1. METAL */}
+          <button type="button" onClick={() => setMetalOpen(v => !v)} className="flex items-center justify-between w-full py-4 text-left" style={{ borderBottom: metalOpen ? 'none' : `1px solid ${BORDER}` }}>
+            <Step n={1} label="Metal" />
             <span className="flex items-center gap-2">
-              <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: ringStyleSwatch, border: '1px solid #ddd', flexShrink: 0 }} />
-              <span className="font-sans" style={{ fontSize: 13, color: G, fontWeight: 300 }}>{ringStyleLabel}</span>
-              <ChevronDown
-                className="w-3.5 h-3.5"
-                style={{ color: '#bbb', transition: 'transform 0.2s', transform: metalOpen ? 'rotate(180deg)' : 'none' }}
-                strokeWidth={1.5}
-              />
+              <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: metalSwatch, border: '1px solid #ddd' }} />
+              <span className="font-sans" style={{ fontSize: 13, color: G, fontWeight: 300 }}>{metalLabel}</span>
+              <ChevronDown className="w-3.5 h-3.5" style={{ color: '#bbb', transform: metalOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} strokeWidth={1.5} />
             </span>
           </button>
-
           {metalOpen && (
             <div style={{ borderBottom: `1px solid ${BORDER}` }}>
-              {enabledVariants.map(v => {
-                const active = v.metal === activeVariantMetal;
+              {metals.map(m => {
+                const active = m === metal;
                 return (
-                  <button
-                    key={v.metal}
-                    type="button"
-                    onClick={() => { switchVariantMetal(v.metal); setMetalOpen(false); }}
+                  <button key={m} type="button" onClick={() => { setMetal(m); setMetalOpen(false); resetAdd(); }}
                     className="flex items-center gap-3 w-full px-2 py-3 font-sans transition-colors hover:bg-stone-50"
-                    style={{ fontSize: 13, color: active ? G : '#666', fontWeight: active ? 400 : 300, backgroundColor: active ? '#f9f9f9' : 'transparent' }}
-                  >
-                    <span style={{ width: 14, height: 14, borderRadius: '50%', backgroundColor: VARIANT_SWATCHES[v.metal] ?? '#d0d0d0', border: '1px solid #ddd', flexShrink: 0 }} />
-                    {METAL_DISPLAY[v.metal]}
-                    {active && <span style={{ marginLeft: 'auto', fontFamily: 'sans-serif', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#4a9e6b' }}>Selected</span>}
+                    style={{ fontSize: 13, color: active ? G : '#666', fontWeight: active ? 400 : 300, backgroundColor: active ? '#f9f9f9' : 'transparent' }}>
+                    <span style={{ width: 14, height: 14, borderRadius: '50%', backgroundColor: VARIANT_SWATCHES[m] ?? '#d0d0d0', border: '1px solid #ddd' }} />
+                    {METAL_DISPLAY[m as MetalKey] ?? m}
+                    {active && <span style={{ marginLeft: 'auto', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#4a9e6b' }}>Selected</span>}
                   </button>
                 );
               })}
             </div>
           )}
 
-          {/* Stone slot selectors */}
-          {matchedPairSlots.map(slot => {
-            const slotFull = slots.find(s => s.slot_key === slot.slot_key);
-            const selectedPair = selectedPairs.get(slot.slot_key) ?? null;
-            const selectorLabel = isSingleSlot ? 'Diamond Pair' : (slotFull?.label ?? slot.slot_key);
-
-            return (
-              <div key={slot.slot_key}>
-                {/* Slot row */}
-                <div className="flex items-center justify-between py-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
-                  <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
-                    {selectorLabel}
-                  </span>
-                  {selectedPair ? (
-                    <button
-                      type="button"
-                      onClick={() => setActiveSelectorSlot(slot.slot_key)}
-                      className="font-sans"
-                      style={{ fontSize: 13, color: G, fontWeight: 300, textDecoration: 'underline', textUnderlineOffset: 3 }}
-                    >
-                      {selectedPair.carat_per_stone
-                        ? `${selectedPair.carat_per_stone.toFixed(2)}ct × 2`
-                        : `${selectedPair.total_carat.toFixed(2)}ct total`}
-                      {selectedPair.colour ? ` · ${selectedPair.colour}` : ''}
-                    </button>
-                  ) : (
-                    <span className="font-sans" style={{ fontSize: 13, color: '#bbb', fontWeight: 300 }}>
-                      Not yet selected
-                    </span>
-                  )}
-                </div>
-
-                {/* Select CTA for this slot */}
-                <button
-                  type="button"
-                  onClick={() => setActiveSelectorSlot(slot.slot_key)}
-                  className="w-full font-sans uppercase mt-4 py-4"
-                  style={{ fontSize: 11, letterSpacing: '0.28em', backgroundColor: G, color: '#fff' }}
-                >
-                  {selectedPair
-                    ? `Change ${isSingleSlot ? 'Diamond Pair' : selectorLabel}`
-                    : `Select ${isSingleSlot ? 'Your Diamond Pair' : selectorLabel}`}
-                </button>
-              </div>
-            );
-          })}
-
-          {/* Fixed slots notice */}
-          {fixedSlots.length > 0 && (
-            <p
-              className="font-sans mt-5"
-              style={{ fontSize: 11, color: '#aaa', letterSpacing: '0.04em', lineHeight: 1.6 }}
-            >
-              {fixedSlots.map(s => s.label ?? s.slot_key).join(' & ')} — fixed stones included in the setting price.
-            </p>
-          )}
-
-          {/* YOUR EARRINGS summary — only shown when configuration is complete */}
-          {isComplete && (
-            <div
-              className="mt-8 pt-6"
-              style={{ borderTop: `1px solid ${BORDER}` }}
-            >
-              <p className="font-sans uppercase mb-4" style={{ fontSize: 10, letterSpacing: '0.22em', color: '#999' }}>
-                Your Earrings
-              </p>
-
-              {/* Metal line */}
-              {activeVariantMetal && (
-                <div className="flex justify-between py-2" style={{ borderBottom: `1px solid ${BORDER}` }}>
-                  <span className="font-sans" style={{ fontSize: 12, color: '#888', fontWeight: 300 }}>
-                    Setting — {METAL_DISPLAY[activeVariantMetal]}
-                  </span>
-                  <span className="font-sans" style={{ fontSize: 12, color: G, fontWeight: 300 }}>
-                    £{basePrice.toLocaleString('en-GB')}
-                  </span>
-                </div>
-              )}
-
-              {/* Selected pairs */}
-              {[...selectedPairs.entries()].map(([slotKey, pair]) => {
-                const slotFull = slots.find(s => s.slot_key === slotKey);
-                const label = isSingleSlot ? 'Diamond Pair' : (slotFull?.label ?? slotKey);
-                const caratStr = pair.carat_per_stone
-                  ? `${pair.carat_per_stone.toFixed(2)}ct × 2`
-                  : `${pair.total_carat.toFixed(2)}ct total`;
-                const pairPriceItem = configPrice?.selectedPairs.find(sp => sp.slotKey === slotKey);
+          {/* 2. TOTAL CARAT WEIGHT */}
+          <div className="py-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
+            <Step n={2} label="Total Carat Weight" />
+            <div className="flex flex-wrap gap-2 mt-3">
+              {carats.map(ct => {
+                const active = ct === carat;
                 return (
-                  <div key={slotKey} className="flex justify-between py-2" style={{ borderBottom: `1px solid ${BORDER}` }}>
-                    <span className="font-sans" style={{ fontSize: 12, color: '#888', fontWeight: 300 }}>
-                      {label} — {caratStr}
-                      {pair.colour ? `, ${pair.colour}` : ''}
-                    </span>
-                    <span className="font-sans" style={{ fontSize: 12, color: G, fontWeight: 300 }}>
-                      {pairPriceItem ? `£${pairPriceItem.pairPrice.toLocaleString('en-GB')}` : '—'}
-                    </span>
-                  </div>
+                  <button key={ct} type="button" onClick={() => { setCarat(ct); resetAdd(); }}
+                    className="font-sans" style={{ fontSize: 12, padding: '8px 14px', border: `1px solid ${active ? G : BORDER}`, color: active ? '#fff' : G, backgroundColor: active ? G : '#fff' }}>
+                    {ct.toFixed(2)}ct
+                  </button>
                 );
               })}
+              {carats.length === 0 && <span className="font-sans" style={{ fontSize: 12, color: '#bbb' }}>Select a metal first</span>}
+            </div>
+          </div>
 
-              {/* Total */}
+          {/* 3. COLOUR */}
+          <div className="py-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
+            <Step n={3} label="Colour" />
+            <div className="flex flex-wrap gap-2 mt-3">
+              {colours.map(c => {
+                const active = c === colour;
+                return (
+                  <button key={c} type="button" onClick={() => { setColour(c); resetAdd(); }}
+                    className="font-sans" style={{ fontSize: 12, width: 44, padding: '8px 0', border: `1px solid ${active ? G : BORDER}`, color: active ? '#fff' : G, backgroundColor: active ? G : '#fff' }}>
+                    {c}
+                  </button>
+                );
+              })}
+              {colours.length === 0 && <span className="font-sans" style={{ fontSize: 12, color: '#bbb' }}>Select carat weight</span>}
+            </div>
+          </div>
+
+          {/* 4. CLARITY */}
+          <div className="py-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
+            <Step n={4} label="Clarity" />
+            <div className="flex flex-wrap gap-2 mt-3">
+              {clarities.map(cl => {
+                const active = cl === clarity;
+                return (
+                  <button key={cl} type="button" onClick={() => { setClarity(cl); resetAdd(); }}
+                    className="font-sans" style={{ fontSize: 12, padding: '8px 14px', border: `1px solid ${active ? G : BORDER}`, color: active ? '#fff' : G, backgroundColor: active ? G : '#fff' }}>
+                    {clarityLabel(cl)}
+                  </button>
+                );
+              })}
+              {clarities.length === 0 && <span className="font-sans" style={{ fontSize: 12, color: '#bbb' }}>Select colour</span>}
+            </div>
+          </div>
+
+          {/* Fixed design note (e.g. halo) — only when supplied by real product data */}
+          {fixedDesignNote && (
+            <p className="font-sans mt-5" style={{ fontSize: 11, color: '#aaa', letterSpacing: '0.04em', lineHeight: 1.6 }}>{fixedDesignNote}</p>
+          )}
+
+          {/* YOUR EARRINGS */}
+          {selectedVariant && (
+            <div className="mt-8 pt-6" style={{ borderTop: `1px solid ${BORDER}` }}>
+              <p className="font-sans uppercase mb-4" style={{ fontSize: 10, letterSpacing: '0.22em', color: '#999' }}>Your Earrings</p>
+              {([
+                ['Metal', metalLabel],
+                ['Total carat', `${selectedVariant.total_carat.toFixed(2)}ct`],
+                ['Colour', selectedVariant.colour],
+                ['Clarity', clarityLabel(selectedVariant.clarity)],
+              ] as const).map(([k, v]) => (
+                <div key={k} className="flex justify-between py-2" style={{ borderBottom: `1px solid ${BORDER}` }}>
+                  <span className="font-sans" style={{ fontSize: 12, color: '#888', fontWeight: 300 }}>{k}</span>
+                  <span className="font-sans" style={{ fontSize: 12, color: G, fontWeight: 300 }}>{v}</span>
+                </div>
+              ))}
               <div className="flex justify-between pt-3">
-                <span className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.16em', color: '#999' }}>
-                  Total
-                </span>
-                <span className="font-sans" style={{ fontSize: 14, color: G, fontWeight: 400 }}>
-                  {priceLoading
-                    ? '—'
-                    : configPrice
-                      ? `£${configPrice.totalPrice.toLocaleString('en-GB')}`
-                      : '—'}
-                </span>
+                <span className="font-sans uppercase" style={{ fontSize: 10, letterSpacing: '0.16em', color: '#999' }}>Total</span>
+                <span className="font-sans" style={{ fontSize: 14, color: G, fontWeight: 400 }}>£{selectedVariant.price_gbp.toLocaleString('en-GB')}</span>
               </div>
-
-              {/* Add to Bag CTA */}
-              {addToCartError && (
-                <p className="font-sans mt-4 text-center" style={{ fontSize: 11, color: '#c0392b', lineHeight: 1.5 }}>
-                  {addToCartError}
-                </p>
+              {isMadeToOrder && (
+                <p className="font-sans mt-3 text-center" style={{ fontSize: 11, color: '#b08d57', letterSpacing: '0.04em' }}>Available to order · crafted for you</p>
               )}
-              <button
-                type="button"
-                onClick={addToCartState === 'success' ? () => setCartOpen(true) : handleAddToCart}
-                disabled={addToCartState === 'reserving'}
+
+              {addError && <p className="font-sans mt-4 text-center" style={{ fontSize: 11, color: '#c0392b', lineHeight: 1.5 }}>{addError}</p>}
+              <button type="button" onClick={addState === 'success' ? () => setCartOpen(true) : handleAdd} disabled={addState === 'reserving'}
                 className="w-full font-sans uppercase mt-6 py-4"
-                style={{
-                  fontSize: 11, letterSpacing: '0.28em',
-                  backgroundColor: addToCartState === 'success' ? '#4a9e6b' : addToCartState === 'reserving' ? '#888' : G,
-                  color: '#fff',
-                  cursor: addToCartState === 'reserving' ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {addToCartState === 'idle'      && 'Add to Bag'}
-                {addToCartState === 'reserving' && 'Reserving your selection…'}
-                {addToCartState === 'success'   && 'Added to Bag'}
-                {addToCartState === 'error'     && 'Try Again'}
+                style={{ fontSize: 11, letterSpacing: '0.28em', color: '#fff', cursor: addState === 'reserving' ? 'not-allowed' : 'pointer',
+                  backgroundColor: addState === 'success' ? '#4a9e6b' : addState === 'reserving' ? '#888' : G }}>
+                {addState === 'idle'      && 'Add to Bag'}
+                {addState === 'reserving' && 'Reserving your selection…'}
+                {addState === 'success'   && 'Added to Bag'}
+                {addState === 'error'     && 'Try Again'}
               </button>
             </div>
           )}
 
-          {/* Incomplete configuration — show CTA as informational placeholder */}
-          {!isComplete && matchedPairSlots.length > 0 && (
+          {/* Incomplete prompt */}
+          {!selectedVariant && (
             <div className="mt-8 pt-4" style={{ borderTop: `1px solid ${BORDER}` }}>
-              <button
-                type="button"
-                disabled
-                className="w-full font-sans uppercase py-4"
-                style={{
-                  fontSize: 11, letterSpacing: '0.28em',
-                  backgroundColor: '#f2f2f0', color: '#bbb', cursor: 'not-allowed',
-                }}
-              >
-                Complete your selection to continue
+              <button type="button" disabled className="w-full font-sans uppercase py-4" style={{ fontSize: 11, letterSpacing: '0.28em', backgroundColor: '#f2f2f0', color: '#bbb', cursor: 'not-allowed' }}>
+                {isLoading ? 'Loading options…' : 'Complete your selection to continue'}
               </button>
             </div>
           )}
 
-          {/* Save to Shortlist */}
-          <button
-            type="button"
-            onClick={() => toggle(buildShortlistItem())}
+          {/* Shortlist */}
+          <button type="button" onClick={() => toggle(buildShortlistItem())}
             className="flex items-center justify-center gap-2 w-full font-sans uppercase mt-6 py-3 transition-opacity hover:opacity-70"
-            style={{ fontSize: 10, letterSpacing: '0.22em', color: isShortlisted ? G : '#aaa', border: `1px solid ${isShortlisted ? G : '#ddd'}` }}
-          >
+            style={{ fontSize: 10, letterSpacing: '0.22em', color: isShortlisted ? G : '#aaa', border: `1px solid ${isShortlisted ? G : '#ddd'}` }}>
             <Heart className="w-3.5 h-3.5" strokeWidth={1.5} style={{ fill: isShortlisted ? G : 'none', color: isShortlisted ? G : '#aaa' }} />
             {isShortlisted ? 'Saved to Shortlist' : 'Save to Shortlist'}
           </button>
 
-          {/* Speak to a Consultant */}
-          <div className="mt-5" style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 20 }}>
-            <p className="font-sans text-center" style={{ fontSize: 12, color: '#aaa', letterSpacing: '0.02em' }}>
-              Prefer to speak with an Éclat expert?
-            </p>
-            <Link
-              href="/contact"
-              className="flex items-center justify-center w-full font-sans uppercase mt-3 py-3 transition-opacity hover:opacity-70"
-              style={{ fontSize: 10, letterSpacing: '0.22em', color: G, border: `1px solid ${BORDER}` }}
-            >
-              Speak to a Consultant
-            </Link>
-          </div>
-
           <div className="mt-10 mb-8" style={{ height: 1, backgroundColor: BORDER }} />
-
-          {/* Description */}
-          <p className="font-sans" style={{ fontSize: 13, color: '#666', lineHeight: 1.85, fontWeight: 300, letterSpacing: '0.02em' }}>
-            {productDescription}
-          </p>
-
-          {/* Service promises */}
-          <div className="mt-10">
-            {[
-              'Complimentary shipping on all orders',
-              'Complimentary gift packaging',
-              'Free engraving service',
-              'Lifetime warranty & servicing',
-            ].map(item => (
-              <div key={item} className="flex items-center gap-3 py-4 font-sans" style={{ fontSize: 12, color: '#888', borderTop: `1px solid ${BORDER}`, fontWeight: 300, letterSpacing: '0.02em' }}>
-                <span style={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: '#ccc', flexShrink: 0 }} />
-                {item}
-              </div>
-            ))}
-          </div>
+          <p className="font-sans" style={{ fontSize: 13, color: '#666', lineHeight: 1.85, fontWeight: 300, letterSpacing: '0.02em' }}>{productDescription}</p>
         </div>
       </div>
-
-      {/* PAIR SELECTOR DRAWER */}
-      {activeSelectorSlot && (() => {
-        const slotFull = slots.find(s => s.slot_key === activeSelectorSlot);
-        const selectorLabel = isSingleSlot ? 'Diamond Pair' : (slotFull?.label ?? activeSelectorSlot);
-        return (
-          <div
-            className="fixed inset-0 z-[80]"
-            onClick={e => { if (e.target === e.currentTarget) setActiveSelectorSlot(null); }}
-          >
-            <div className="absolute inset-0 bg-black/5" />
-            <div
-              className="absolute right-0 top-0 bottom-0 flex flex-col bg-white"
-              style={{ width: 'min(480px, 96vw)', boxShadow: '-4px 0 40px rgba(0,0,0,0.10)' }}
-            >
-              <EarringPairSelector
-                productId={productId}
-                slotKey={activeSelectorSlot}
-                slotLabel={selectorLabel}
-                selectedPairId={selectedPairs.get(activeSelectorSlot)?.id ?? null}
-                disabledPairIds={activeDisabledIds}
-                onSelect={handlePairSelect}
-                onClose={() => setActiveSelectorSlot(null)}
-                isSingleSlot={isSingleSlot}
-              />
-            </div>
-          </div>
-        );
-      })()}
     </div>
   );
 }

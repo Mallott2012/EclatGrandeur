@@ -1,13 +1,13 @@
-import { NextResponse }    from 'next/server';
-import { isPairHoldValid } from '@/lib/pairs/reservation';
+import { NextResponse }         from 'next/server';
+import { isVariantPurchasable } from '@/lib/earrings/variants';
 
 /**
  * POST /api/earrings/validate-cart-line
  *
- * Validates that every pair reservation in an earring cart line is still active
- * for the given cart token. Called on cart page load / refresh.
+ * Validates that an earring variant in a cart line still exists and remains
+ * purchasable for the given cart token. Called on cart page load / refresh.
  *
- * Body: { pairIds: string[], cartToken: string }
+ * Body: { productId: string, variantId: string, cartToken: string }
  * Returns: { valid: boolean, reason?: string }
  */
 export async function POST(request: Request) {
@@ -16,30 +16,16 @@ export async function POST(request: Request) {
     try { body = await request.json(); } catch { return NextResponse.json({ valid: false, reason: 'Invalid request' }, { status: 400 }); }
 
     const raw = body as Record<string, unknown>;
-    const pairIds   = raw.pairIds;
+    const productId = raw.productId;
+    const variantId = raw.variantId;
     const cartToken = raw.cartToken;
 
-    if (!Array.isArray(pairIds) || typeof cartToken !== 'string') {
+    if (typeof productId !== 'string' || typeof variantId !== 'string' || typeof cartToken !== 'string') {
       return NextResponse.json({ valid: false, reason: 'Invalid request' }, { status: 400 });
     }
 
-    const validIds = pairIds.filter((id): id is string => typeof id === 'string' && id.length > 0);
-    if (validIds.length === 0) {
-      return NextResponse.json({ valid: true });
-    }
-
-    const holdChecks = await Promise.all(
-      validIds.map(id => isPairHoldValid(id, cartToken).catch(() => false)),
-    );
-
-    const allValid = holdChecks.every(h => h);
-
-    return NextResponse.json({
-      valid:  allValid,
-      reason: allValid
-        ? undefined
-        : 'Your selected diamond pair is no longer reserved. Please review your selection.',
-    });
+    const result = await isVariantPurchasable(productId, variantId, cartToken);
+    return NextResponse.json({ valid: result.valid, reason: result.valid ? undefined : result.reason });
   } catch {
     return NextResponse.json({ valid: false, reason: 'Could not validate reservation' }, { status: 500 });
   }

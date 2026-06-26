@@ -3,7 +3,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { JewelArt, Money, ConfiguredEngagementRing, ConfiguredEarring } from '@/types';
-import { getPairIdsFromEarringConfig, wouldDuplicatePairInCart } from '@/lib/earrings/cart-helpers';
+import { getVariantIdFromEarringConfig, wouldDuplicateVariantInCart } from '@/lib/earrings/cart-helpers';
+
+function releaseEarringVariant(variantId: string, cartToken: string) {
+  fetch('/api/earrings/release', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ variantId, cartToken }),
+  }).catch(() => {});
+}
 
 export interface CartItem {
   id:             string;
@@ -62,9 +70,9 @@ export const useCart = create<CartState>()(
 
           // ── Configured earring dedup ───────────────────────────────────────
           if (item.earringConfig) {
-            const newPairIds = getPairIdsFromEarringConfig(item.earringConfig);
-            // Prevent same pair from being in two cart lines
-            if (wouldDuplicatePairInCart(state.items, newPairIds)) {
+            const variantId = getVariantIdFromEarringConfig(item.earringConfig);
+            // Prevent the same variant from being in two cart lines
+            if (wouldDuplicateVariantInCart(state.items, variantId)) {
               return { open: true };
             }
             return { open: true, items: [...state.items, { ...item, qty: 1 }] };
@@ -94,16 +102,9 @@ export const useCart = create<CartState>()(
             body:    JSON.stringify({ diamondId: item.ringConfig.diamondId, cartToken: state.cartToken }),
           }).catch(() => {});
         }
-        // Release all earring pairs
+        // Release the earring variant hold
         if (item?.earringConfig) {
-          const pairIds = getPairIdsFromEarringConfig(item.earringConfig);
-          if (pairIds.length > 0) {
-            fetch('/api/earrings/release', {
-              method:  'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body:    JSON.stringify({ pairIds, cartToken: state.cartToken }),
-            }).catch(() => {});
-          }
+          releaseEarringVariant(getVariantIdFromEarringConfig(item.earringConfig), state.cartToken);
         }
         set(s => ({ items: s.items.filter(i => i.id !== id) }));
       },
@@ -130,18 +131,10 @@ export const useCart = create<CartState>()(
             body:    JSON.stringify({ diamondId: i.ringConfig!.diamondId, cartToken }),
           }).catch(() => {});
         });
-        // Release all earring pairs
-        const earringItems = items.filter(i => i.earringConfig);
-        if (earringItems.length > 0) {
-          const pairIds = earringItems.flatMap(i => getPairIdsFromEarringConfig(i.earringConfig!));
-          if (pairIds.length > 0) {
-            fetch('/api/earrings/release', {
-              method:  'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body:    JSON.stringify({ pairIds, cartToken }),
-            }).catch(() => {});
-          }
-        }
+        // Release all earring variant holds
+        items.filter(i => i.earringConfig).forEach(i => {
+          releaseEarringVariant(getVariantIdFromEarringConfig(i.earringConfig!), cartToken);
+        });
         set({ items: [] });
       },
 

@@ -4,27 +4,43 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { JewelleryDetailPage, type JewelleryDetailProduct } from '@/components/jewellery/JewelleryDetailPage';
 import { EarringDetailPage } from '@/components/earrings/EarringDetailPage';
+import { EarringConsultationNotice } from '@/components/earrings/EarringConsultationNotice';
 import { getJewelleryProductBySlug } from '@/lib/jewellery/service';
-import { listSlotsForProduct } from '@/lib/pairs/service';
+import { listPurchasableVariants } from '@/lib/earrings/variants';
+import { resolveEarringRenderMode } from '@/lib/earrings/route-mode';
 import { METAL_LABELS } from '@/lib/diamonds/types';
 import { parseGalleryConfig, parseMetalVariants, buildDefaultVariants } from '@/lib/gallery/types';
 
 interface Props { params: Promise<{ slug: string }>; }
+
+/** Halo classification → a short, generic fixed-design note (no invented specifics). */
+function fixedDesignNoteFor(earringType: string | null): string | null {
+  if (earringType === 'halo_studs') return 'Finished with a refined pavé halo setting.';
+  if (earringType === 'pave_hoops') return 'Finished with a continuous pavé-set diamond line.';
+  return null;
+}
 
 export default async function Page({ params }: Props) {
   const { slug } = await params;
   const p = await getJewelleryProductBySlug(slug, 'earrings').catch(() => null);
   if (!p) notFound();
 
-  const galleryConfig   = parseGalleryConfig(p.gallery_config);
-  const metalVariants   = parseMetalVariants(p.metal_variants) ?? buildDefaultVariants(galleryConfig);
+  const galleryConfig = parseGalleryConfig(p.gallery_config);
+  const metalVariants = parseMetalVariants(p.metal_variants) ?? buildDefaultVariants(galleryConfig);
 
-  // Fetch stone slots — determines whether this earring needs the configurable experience
-  const slots = await listSlotsForProduct(p.id).catch(() => []);
-  const hasMatchedPairSlots = slots.some(s => s.selection_mode === 'matched_pair');
+  // Earring variants drive everything. Earrings never use the individual-diamond
+  // selector and never call /api/diamonds.
+  const variants     = await listPurchasableVariants(p.id).catch(() => []);
+  const earringType  = (p.earring_type as string | null) ?? null;
+  const mode = resolveEarringRenderMode({
+    earringType,
+    purchasableVariantCount: variants.length,
+    legacyShowDiamond:       Boolean(p.show_diamond),
+    legacyIsPair:            Boolean(p.is_pair),
+  });
 
-  // Configurable earring path — uses EarringDetailPage with pair selectors
-  if (hasMatchedPairSlots) {
+  // ── Configurable: the metal/carat/colour/clarity variant configurator ─────────
+  if (mode.kind === 'configurable') {
     return (
       <Suspense>
         <EarringDetailPage
@@ -33,9 +49,8 @@ export default async function Page({ params }: Props) {
           productName={p.name}
           productSubtitle={p.subtitle ?? ''}
           productDescription={p.description ?? ''}
-          basePrice={p.base_price_gbp}
-          earringType={p.earring_type ?? 'other'}
-          slots={slots}
+          earringType={earringType ?? 'other'}
+          fixedDesignNote={fixedDesignNoteFor(earringType)}
           galleryConfig={galleryConfig}
           metalVariants={metalVariants}
           config={{ categoryLabel: 'Earrings', categoryPath: '/earrings' }}
@@ -44,18 +59,22 @@ export default async function Page({ params }: Props) {
     );
   }
 
-  // Standard jewellery path (non-configurable earrings).
-  //
-  // Earrings are pair products: their configurable experience uses matched-pair
-  // slots (handled above via EarringDetailPage → EarringPairSelector). They must
-  // NEVER mount the engagement-ring individual-diamond DiamondSelector, which is
-  // reached through the 'single' / 'pair' diamond modes. Restrict earrings to
-  // 'none' (fixed design) or 'total-carat' (simple carat-pill selector, no
-  // DiamondSelector). This prevents an earring page from rendering the ring
-  // diamond selector and from calling the individual-diamond inventory endpoint.
-  const diamondMode: JewelleryDetailProduct['diamondMode'] =
-    !p.show_diamond ? 'none' : p.is_total_carat ? 'total-carat' : 'none';
+  // ── Consultation-only: configurable-intent product with no live variants ──────
+  if (mode.kind === 'consultation') {
+    return (
+      <EarringConsultationNotice
+        productName={p.name}
+        productSubtitle={p.subtitle ?? ''}
+        productDescription={p.description ?? ''}
+        gallery={galleryConfig}
+        categoryLabel="Earrings"
+        categoryPath="/earrings"
+      />
+    );
+  }
 
+  // ── Standard fixed-composition earring — normal jewellery flow, NO diamond
+  //    selector (earrings never mount the engagement-ring DiamondSelector). ──────
   const product: JewelleryDetailProduct = {
     name:        p.name,
     subtitle:    p.subtitle ?? '',
@@ -63,8 +82,8 @@ export default async function Page({ params }: Props) {
     description: p.description ?? '',
     media:       p.media.sort((a, b) => a.display_order - b.display_order).map(m => ({ url: m.storage_path, metal: m.metal ?? null })),
     materials:   p.metals.map(m => METAL_LABELS[m]),
-    diamondMode,
-    caratIsPair: p.is_pair,
+    diamondMode: 'none',
+    caratIsPair: false,
   };
 
   return (

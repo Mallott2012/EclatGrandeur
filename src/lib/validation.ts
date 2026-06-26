@@ -1,26 +1,21 @@
 import { z } from 'zod';
 
-const configuredEarringSlotSchema = z.object({
-  slotKey:         z.string(),
-  slotLabel:       z.string(),
-  pairId:          z.string(),
-  pairDescription: z.string(),
-  pairPrice:       z.number().int().nonnegative(),
-});
-
 const configuredEarringSchema = z.object({
   productId:            z.string(),
   productSlug:          z.string(),
   productName:          z.string(),
   productMedia:         z.string(),
+  variantId:            z.string(),
   metalVariantId:       z.string().nullable(),
   metalLabel:           z.string(),
   earringType:          z.string(),
-  settingPrice:         z.number().int().nonnegative(),
-  selectedSlots:        z.array(configuredEarringSlotSchema),
+  totalCarat:           z.number().nonnegative(),
+  colour:               z.string(),
+  clarity:              z.string(),
+  availability:         z.string(),
   totalPrice:           z.number().int().nonnegative(),
   currency:             z.string(),
-  reservationExpiresAt: z.string(),
+  reservationExpiresAt: z.string().nullable(),
   addedAt:              z.string(),
 });
 

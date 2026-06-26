@@ -1,94 +1,97 @@
-import type { DiamondCategory, ColourFamily, ColourIntensity } from '@/lib/diamonds/types';
-import type { SlotSelectionMode } from '@/lib/pairs/types';
+/**
+ * Earring-variant model types.
+ *
+ * Customers configure a finished earring set by choosing metal, total carat,
+ * colour and clarity. Each genuinely sellable combination is one earring_variants
+ * row. Customers never select individual diamonds, pairs, or stone slots.
+ *
+ * (The previous matched-pair types are removed — that model is deprecated; the
+ *  0029–0033 schema remains dormant only for migration-history integrity.)
+ */
 
-// ── Public-safe pair card (Part A result) ─────────────────────────────────────
-// Does NOT include pair_sku, matching_notes, held_by_cart, approval fields, or DB internals.
+export const EARRING_COLOURS   = ['D', 'E', 'F'] as const;
+export const EARRING_CLARITIES = ['VS2', 'VS1', 'VVS2', 'VVS1', 'IF', 'FL'] as const;
+export const EARRING_AVAILABILITY = ['available', 'reserved', 'sold', 'made_to_order', 'unavailable'] as const;
 
-export interface CompatiblePairCard {
-  id:                 string;
-  shape:              string;
-  total_carat:        number;
-  carat_per_stone:    number | null;
-  colour:             string | null;
-  clarity:            string | null;
-  colour_family:      ColourFamily | null;
-  colour_intensity:   ColourIntensity | null;
-  colour_description: string | null;
-  pair_price_gbp:     number;
-  diamond_category:   DiamondCategory;
+export type EarringColour       = typeof EARRING_COLOURS[number];
+export type EarringClarity      = typeof EARRING_CLARITIES[number];
+export type EarringAvailability = typeof EARRING_AVAILABILITY[number];
+
+/** Customer-facing clarity wording. FL is shown as "Flawless". */
+export const CLARITY_LABEL: Record<EarringClarity, string> = {
+  VS2: 'VS2', VS1: 'VS1', VVS2: 'VVS2', VVS1: 'VVS1', IF: 'IF', FL: 'Flawless',
+};
+
+/** Only purchasable availability states are ever exposed to customers. */
+export type PublicAvailability = 'available' | 'made_to_order';
+
+/**
+ * Customer-safe earring variant — the only shape returned by public APIs.
+ * Never includes sku, admin_note, held_by_cart, held_until, or raw stock state.
+ */
+export interface PublicEarringVariant {
+  id:           string;
+  metal:        string;        // metal key, e.g. 'yellow-gold-18k'
+  total_carat:  number;
+  colour:       EarringColour;
+  clarity:      EarringClarity;
+  price_gbp:    number;
+  currency:     string;
+  availability: PublicAvailability;
 }
 
-// ── Configuration input (Part B / C / E) ─────────────────────────────────────
-
-export interface EarringConfigurationInput {
-  jewelleryProductId: string;
-  metalVariantId?:    string;
-  selectedPairs: Array<{
-    slotKey: string;
-    pairId:  string;
-  }>;
+/** Full admin view of a variant (staff-auth gated). */
+export interface EarringVariantAdmin {
+  id:                   string;
+  jewellery_product_id: string;
+  sku:                  string;
+  metal:                string;
+  total_carat:          number;
+  colour:               EarringColour;
+  clarity:              EarringClarity;
+  price_gbp:            number;
+  currency:             string;
+  availability:         EarringAvailability;
+  display_order:        number;
+  is_published:         boolean;
+  admin_note:           string | null;
+  held_until:           string | null;
+  held_by_cart:         string | null;
+  created_at:           string;
+  updated_at:           string;
 }
 
-// ── Validation result (Part B) ───────────────────────────────────────────────
-
-export type ConfigurationErrorCode =
-  | 'invalid_product'
-  | 'invalid_slot'
-  | 'missing_required_selection'
-  | 'duplicate_pair_selection'
-  | 'pair_not_compatible'
-  | 'pair_unavailable'
-  | 'invalid_metal'
-  | 'configuration_invalid';
-
-export interface ConfigurationError {
-  code:     ConfigurationErrorCode;
-  slotKey?: string;
-  pairId?:  string;
-  message:  string;
+export interface CreateEarringVariantInput {
+  jewellery_product_id: string;
+  metal:                string;
+  total_carat:          number;
+  colour:               EarringColour;
+  clarity:              EarringClarity;
+  price_gbp:            number;
+  currency?:            string;
+  availability?:        EarringAvailability;
+  display_order?:       number;
+  is_published?:        boolean;
+  admin_note?:          string | null;
 }
 
-export interface ConfigurationValidationResult {
-  valid:  boolean;
-  errors: ConfigurationError[];
+export interface UpdateEarringVariantInput {
+  metal?:         string;
+  total_carat?:   number;
+  colour?:        EarringColour;
+  clarity?:       EarringClarity;
+  price_gbp?:     number;
+  currency?:      string;
+  availability?:  EarringAvailability;
+  display_order?: number;
+  is_published?:  boolean;
+  admin_note?:    string | null;
 }
 
-// ── Price result (Part C) ────────────────────────────────────────────────────
-
-export interface EarringPairPriceItem {
-  slotKey:   string;
-  pairId:    string;
-  pairPrice: number;
-}
-
-export interface EarringConfigurationPrice {
-  jewelleryProductId: string;
-  metalVariantId:     string | null;
-  basePrice:          number;
-  selectedPairs:      EarringPairPriceItem[];
-  totalPrice:         number;
-}
-
-// ── Availability result (Part D) ─────────────────────────────────────────────
-
-export interface SlotAvailability {
-  slotKey:        string;
-  label:          string;
-  selection_mode: SlotSelectionMode;
-  required:       boolean;
-  pairCount:      number | null; // null for non-matched_pair slots
-}
-
-export interface EarringConfigurationAvailability {
-  slots:                 SlotAvailability[];
-  requiredSlotCount:     number;
-  isCompletable:         boolean;
-  validCombinationCount: number | null; // null when not calculable due to large inventory
-}
-
-// ── Preflight result (Part E) ────────────────────────────────────────────────
-
-export interface ReservationPreflightResult {
-  canClaim: boolean;
-  issues:   string[];
+/** Result of a variant reservation attempt. */
+export interface VariantReservationResult {
+  ok:                   boolean;
+  reason?:              string;
+  availability?:        PublicAvailability;
+  reservationExpiresAt: string | null;  // null for made_to_order (no exclusive hold)
 }

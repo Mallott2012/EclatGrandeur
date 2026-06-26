@@ -18,12 +18,13 @@ import {
   listDiamonds,
 } from '@/lib/diamonds/service'
 import {
-  createStoneSlot,
-  updateStoneSlot,
-  deleteStoneSlot,
-} from '@/lib/pairs/service'
+  createVariant,
+  updateVariant,
+  deleteVariant,
+  duplicateVariant,
+} from '@/lib/earrings/variants'
 import type { CreateDiamondInput, UpdateDiamondInput } from '@/lib/diamonds/schemas'
-import type { CreateSlotInput, UpdateSlotInput } from '@/lib/pairs/types'
+import type { CreateEarringVariantInput, UpdateEarringVariantInput } from '@/lib/earrings/types'
 import type { EarringType } from '@/lib/jewellery/types'
 
 const CATEGORY   = 'earrings' as const
@@ -105,30 +106,40 @@ export async function saveEarringTypeAction(productId: string, type: EarringType
   revalidatePath(`${BACK}/${productId}`)
 }
 
-export async function createSlotAction(input: CreateSlotInput): Promise<{ error?: string }> {
+// ── Earring variant actions ───────────────────────────────────────────────────
+
+export async function createVariantAction(input: CreateEarringVariantInput): Promise<{ error?: string }> {
   await requireStaffRole([])
-  try {
-    await createStoneSlot(input)
-    revalidatePath(`${BACK}/${input.jewellery_product_id}`)
-    return {}
-  } catch (e) {
-    return { error: (e as Error).message }
-  }
+  const res = await createVariant(input)
+  if (!res.ok) return { error: res.error }
+  revalidatePath(`${BACK}/${input.jewellery_product_id}`)
+  revalidatePath(FRONT)
+  revalidatePath(FRONT_SLUG, 'page')
+  return {}
 }
 
-export async function updateSlotAction(slotId: string, patch: UpdateSlotInput, productId: string): Promise<{ error?: string }> {
+export async function updateVariantAction(variantId: string, patch: UpdateEarringVariantInput, productId: string): Promise<{ error?: string }> {
   await requireStaffRole([])
-  try {
-    await updateStoneSlot(slotId, patch)
-    revalidatePath(`${BACK}/${productId}`)
-    return {}
-  } catch (e) {
-    return { error: (e as Error).message }
-  }
-}
-
-export async function deleteSlotAction(slotId: string, productId: string): Promise<void> {
-  await requireStaffRole([])
-  await deleteStoneSlot(slotId)
+  const res = await updateVariant(variantId, patch)
+  if (!res.ok) return { error: res.error }
   revalidatePath(`${BACK}/${productId}`)
+  revalidatePath(FRONT)
+  revalidatePath(FRONT_SLUG, 'page')
+  return {}
+}
+
+export async function deleteVariantAction(variantId: string, productId: string): Promise<void> {
+  await requireStaffRole([])
+  await deleteVariant(variantId)
+  revalidatePath(`${BACK}/${productId}`)
+  revalidatePath(FRONT)
+  revalidatePath(FRONT_SLUG, 'page')
+}
+
+export async function duplicateVariantAction(variantId: string, productId: string): Promise<{ error?: string }> {
+  await requireStaffRole([])
+  const res = await duplicateVariant(variantId)
+  if (!res.ok) return { error: res.error }
+  revalidatePath(`${BACK}/${productId}`)
+  return {}
 }
