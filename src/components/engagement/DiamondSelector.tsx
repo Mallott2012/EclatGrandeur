@@ -54,6 +54,22 @@ const INITIAL_DISPLAY = 12;
 const fetcher = (url: string): Promise<PublicDiamond[]> =>
   fetch(url).then(r => r.json()).then(d => d.diamonds ?? []);
 
+/**
+ * Defensive normalisation for the diamond inventory response.
+ *
+ * SWR dedupes by cache key, so if another component pre-warms the same URL with a
+ * different fetcher, this component can receive the raw `{ diamonds: [...] }` object
+ * (or an `{ error }` payload) instead of an array. Never call array methods on a
+ * non-array value — always resolve to a safe `PublicDiamond[]`.
+ */
+export function normaliseDiamondInventory(raw: unknown): PublicDiamond[] {
+  if (Array.isArray(raw)) return raw as PublicDiamond[];
+  if (raw && typeof raw === 'object' && Array.isArray((raw as { diamonds?: unknown }).diamonds)) {
+    return (raw as { diamonds: PublicDiamond[] }).diamonds;
+  }
+  return [];
+}
+
 // ── Range slider ───────────────────────────────────────────────────────────────
 
 function RangeSlider({ label, min, max, value, onChange, format }: {
@@ -265,11 +281,27 @@ export function DiamondSelector({
     : diamondApiUrl;
 
   // ── Data fetching ──────────────────────────────────────────────────────────
-  const { data: liveDiamonds = [], isLoading } = useSWR<PublicDiamond[]>(
+  const { data: rawDiamonds, isLoading } = useSWR<unknown>(
     totalCaratMode ? null : activeUrl,
     fetcher,
     { revalidateOnFocus: false },
   );
+
+  // Always resolve to an array — guards against a shared SWR cache key or a
+  // malformed/error inventory response yielding a non-array value.
+  const liveDiamonds = useMemo<PublicDiamond[]>(() => normaliseDiamondInventory(rawDiamonds), [rawDiamonds]);
+
+  // Dev-only, customer-safe diagnostic: log the shape only, never the raw payload.
+  useEffect(() => {
+    if (
+      process.env.NODE_ENV !== 'production' &&
+      rawDiamonds !== undefined &&
+      !Array.isArray(rawDiamonds) &&
+      !Array.isArray((rawDiamonds as { diamonds?: unknown })?.diamonds)
+    ) {
+      console.warn('[DiamondSelector] Inventory response was not an array; rendering an empty result.');
+    }
+  }, [rawDiamonds]);
 
   // ── Filter state ───────────────────────────────────────────────────────────
   const caratMin = minCarat ?? 0.5;

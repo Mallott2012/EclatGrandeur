@@ -44,9 +44,17 @@ export default async function Page({ params }: Props) {
     );
   }
 
-  // Standard jewellery path — existing experience, completely unchanged
+  // Standard jewellery path (non-configurable earrings).
+  //
+  // Earrings are pair products: their configurable experience uses matched-pair
+  // slots (handled above via EarringDetailPage → EarringPairSelector). They must
+  // NEVER mount the engagement-ring individual-diamond DiamondSelector, which is
+  // reached through the 'single' / 'pair' diamond modes. Restrict earrings to
+  // 'none' (fixed design) or 'total-carat' (simple carat-pill selector, no
+  // DiamondSelector). This prevents an earring page from rendering the ring
+  // diamond selector and from calling the individual-diamond inventory endpoint.
   const diamondMode: JewelleryDetailProduct['diamondMode'] =
-    !p.show_diamond ? 'none' : p.is_total_carat ? 'total-carat' : p.is_pair ? 'pair' : 'single';
+    !p.show_diamond ? 'none' : p.is_total_carat ? 'total-carat' : 'none';
 
   const product: JewelleryDetailProduct = {
     name:        p.name,
