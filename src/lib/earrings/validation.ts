@@ -1,4 +1,4 @@
-// Pure validation functions for earring configuration.
+// Pure validation and UI-helper functions for earring configuration.
 // No database calls — all DB-sourced state is passed in as parameters.
 // All functions here are directly importable from non-server contexts and testable
 // without mocking or database connections.
@@ -261,4 +261,45 @@ export function assessConfigurationCompletability(
     isCompletable:         count > 0,
     validCombinationCount: shouldReport ? count : null,
   };
+}
+
+// ── UI configuration helpers (pure, safe for client components) ───────────────
+
+/** Returns slots that need a customer pair selector (matched_pair mode only). */
+export function getRequiredSelectorSlots(slots: SlotDescriptor[]): SlotDescriptor[] {
+  return slots.filter(s => s.selection_mode === 'matched_pair');
+}
+
+/** Returns true when every required matched_pair slot has a pair selected. */
+export function isConfigurationComplete(
+  slots: SlotDescriptor[],
+  selectedPairIds: Map<string, string>,
+): boolean {
+  return slots
+    .filter(s => s.required && s.selection_mode === 'matched_pair')
+    .every(s => selectedPairIds.has(s.slot_key) && !!selectedPairIds.get(s.slot_key));
+}
+
+/** Returns true when a pair ID is already used for a different slot. */
+export function wouldCreateDuplicatePair(
+  currentSelections: Map<string, string>,
+  newSlotKey: string,
+  newPairId: string,
+): boolean {
+  for (const [slotKey, pairId] of currentSelections) {
+    if (slotKey !== newSlotKey && pairId === newPairId) return true;
+  }
+  return false;
+}
+
+/**
+ * Filters a URL-derived pair ID against the known compatible pairs for a slot.
+ * Returns the pair ID if still valid, null if it should be silently cleared.
+ */
+export function validateUrlPairId(
+  pairId: string | null,
+  availablePairIds: Set<string>,
+): string | null {
+  if (!pairId) return null;
+  return availablePairIds.has(pairId) ? pairId : null;
 }
