@@ -21,11 +21,19 @@ export type EngagementEventName =
   | 'engagement_ring_removed_from_bag'
   | 'engagement_reservation_expiry_warning'
   | 'engagement_enquiry_with_ring_config'
+  // Phase E5 — earring reservation + basket
+  | 'earring_add_to_bag_initiated'
+  | 'earring_reservation_succeeded'
+  | 'earring_reservation_failed'
+  | 'earring_added_to_bag'
+  | 'earring_removed_from_bag'
+  | 'earring_enquiry_with_config'
 
 export interface EventProperties {
   settingId?:              string
   settingName?:            string
   diamondId?:              string
+  productId?:              string
   diamondType?:            'white' | 'coloured'
   diamondShape?:           string
   diamondCarat?:           number

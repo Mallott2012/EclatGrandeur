@@ -9,6 +9,7 @@ import { Button }      from '@/components/ui/Button';
 import { formatMoney } from '@/lib/utils';
 import { cn }          from '@/lib/utils';
 import { trackEvent }  from '@/lib/analytics';
+import { getPairIdsFromEarringConfig } from '@/lib/earrings/cart-helpers';
 
 export function CartDrawer() {
   const { items, open, setOpen, remove, setQty, cartToken } = useCart();
@@ -39,6 +40,16 @@ export function CartDrawer() {
         settingId: item.ringConfig.settingId,
         diamondId: item.ringConfig.diamondId,
       });
+    }
+    if (item.earringConfig) {
+      const pairIds = getPairIdsFromEarringConfig(item.earringConfig);
+      if (pairIds.length > 0) {
+        fetch('/api/earrings/release', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ pairIds, cartToken }),
+        }).catch(console.error);
+      }
     }
     remove(item.id);
   }
@@ -98,10 +109,33 @@ export function CartDrawer() {
                       </span>
                       <span className="mt-1 text-sm text-ink/80">{formatMoney(item.price)}</span>
                       <div className="mt-auto flex justify-end pt-3">
-                        <button
-                          className="text-[10px] uppercase tracking-luxe text-ink/40 hover:text-ink"
-                          onClick={() => handleRemove(item)}
-                        >
+                        <button className="text-[10px] uppercase tracking-luxe text-ink/40 hover:text-ink" onClick={() => handleRemove(item)}>
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : item.earringConfig ? (
+                  /* ── Configured earring ── */
+                  <div key={item.id} className="flex gap-4 border-b border-ink/10 py-5">
+                    <Link href={item.href} onClick={() => setOpen(false)} className="h-24 w-20 shrink-0 overflow-hidden bg-ivory-deep">
+                      <JewelArt art={item.art} gid={`cart-${item.id}`} className="h-full w-full" />
+                    </Link>
+                    <div className="flex flex-1 flex-col">
+                      <Link href={item.href} onClick={() => setOpen(false)} className="font-display text-lg leading-tight hover:text-champagne-deep">
+                        {item.name}
+                      </Link>
+                      <span className="mt-0.5 text-xs font-light text-ink/50">
+                        {item.earringConfig.metalLabel}
+                      </span>
+                      {item.earringConfig.selectedSlots.map(s => (
+                        <span key={s.slotKey} className="mt-0.5 text-xs font-light text-ink/50">
+                          {item.earringConfig!.selectedSlots.length > 1 ? `${s.slotLabel}: ` : ''}{s.pairDescription}
+                        </span>
+                      ))}
+                      <span className="mt-1 text-sm text-ink/80">{formatMoney(item.price)}</span>
+                      <div className="mt-auto flex justify-end pt-3">
+                        <button className="text-[10px] uppercase tracking-luxe text-ink/40 hover:text-ink" onClick={() => handleRemove(item)}>
                           Remove
                         </button>
                       </div>

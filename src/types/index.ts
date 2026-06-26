@@ -188,6 +188,37 @@ export interface Setting {
   shapes: DiamondShape[];
 }
 
+/** One selected diamond pair occupying a stone slot in a configured earring. */
+export interface ConfiguredEarringSlot {
+  slotKey:         string;
+  slotLabel:       string;
+  pairId:          string;
+  /** Customer-safe description, e.g. "1.00ct × 2 · Oval · D · VS1". */
+  pairDescription: string;
+  pairPrice:       number;   // pence (minor units)
+}
+
+/**
+ * A fully validated, server-locked earring configuration.
+ * All prices are in MINOR units (pence) to match CartItem.price: Money.
+ * Created by validateAndReserveEarringConfiguration() and stored in CartItem.earringConfig.
+ */
+export interface ConfiguredEarring {
+  productId:            string;
+  productSlug:          string;
+  productName:          string;
+  productMedia:         string;     // URL of the first gallery image (or '')
+  metalVariantId:       string | null;
+  metalLabel:           string;
+  earringType:          string;     // 'classic_studs' | 'halo_studs' | 'drop_earrings' etc.
+  settingPrice:         number;     // pence (minor units)
+  selectedSlots:        ConfiguredEarringSlot[];
+  totalPrice:           number;     // pence (minor units)
+  currency:             string;     // 'GBP'
+  reservationExpiresAt: string;     // ISO timestamp
+  addedAt:              string;     // ISO timestamp
+}
+
 /**
  * A fully validated, server-locked engagement ring configuration.
  * All prices are in MINOR units (pence) to match CartItem.price: Money.

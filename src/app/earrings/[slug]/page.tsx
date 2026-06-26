@@ -29,10 +29,12 @@ export default async function Page({ params }: Props) {
       <Suspense>
         <EarringDetailPage
           productId={p.id}
+          productSlug={p.slug}
           productName={p.name}
           productSubtitle={p.subtitle ?? ''}
           productDescription={p.description ?? ''}
           basePrice={p.base_price_gbp}
+          earringType={p.earring_type ?? 'other'}
           slots={slots}
           galleryConfig={galleryConfig}
           metalVariants={metalVariants}

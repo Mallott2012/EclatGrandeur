@@ -1,5 +1,29 @@
 import { z } from 'zod';
 
+const configuredEarringSlotSchema = z.object({
+  slotKey:         z.string(),
+  slotLabel:       z.string(),
+  pairId:          z.string(),
+  pairDescription: z.string(),
+  pairPrice:       z.number().int().nonnegative(),
+});
+
+const configuredEarringSchema = z.object({
+  productId:            z.string(),
+  productSlug:          z.string(),
+  productName:          z.string(),
+  productMedia:         z.string(),
+  metalVariantId:       z.string().nullable(),
+  metalLabel:           z.string(),
+  earringType:          z.string(),
+  settingPrice:         z.number().int().nonnegative(),
+  selectedSlots:        z.array(configuredEarringSlotSchema),
+  totalPrice:           z.number().int().nonnegative(),
+  currency:             z.string(),
+  reservationExpiresAt: z.string(),
+  addedAt:              z.string(),
+});
+
 const configuredRingSchema = z.object({
   settingId:            z.string(),
   settingName:          z.string(),
@@ -31,9 +55,11 @@ export const enquirySchema = z.object({
   /** Hidden context, e.g. the piece being enquired about. */
   context:    z.string().optional(),
   /** Structured configured ring snapshot (Phase 6). */
-  ringConfig: configuredRingSchema.optional(),
-  /** Cart token for reservation ownership verification (Phase 6). */
-  cartToken:  z.string().optional(),
+  ringConfig:    configuredRingSchema.optional(),
+  /** Structured configured earring snapshot (Phase E5). */
+  earringConfig: configuredEarringSchema.optional(),
+  /** Cart token for reservation ownership verification. */
+  cartToken:     z.string().optional(),
 });
 
 export type EnquiryInput = z.infer<typeof enquirySchema>;

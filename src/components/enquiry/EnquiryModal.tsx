@@ -4,7 +4,7 @@ import { useEffect }  from 'react';
 import { X }          from 'lucide-react';
 import { EnquiryForm } from '@/components/forms/EnquiryForm';
 import { cn }          from '@/lib/utils';
-import type { ConfiguredEngagementRing } from '@/types';
+import type { ConfiguredEngagementRing, ConfiguredEarring } from '@/types';
 
 export function EnquiryModal({
   open,
@@ -13,15 +13,17 @@ export function EnquiryModal({
   title = 'Request a Quote',
   intro,
   ringConfig,
+  earringConfig,
   cartToken,
 }: {
-  open:        boolean;
-  onClose:     () => void;
-  context?:    string;
-  title?:      string;
-  intro?:      string;
-  ringConfig?: ConfiguredEngagementRing;
-  cartToken?:  string;
+  open:           boolean;
+  onClose:        () => void;
+  context?:       string;
+  title?:         string;
+  intro?:         string;
+  ringConfig?:    ConfiguredEngagementRing;
+  earringConfig?: ConfiguredEarring;
+  cartToken?:     string;
 }) {
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
@@ -53,7 +55,7 @@ export function EnquiryModal({
           {intro ?? 'Share a few details and our concierge will respond within one business day.'}
         </p>
         <div className="mt-6">
-          <EnquiryForm context={context} ringConfig={ringConfig} cartToken={cartToken} compact />
+          <EnquiryForm context={context} ringConfig={ringConfig} earringConfig={earringConfig} cartToken={cartToken} compact />
         </div>
       </div>
     </div>

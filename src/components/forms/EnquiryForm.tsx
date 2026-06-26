@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Check }    from 'lucide-react';
 import { Button }   from '@/components/ui/Button';
 import type { EnquiryInput }             from '@/lib/validation';
-import type { ConfiguredEngagementRing } from '@/types';
+import type { ConfiguredEngagementRing, ConfiguredEarring } from '@/types';
 
 const field =
   'w-full border-b border-ink/20 bg-transparent py-2.5 text-sm font-light text-ink placeholder:text-ink/40 focus:border-champagne focus:outline-none';
@@ -15,12 +15,14 @@ export function EnquiryForm({
   context,
   compact = false,
   ringConfig,
+  earringConfig,
   cartToken,
 }: {
-  context?:    string;
-  compact?:    boolean;
-  ringConfig?: ConfiguredEngagementRing;
-  cartToken?:  string;
+  context?:       string;
+  compact?:       boolean;
+  ringConfig?:    ConfiguredEngagementRing;
+  earringConfig?: ConfiguredEarring;
+  cartToken?:     string;
 }) {
   const {
     register,
@@ -36,7 +38,7 @@ export function EnquiryForm({
     const res = await fetch('/api/enquiry', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ ...data, context, ringConfig, cartToken }),
+      body:    JSON.stringify({ ...data, context, ringConfig, earringConfig, cartToken }),
     });
     if (res.ok) {
       setSent(true);

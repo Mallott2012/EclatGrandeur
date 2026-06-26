@@ -8,6 +8,9 @@ import { Heart } from 'lucide-react';
 import { ProductGallery } from '@/components/shared/ProductGallery';
 import { EarringPairSelector } from './EarringPairSelector';
 import { useShortlist, type ShortlistItem } from '@/hooks/useShortlist';
+import { useCart } from '@/lib/store/cart';
+import { validateAndReserveEarringConfiguration } from '@/app/earrings/[slug]/actions';
+import { buildEarringCartLineId } from '@/lib/earrings/cart-helpers';
 import type { GalleryData, MetalVariant, MetalKey } from '@/lib/gallery/types';
 import { METAL_DISPLAY, EMPTY_GALLERY, variantToGalleryData } from '@/lib/gallery/types';
 import type { JewelleryDetailConfig } from '@/components/jewellery/JewelleryDetailPage';
@@ -27,19 +30,23 @@ const VARIANT_SWATCHES: Record<string, string> = {
 
 export interface EarringDetailPageProps {
   productId:          string;
+  productSlug:        string;
   productName:        string;
   productSubtitle:    string;
   productDescription: string;
   basePrice:          number;
+  earringType:        string;
   slots:              JewelleryStoneSlot[];
   galleryConfig:      GalleryData;
   metalVariants:      MetalVariant[] | null;
   config:             JewelleryDetailConfig;
 }
 
+type AddToCartState = 'idle' | 'reserving' | 'success' | 'error';
+
 export function EarringDetailPage({
-  productId, productName, productSubtitle, productDescription,
-  basePrice, slots, galleryConfig, metalVariants, config,
+  productId, productSlug, productName, productSubtitle, productDescription,
+  basePrice, earringType, slots, galleryConfig, metalVariants, config,
 }: EarringDetailPageProps) {
   const router       = useRouter();
   const pathname     = usePathname();
@@ -84,7 +91,11 @@ export function EarringDetailPage({
   const [activeSelectorSlot, setActiveSelectorSlot] = useState<string | null>(null);
   const [configPrice, setConfigPrice] = useState<EarringConfigurationPrice | null>(null);
   const [priceLoading, setPriceLoading] = useState(false);
+  const [addToCartState, setAddToCartState] = useState<AddToCartState>('idle');
+  const [addToCartError, setAddToCartError] = useState<string | null>(null);
   const validatedOnce = useRef(false);
+
+  const { add: addToCart, cartToken, setOpen: setCartOpen } = useCart();
 
   const selectedPairIds = new Map([...selectedPairs.entries()].map(([k, p]) => [k, p.id]));
   const slotDescriptors = slots.map(s => ({
@@ -176,6 +187,42 @@ export function EarringDetailPage({
     setSelectedPairs(prev => { const n = new Map(prev); n.set(activeSelectorSlot!, pair); return n; });
     updateUrl({ [activeSelectorSlot]: pair.id });
     setActiveSelectorSlot(null);
+  }
+
+  // ── Add to Cart ──────────────────────────────────────────────────────────────
+  async function handleAddToCart() {
+    if (!isComplete || addToCartState === 'reserving') return;
+    setAddToCartState('reserving');
+    setAddToCartError(null);
+
+    const pairs = [...selectedPairIds.entries()].map(([slotKey, pairId]) => ({ slotKey, pairId }));
+    const result = await validateAndReserveEarringConfiguration(
+      productId,
+      activeVariantMetal ?? null,
+      pairs,
+      cartToken,
+    );
+
+    if (!result.ok) {
+      setAddToCartState('error');
+      setAddToCartError(result.error);
+      return;
+    }
+
+    const { earring } = result;
+    const cartLineId = buildEarringCartLineId(productId, pairs.map(p => p.pairId));
+
+    addToCart({
+      id:            cartLineId,
+      name:          earring.productName,
+      href:          `${config.categoryPath}/${productSlug}`,
+      price:         { amount: earring.totalPrice, currency: 'GBP' },
+      meta:          earring.metalLabel,
+      art:           { kind: 'stud-earrings', shape: 'round', metal: 'platinum' },
+      earringConfig: earring,
+    });
+
+    setAddToCartState('success');
   }
 
   // ── Shortlist ────────────────────────────────────────────────────────────────
@@ -427,31 +474,46 @@ export function EarringDetailPage({
                 </span>
               </div>
 
-              {/* E5 placeholder CTA */}
+              {/* Add to Bag CTA */}
+              {addToCartError && (
+                <p className="font-sans mt-4 text-center" style={{ fontSize: 11, color: '#c0392b', lineHeight: 1.5 }}>
+                  {addToCartError}
+                </p>
+              )}
               <button
                 type="button"
-                disabled
+                onClick={addToCartState === 'success' ? () => setCartOpen(true) : handleAddToCart}
+                disabled={addToCartState === 'reserving'}
                 className="w-full font-sans uppercase mt-6 py-4"
                 style={{
                   fontSize: 11, letterSpacing: '0.28em',
-                  backgroundColor: '#f2f2f0', color: '#aaa',
-                  cursor: 'not-allowed',
+                  backgroundColor: addToCartState === 'success' ? '#4a9e6b' : addToCartState === 'reserving' ? '#888' : G,
+                  color: '#fff',
+                  cursor: addToCartState === 'reserving' ? 'not-allowed' : 'pointer',
                 }}
               >
-                Enquire About This Design
+                {addToCartState === 'idle'      && 'Add to Bag'}
+                {addToCartState === 'reserving' && 'Reserving your selection…'}
+                {addToCartState === 'success'   && 'Added to Bag'}
+                {addToCartState === 'error'     && 'Try Again'}
               </button>
-              <p className="font-sans text-center mt-2" style={{ fontSize: 10, color: '#ccc', letterSpacing: '0.06em' }}>
-                Enquiry wiring coming soon
-              </p>
             </div>
           )}
 
-          {/* Incomplete configuration placeholder */}
+          {/* Incomplete configuration — show CTA as informational placeholder */}
           {!isComplete && matchedPairSlots.length > 0 && (
             <div className="mt-8 pt-4" style={{ borderTop: `1px solid ${BORDER}` }}>
-              <p className="font-sans text-center" style={{ fontSize: 11, color: '#bbb', letterSpacing: '0.06em', lineHeight: 1.7 }}>
-                Complete your selection above to see your total price and continue.
-              </p>
+              <button
+                type="button"
+                disabled
+                className="w-full font-sans uppercase py-4"
+                style={{
+                  fontSize: 11, letterSpacing: '0.28em',
+                  backgroundColor: '#f2f2f0', color: '#bbb', cursor: 'not-allowed',
+                }}
+              >
+                Complete your selection to continue
+              </button>
             </div>
           )}
 
