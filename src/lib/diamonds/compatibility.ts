@@ -79,12 +79,38 @@ function parseCaratBound(v: string | number | null): number | null {
   return isNaN(n) ? null : n
 }
 
+/**
+ * Returns the IDs of every diamond that belongs to an active published pair.
+ * "Active published pair" = is_published=true AND status != 'sold'.
+ *
+ * These diamonds must be excluded from all individual-diamond selection
+ * and reservation paths.  A draft pair (is_published=false) or a sold pair
+ * does NOT permanently lock its member diamonds.
+ */
+async function getActivePairDiamondIds(admin: AdminClient): Promise<string[]> {
+  const { data } = await admin
+    .from('diamond_pairs')
+    .select('diamond_id_a, diamond_id_b')
+    .eq('is_published', true)
+    .neq('status', 'sold')
+
+  if (!data || data.length === 0) return []
+
+  const ids = new Set<string>()
+  for (const pair of data) {
+    ids.add(pair.diamond_id_a)
+    ids.add(pair.diamond_id_b)
+  }
+  return [...ids]
+}
+
 async function runCountQuery(
   admin: AdminClient,
   shapes: string[],
   minCarat: number | null,
   maxCarat: number | null,
   category: 'white' | 'yellow' | 'pink',
+  excludeIds: string[],
 ): Promise<number> {
   // Rebuild from scratch each call — avoids Supabase builder type issues
   let q = admin
@@ -101,6 +127,11 @@ async function runCountQuery(
   if (minCarat !== null) q = q.gte('carat', minCarat)
   if (maxCarat !== null) q = q.lte('carat', maxCarat)
 
+  // Exclude diamonds that are members of an active published pair
+  if (excludeIds.length > 0) {
+    q = q.filter('id', 'not.in', `(${excludeIds.join(',')})`)
+  }
+
   if (category === 'white') {
     q = q.eq('diamond_category', 'white')
   } else {
@@ -115,7 +146,10 @@ async function runCountQuery(
 
 export async function getCompatibleDiamondCounts(ringSettingId: string): Promise<CompatibleCounts> {
   const admin = createAdminClient()
-  const raw = await fetchRingConstraints(admin, ringSettingId)
+  const [raw, pairedIds] = await Promise.all([
+    fetchRingConstraints(admin, ringSettingId),
+    getActivePairDiamondIds(admin),
+  ])
 
   if (!raw) return { white: 0, yellow: 0, pink: 0 }
 
@@ -133,9 +167,9 @@ export async function getCompatibleDiamondCounts(ringSettingId: string): Promise
   }
 
   const [white, yellow, pink] = await Promise.all([
-    runCountQuery(admin, shapes, minCarat, maxCarat, 'white'),
-    runCountQuery(admin, shapes, minCarat, maxCarat, 'yellow'),
-    runCountQuery(admin, shapes, minCarat, maxCarat, 'pink'),
+    runCountQuery(admin, shapes, minCarat, maxCarat, 'white',  pairedIds),
+    runCountQuery(admin, shapes, minCarat, maxCarat, 'yellow', pairedIds),
+    runCountQuery(admin, shapes, minCarat, maxCarat, 'pink',   pairedIds),
   ])
 
   return { white, yellow, pink }
@@ -145,20 +179,24 @@ export async function getCompatibleDiamondCounts(ringSettingId: string): Promise
 
 /** Fetch a single diamond and verify it is compatible with the given setting.
  *  Returns null when the diamond doesn't exist, is incompatible, ineligible,
- *  unpublished, or sold — safe to call with untrusted URL params. */
+ *  unpublished, sold, or is a member of an active published pair (those
+ *  diamonds are only selectable as part of that pair, not individually). */
 export async function getCompatibleDiamondById(
   diamondId: string,
   setting: CompatibilitySetting,
 ): Promise<Diamond | null> {
   const admin = createAdminClient()
-  const { data } = await admin
-    .from('diamonds')
-    .select('*')
-    .eq('id', diamondId)
-    .maybeSingle()
 
-  if (!data) return null
-  const diamond = parseDiamond(data)
+  // Pair membership check — fetch in parallel with the diamond row
+  const [diamondResult, pairedIds] = await Promise.all([
+    admin.from('diamonds').select('*').eq('id', diamondId).maybeSingle(),
+    getActivePairDiamondIds(admin),
+  ])
+
+  if (!diamondResult.data) return null
+  if (pairedIds.includes(diamondId)) return null
+
+  const diamond = parseDiamond(diamondResult.data)
   if (!isDiamondCompatibleWith(diamond, setting)) return null
   return diamond
 }
@@ -166,7 +204,10 @@ export async function getCompatibleDiamondById(
 export async function listCompatibleDiamonds(options: ListCompatibleOptions): Promise<Diamond[]> {
   const { ringSettingId, diamondCategory, colourFamily, limit = 50, offset = 0 } = options
   const admin = createAdminClient()
-  const raw = await fetchRingConstraints(admin, ringSettingId)
+  const [raw, pairedIds] = await Promise.all([
+    fetchRingConstraints(admin, ringSettingId),
+    getActivePairDiamondIds(admin),
+  ])
 
   if (!raw) return []
 
@@ -196,6 +237,12 @@ export async function listCompatibleDiamonds(options: ListCompatibleOptions): Pr
 
   if (minCarat !== null) q = q.gte('carat', minCarat)
   if (maxCarat !== null) q = q.lte('carat', maxCarat)
+
+  // Exclude diamonds that belong to any active published pair — those are only
+  // selectable as part of the pair, never as standalone ring diamonds.
+  if (pairedIds.length > 0) {
+    q = q.filter('id', 'not.in', `(${pairedIds.join(',')})`)
+  }
 
   if (diamondCategory === 'white') {
     q = q.eq('diamond_category', 'white')

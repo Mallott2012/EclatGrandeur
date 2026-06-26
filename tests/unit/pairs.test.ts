@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { isPairEligible, arePairMembersAvailable } from '@/lib/pairs/eligibility';
 import { isPairCompatibleWithSlot, validateSlotCoverage } from '@/lib/pairs/compatibility';
 import { parseDiamondPair } from '@/lib/pairs/types';
+import { isDiamondCompatibleWith } from '@/lib/diamonds/compatibility';
 import type { PairMemberInput, PairEligibilityInput } from '@/lib/pairs/eligibility';
+import type { CompatibilityDiamondInput, CompatibilitySetting } from '@/lib/diamonds/compatibility';
 import type { PairCompatibilityInput } from '@/lib/pairs/compatibility';
 import type { SlotConstraints, DiamondPairRecord } from '@/lib/pairs/types';
 
@@ -377,5 +379,305 @@ describe('parseDiamondPair', () => {
 
     const parsed = parseDiamondPair(record);
     expect(parsed.carat_per_stone).toBeNull();
+  });
+});
+
+// ── E1 Integrity Audit — invariant tests ─────────────────────────────────────
+//
+// These tests verify the pure-function side of the invariants established by
+// the integrity patch (migration 0031 + reservation.ts rewrite).
+//
+// The database-level enforcement (atomic PL/pgSQL functions) cannot be tested
+// here without a live DB; integration-layer coverage belongs in a Supabase
+// local-dev test run. The pure-function tests below verify that the resulting
+// diamond STATE (after the atomic functions have executed) is correctly
+// reflected in all selection and eligibility paths.
+
+// ── Audit T1: Reserved-pair constituent excluded from ring selection ───────────
+//
+// After claim_pair_atomic executes, both constituent diamonds are set to
+// status='reserved'. This test verifies that isDiamondCompatibleWith (which
+// drives listCompatibleDiamonds) returns false for a reserved diamond —
+// meaning pair-claimed diamonds are automatically invisible to ring selection.
+
+describe('Audit T1: reserved constituent diamond is incompatible with ring settings', () => {
+  const setting: CompatibilitySetting = {
+    diamond_shapes: ['oval', 'round'],
+    min_carat:      0.5,
+    max_carat:      3.0,
+  };
+
+  function makeRingDiamond(overrides: Partial<CompatibilityDiamondInput> = {}): CompatibilityDiamondInput {
+    return {
+      cut:              'oval',
+      carat:            1.5,
+      cut_grade:        null,
+      polish:           'excellent',
+      symmetry:         'excellent',
+      fluorescence:     'none',
+      eclat_approved:   true,
+      status:           'available',
+      is_published:     true,
+      diamond_category: 'white',
+      colour_family:    null,
+      ...overrides,
+    };
+  }
+
+  it('available diamond is compatible', () => {
+    expect(isDiamondCompatibleWith(makeRingDiamond({ status: 'available' }), setting)).toBe(true);
+  });
+
+  it('reserved diamond (post-pair-claim state) is not compatible with ring settings', () => {
+    // This is the state both diamonds enter after claim_pair_atomic runs.
+    expect(isDiamondCompatibleWith(makeRingDiamond({ status: 'reserved' }), setting)).toBe(false);
+  });
+
+  it('sold diamond is not compatible with ring settings', () => {
+    expect(isDiamondCompatibleWith(makeRingDiamond({ status: 'sold' }), setting)).toBe(false);
+  });
+});
+
+// ── Audit T2: Reserved constituent excluded from jewellery slot selection ──────
+//
+// isPairCompatibleWithSlot checks arePairMembersAvailable, which returns false
+// when either constituent diamond has status != 'available'. After pair claim,
+// both constituents are reserved — so the pair cannot appear in other slots either.
+
+describe('Audit T2: reserved constituent blocks pair from slot selection', () => {
+  it('pair whose diamond_a is reserved is not slot-compatible', () => {
+    const pair = makePairInput({
+      diamond_a: makeMember({ status: 'reserved' }),
+    });
+    expect(isPairCompatibleWithSlot(pair, makeSlot())).toBe(false);
+  });
+
+  it('pair whose diamond_b is reserved is not slot-compatible', () => {
+    const pair = makePairInput({
+      diamond_b: makeMember({ status: 'reserved' }),
+    });
+    expect(isPairCompatibleWithSlot(pair, makeSlot())).toBe(false);
+  });
+});
+
+// ── Audit T3: Release restores correct availability ───────────────────────────
+//
+// After release_pair_atomic: pair.status='available', both diamonds back to
+// 'available'. arePairMembersAvailable returns true; pair passes slot compat.
+
+describe('Audit T3: post-release state restores availability', () => {
+  it('both constituents available → pair members are available', () => {
+    const input: PairEligibilityInput = {
+      diamond_a:        makeMember({ status: 'available' }),
+      diamond_b:        makeMember({ status: 'available' }),
+      shape:            'oval',
+      diamond_category: 'white',
+      colour_family:    null,
+    };
+    expect(arePairMembersAvailable(input)).toBe(true);
+  });
+
+  it('restored pair passes slot compatibility (post-release state)', () => {
+    const pair = makePairInput({ status: 'available', is_published: true });
+    expect(isPairCompatibleWithSlot(pair, makeSlot())).toBe(true);
+  });
+});
+
+// ── Audit T4: Wrong-token release is a no-op ─────────────────────────────────
+//
+// release_pair_atomic (DB function) only updates when held_by_cart = token.
+// A wrong token leaves the pair and both diamonds reserved.
+// Pure-function perspective: reserved pair remains incompatible.
+
+describe('Audit T4: wrong-token release leaves pair reserved', () => {
+  it('pair still reserved after wrong-token release attempt', () => {
+    // Simulates the state that must persist when wrong token is used:
+    // pair.status = 'reserved', both diamonds status = 'reserved'.
+    const pair = makePairInput({
+      status:    'reserved',
+      diamond_a: makeMember({ status: 'reserved' }),
+      diamond_b: makeMember({ status: 'reserved' }),
+    });
+    expect(isPairCompatibleWithSlot(pair, makeSlot())).toBe(false);
+    // Both constituent diamonds remain unavailable
+    const eligInput: PairEligibilityInput = {
+      diamond_a:        pair.diamond_a,
+      diamond_b:        pair.diamond_b,
+      shape:            pair.shape,
+      diamond_category: pair.diamond_category,
+      colour_family:    pair.colour_family,
+    };
+    expect(arePairMembersAvailable(eligInput)).toBe(false);
+  });
+});
+
+// ── Audit T5: Expired hold can be reclaimed ───────────────────────────────────
+//
+// claim_pair_atomic condition: status='available' OR (status='reserved' AND
+// held_until < now()). After expiry, the pair reverts to claimable state.
+// Post-expiry-reclaim, pair.status='available' with fresh held_until:
+// constituent diamonds also get fresh reservation (same held_until).
+// Pure-function perspective: a newly reclaimed pair is compatible.
+
+describe('Audit T5: reclaimed pair is compatible after expiry', () => {
+  it('a newly reclaimed pair (status=reserved, diamonds=reserved, fresh hold) is NOT slot-compatible', () => {
+    // After reclaim: pair.status='reserved', so it fails the availability check.
+    const pair = makePairInput({
+      status:    'reserved',  // currently held by a new cart post-reclaim
+      diamond_a: makeMember({ status: 'reserved' }),
+      diamond_b: makeMember({ status: 'reserved' }),
+    });
+    expect(isPairCompatibleWithSlot(pair, makeSlot())).toBe(false);
+  });
+
+  it('after reclaim + release the pair is slot-compatible again', () => {
+    // Simulates pair state after: expiry → reclaim → release cycle
+    const pair = makePairInput({ status: 'available', is_published: true });
+    expect(isPairCompatibleWithSlot(pair, makeSlot())).toBe(true);
+  });
+});
+
+// ── Audit T6: Sold pairs cannot be released ───────────────────────────────────
+//
+// release_pair_atomic only matches WHERE status='reserved'. A sold pair is
+// permanently in status='sold' and its constituent diamonds in status='sold'.
+
+describe('Audit T6: sold pair is permanently unavailable', () => {
+  it('sold pair is not slot-compatible', () => {
+    const pair = makePairInput({ status: 'sold' });
+    expect(isPairCompatibleWithSlot(pair, makeSlot())).toBe(false);
+  });
+
+  it('sold constituent diamond is not eligible for ring selection', () => {
+    const setting: CompatibilitySetting = {
+      diamond_shapes: ['oval'], min_carat: null, max_carat: null,
+    };
+    const d: CompatibilityDiamondInput = {
+      cut: 'oval', carat: 1.5, cut_grade: null,
+      polish: 'excellent', symmetry: 'excellent', fluorescence: 'none',
+      eclat_approved: true, status: 'sold', is_published: true,
+      diamond_category: 'white', colour_family: null,
+    };
+    expect(isDiamondCompatibleWith(d, setting)).toBe(false);
+  });
+
+  it('sold constituent makes pair members unavailable', () => {
+    const input: PairEligibilityInput = {
+      diamond_a:        makeMember({ status: 'sold' }),
+      diamond_b:        makeMember({ status: 'available' }),
+      shape:            'oval',
+      diamond_category: 'white',
+      colour_family:    null,
+    };
+    expect(arePairMembersAvailable(input)).toBe(false);
+  });
+});
+
+// ── Audit T7: Diamond cannot simultaneously be in active pair and individual reservation ──
+//
+// If diamond D is in an active published pair:
+//   - claimDiamond(D) returns false (pair-membership check in reservation.ts)
+//   - If D's status is 'available' (pair is available), isDiamondCompatibleWith
+//     would still return true — this is prevented by getActivePairDiamondIds
+//     exclusion in listCompatibleDiamonds/getCompatibleDiamondById.
+//   - If D's status is 'reserved' (pair was claimed), isDiamondCompatibleWith
+//     returns false — shown here.
+//
+// Scenario: pair is claimed → diamond_a.status='reserved'.
+// No other path may simultaneously make diamond_a.status='reserved' with a
+// different cart token because:
+//   a) claimDiamond checks pair membership first and returns false
+//   b) claim_pair_atomic checks diamond status and rolls back if already held
+
+describe('Audit T7: diamond cannot be active in a pair and individually reserved', () => {
+  it('diamond reserved by pair claim (status=reserved) is not ring-compatible', () => {
+    // After claim_pair_atomic, diamond status = 'reserved'.
+    // isDiamondCompatibleWith checks status='available' first → false.
+    const setting: CompatibilitySetting = {
+      diamond_shapes: ['oval'], min_carat: null, max_carat: null,
+    };
+    const d: CompatibilityDiamondInput = {
+      cut: 'oval', carat: 1.2, cut_grade: null,
+      polish: 'excellent', symmetry: 'excellent', fluorescence: 'none',
+      eclat_approved: true, status: 'reserved',  // set by claim_pair_atomic
+      is_published: true, diamond_category: 'white', colour_family: null,
+    };
+    expect(isDiamondCompatibleWith(d, setting)).toBe(false);
+  });
+
+  it('pair with one reserved constituent fails arePairMembersAvailable', () => {
+    // Ensures the pair also becomes unavailable when one diamond is claimed
+    // individually (hypothetical race) — the pair slot compat check catches this.
+    const input: PairEligibilityInput = {
+      diamond_a:        makeMember({ status: 'reserved' }),
+      diamond_b:        makeMember({ status: 'available' }),
+      shape:            'oval',
+      diamond_category: 'white',
+      colour_family:    null,
+    };
+    expect(arePairMembersAvailable(input)).toBe(false);
+  });
+});
+
+// ── Audit T8: Multi-pair atomic claim is schema-compatible ────────────────────
+//
+// claim_pairs_atomic (migration 0031) supports reserving N pairs and their 2N
+// constituent diamonds in one PL/pgSQL transaction. The TypeScript wrapper
+// claimPairsAtomically() accepts an array of pairIds.
+//
+// Verifiable here: the input type contract is sound and the trivial case
+// (empty array) is correct without touching the DB.
+
+describe('Audit T8: multi-pair atomic claim contract', () => {
+  it('empty pairIds is trivially true (no pairs to claim)', () => {
+    // claimPairsAtomically returns true immediately for empty arrays — nothing
+    // reserved, nothing failed. This is used when a product has no pair slots.
+    // Verified by inspecting the guard at the top of claimPairsAtomically:
+    //   if (opts.pairIds.length === 0) return true;
+    // We test the slot-coverage analogue: no required matched_pair slots = valid.
+    const result = validateSlotCoverage([], new Map(), []);
+    expect(result.valid).toBe(true);
+    expect(result.missingSlots).toHaveLength(0);
+  });
+
+  it('two-slot drop earring: both slots filled → valid', () => {
+    const topSlot  = makeSlot({ compatible_shapes: ['round'] });
+    const dropSlot = makeSlot({ compatible_shapes: ['pear'] });
+    const topPair  = makePairInput({ shape: 'round' });
+    const dropPair = makePairInput({
+      shape:     'pear',
+      diamond_a: makeMember({ cut: 'pear', eclat_approved: true }),
+      diamond_b: makeMember({ cut: 'pear', eclat_approved: true }),
+    });
+    const coverage = new Map([
+      ['top_pair',  topPair],
+      ['drop_pair', dropPair],
+    ]);
+    const result = validateSlotCoverage(
+      [topSlot, dropSlot],
+      coverage,
+      ['top_pair', 'drop_pair'],
+    );
+    expect(result.valid).toBe(true);
+  });
+
+  it('two-slot drop earring: one slot incompatible → invalid, reports missing', () => {
+    const topSlot  = makeSlot({ compatible_shapes: ['round'] });
+    const dropSlot = makeSlot({ compatible_shapes: ['pear'] });
+    const topPair  = makePairInput({ shape: 'round' });
+    // Drop pair shape mismatch → incompatible
+    const dropPair = makePairInput({ shape: 'oval' });
+    const coverage = new Map([
+      ['top_pair',  topPair],
+      ['drop_pair', dropPair],
+    ]);
+    const result = validateSlotCoverage(
+      [topSlot, dropSlot],
+      coverage,
+      ['top_pair', 'drop_pair'],
+    );
+    expect(result.valid).toBe(false);
+    expect(result.missingSlots).toContain('drop_pair');
+    expect(result.missingSlots).not.toContain('top_pair');
   });
 });

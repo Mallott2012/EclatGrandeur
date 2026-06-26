@@ -5,13 +5,30 @@ import { createAdminClient } from '@/lib/supabase/admin'
 /**
  * Atomically claims a diamond reservation for a cart.
  * Succeeds only if diamond is available OR its existing hold has expired.
- * Returns true if the claim succeeded, false if actively held by another cart.
+ * Returns true if the claim succeeded, false if actively held by another cart
+ * OR if the diamond belongs to an active published pair (those are only
+ * reservable as part of the pair via claimPair / claimPairsAtomically).
  */
 export async function claimDiamond(
   diamondId: string,
   cartToken: string,
 ): Promise<boolean> {
   const admin = createAdminClient()
+
+  // Guard: reject if this diamond is a member of any active published pair.
+  // An "active published pair" is is_published=true AND status != 'sold'.
+  // Even if the pair is available (not yet reserved by any cart), the diamond
+  // must not be individually claimable — it may only be reserved as part of
+  // the pair via the atomic pair-claim functions.
+  const { count: pairCount } = await admin
+    .from('diamond_pairs')
+    .select('id', { count: 'exact', head: true })
+    .eq('is_published', true)
+    .neq('status', 'sold')
+    .or(`diamond_id_a.eq.${diamondId},diamond_id_b.eq.${diamondId}`)
+
+  if ((pairCount ?? 0) > 0) return false
+
   const now       = new Date().toISOString()
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString()
 
