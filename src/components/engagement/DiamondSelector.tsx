@@ -112,10 +112,8 @@ function DiamondCard({
 }: {
   d: PublicDiamond; selected: boolean; onSelect: () => void; settingName?: string;
 }) {
-  const isRound    = d.shape === 'round';
   const isWhite    = d.diamond_category === 'white';
   const shapeLabel = d.shape.charAt(0).toUpperCase() + d.shape.slice(1);
-  const excellentMake = isRound && d.cut_grade?.toLowerCase().includes('excell');
 
   // Build headline line
   const headline = isWhite
@@ -175,13 +173,6 @@ function DiamondCard({
       <span className="font-sans mt-1" style={{ fontSize: 11, color: '#888', fontWeight: 300, lineHeight: 1.4 }}>
         {subtitle}
       </span>
-
-      {/* Excellent Make badge — round white only */}
-      {isWhite && excellentMake && (
-        <span className="font-sans mt-1.5" style={{ fontSize: 9, color: '#5a8a5a', letterSpacing: '0.08em' }}>
-          Excellent Make
-        </span>
-      )}
 
       {/* Price */}
       <span className="font-sans mt-2" style={{ fontSize: 13, color: G, fontWeight: 400 }}>

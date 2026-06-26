@@ -14,9 +14,12 @@ export function isEclatEligible(d: EligibilityInput): boolean {
   if (normaliseGrade(d.symmetry) !== 'excellent') return false;
   if (normaliseFluorescence(d.fluorescence) !== 'none') return false;
 
+  // All shapes require Excellent Cut. For round brilliants this is proven by
+  // the formal GIA certificate cut grade. For fancy shapes (oval, cushion,
+  // pear, radiant, emerald) GIA does not issue a cut grade, so Éclat approval
+  // confirms the internal Excellent Cut standard instead.
   if (d.cut === 'round') {
     return normaliseGrade(d.cut_grade) === 'excellent';
   }
-  // Fancy shapes require explicit Éclat approval (no formal GIA cut grade)
   return d.eclat_approved === true;
 }

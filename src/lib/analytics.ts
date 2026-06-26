@@ -1,11 +1,7 @@
 // Analytics helper — engagement funnel events (Phases 4–6)
 
 export type EngagementEventName =
-  // Phase 4 — shape + diamond selector
-  | 'engagement_shape_section_viewed'
-  | 'engagement_shape_clicked'
-  | 'engagement_shape_filter_cleared'
-  | 'engagement_shape_filter_loaded'
+  // Phase 4 — diamond selector
   | 'engagement_diamond_selector_opened'
   | 'engagement_diamond_type_selected'
   | 'engagement_diamond_filter_changed'
@@ -29,8 +25,6 @@ export type EngagementEventName =
 export interface EventProperties {
   settingId?:              string
   settingName?:            string
-  shape?:                  string
-  previousShape?:          string
   diamondId?:              string
   diamondType?:            'white' | 'coloured'
   diamondShape?:           string
