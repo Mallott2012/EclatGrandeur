@@ -9,6 +9,7 @@ import {
   assignDiamondToJewellery,
   unassignDiamondFromJewellery,
   getJewelleryDiamonds,
+  setEarringType,
 } from '@/lib/jewellery/service'
 import {
   createDiamond,
@@ -16,7 +17,14 @@ import {
   deleteDiamond,
   listDiamonds,
 } from '@/lib/diamonds/service'
+import {
+  createStoneSlot,
+  updateStoneSlot,
+  deleteStoneSlot,
+} from '@/lib/pairs/service'
 import type { CreateDiamondInput, UpdateDiamondInput } from '@/lib/diamonds/schemas'
+import type { CreateSlotInput, UpdateSlotInput } from '@/lib/pairs/types'
+import type { EarringType } from '@/lib/jewellery/types'
 
 const CATEGORY   = 'earrings' as const
 const BACK       = '/admin/earrings'
@@ -88,3 +96,39 @@ export async function deleteDiamondAction(id: string) {
 }
 
 export { listDiamonds }
+
+// ── Earring configuration actions ─────────────────────────────────────────────
+
+export async function saveEarringTypeAction(productId: string, type: EarringType | null): Promise<void> {
+  await requireStaffRole([])
+  await setEarringType(productId, type)
+  revalidatePath(`${BACK}/${productId}`)
+}
+
+export async function createSlotAction(input: CreateSlotInput): Promise<{ error?: string }> {
+  await requireStaffRole([])
+  try {
+    await createStoneSlot(input)
+    revalidatePath(`${BACK}/${input.jewellery_product_id}`)
+    return {}
+  } catch (e) {
+    return { error: (e as Error).message }
+  }
+}
+
+export async function updateSlotAction(slotId: string, patch: UpdateSlotInput, productId: string): Promise<{ error?: string }> {
+  await requireStaffRole([])
+  try {
+    await updateStoneSlot(slotId, patch)
+    revalidatePath(`${BACK}/${productId}`)
+    return {}
+  } catch (e) {
+    return { error: (e as Error).message }
+  }
+}
+
+export async function deleteSlotAction(slotId: string, productId: string): Promise<void> {
+  await requireStaffRole([])
+  await deleteStoneSlot(slotId)
+  revalidatePath(`${BACK}/${productId}`)
+}

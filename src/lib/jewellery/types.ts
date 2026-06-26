@@ -8,6 +8,14 @@ export type JewelleryCategory = 'earrings' | 'necklaces' | 'bracelets'
 
 // ── Raw database row ──────────────────────────────────────────────────────────
 
+export type EarringType =
+  | 'classic_studs'
+  | 'halo_studs'
+  | 'drop_earrings'
+  | 'pave_hoops'
+  | 'fixed_composition'
+  | 'other'
+
 export interface JewelleryProductRecord {
   id:             string
   slug:           string
@@ -24,6 +32,7 @@ export interface JewelleryProductRecord {
   sort_order:     number
   gallery_config:  unknown | null
   metal_variants:  unknown | null
+  earring_type:   EarringType | null
   created_by:      string | null
   updated_by:     string | null
   created_at:     string
@@ -60,6 +69,7 @@ export interface JewelleryProduct {
   sort_order:     number
   gallery_config:  unknown | null
   metal_variants:  unknown | null
+  earring_type:   EarringType | null
   created_at:      string
   updated_at:     string
   media:          JewelleryProductMediaRecord[]
@@ -76,6 +86,7 @@ export function parseJewelleryProduct(
     base_price_gbp: parseFloat(r.base_price_gbp),
     gallery_config:  r.gallery_config  ?? null,
     metal_variants:  r.metal_variants  ?? null,
+    earring_type:   r.earring_type ?? null,
     media,
   }
 }

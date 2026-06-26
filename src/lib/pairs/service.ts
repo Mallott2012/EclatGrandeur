@@ -1,15 +1,20 @@
 import 'server-only';
 
 import { createAdminClient } from '@/lib/supabase/admin';
-import { isPairEligible } from './eligibility';
+import { isPairEligible, isPairLockingDiamonds } from './eligibility';
 import {
   parseDiamondPair,
   parseJewelleryStoneSlot,
   type DiamondPair,
+  type DiamondPairAdmin,
+  type DiamondSummary,
   type JewelleryStoneSlot,
   type CreatePairInput,
   type CreateSlotInput,
+  type UpdatePairInput,
+  type UpdateSlotInput,
 } from './types';
+import { validatePairForPublication, canDeletePair } from './validation';
 
 // ── Pair admin operations ─────────────────────────────────────────────────────
 
@@ -257,4 +262,257 @@ export async function listSlotsForProduct(
 
   if (error) throw new Error(`listSlotsForProduct: ${error.message}`);
   return (data ?? []).map(parseJewelleryStoneSlot);
+}
+
+/**
+ * Update mutable fields of a stone slot.
+ * slot_key and display_order changes are allowed; DB uniqueness constraints
+ * will reject duplicates.
+ */
+export async function updateStoneSlot(
+  slotId: string,
+  patch:  UpdateSlotInput,
+): Promise<JewelleryStoneSlot> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('jewellery_stone_slots')
+    .update(patch)
+    .eq('id', slotId)
+    .select('*')
+    .single();
+  if (error) throw new Error(`updateStoneSlot: ${error.message}`);
+  return parseJewelleryStoneSlot(data);
+}
+
+/**
+ * Delete a stone slot.
+ * No guard needed — slots do not lock diamonds.
+ */
+export async function deleteStoneSlot(slotId: string): Promise<void> {
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from('jewellery_stone_slots')
+    .delete()
+    .eq('id', slotId);
+  if (error) throw new Error(`deleteStoneSlot: ${error.message}`);
+}
+
+// ── Admin pair read operations ────────────────────────────────────────────────
+
+function parseDiamondPairAdmin(row: Record<string, unknown>): DiamondPairAdmin {
+  const parseSummary = (d: Record<string, unknown> | null | undefined): DiamondSummary | undefined => {
+    if (!d) return undefined;
+    return {
+      id:           d.id as string,
+      sku:          d.sku as string,
+      cut:          d.cut as string,
+      carat:        parseFloat(d.carat as string),
+      colour:       (d.colour as string | null) ?? null,
+      clarity:      (d.clarity as string | null) ?? null,
+      status:       d.status as 'available' | 'reserved' | 'sold',
+      is_published: d.is_published as boolean,
+    };
+  };
+
+  return {
+    id:                 row.id as string,
+    pair_sku:           row.pair_sku as string,
+    diamond_id_a:       row.diamond_id_a as string,
+    diamond_id_b:       row.diamond_id_b as string,
+    shape:              row.shape as string,
+    diamond_category:   row.diamond_category as 'white' | 'coloured',
+    colour_family:      (row.colour_family as 'yellow' | 'pink' | null) ?? null,
+    colour:             (row.colour as string | null) ?? null,
+    clarity:            (row.clarity as string | null) ?? null,
+    colour_intensity:   (row.colour_intensity as import('@/lib/diamonds/types').ColourIntensity | null) ?? null,
+    colour_description: (row.colour_description as string | null) ?? null,
+    total_carat:        parseFloat(row.total_carat as string),
+    carat_per_stone:    row.carat_per_stone != null ? parseFloat(row.carat_per_stone as string) : null,
+    pair_price_gbp:     parseFloat(row.pair_price_gbp as string),
+    status:             row.status as 'available' | 'reserved' | 'sold',
+    is_published:       row.is_published as boolean,
+    held_until:         (row.held_until as string | null) ?? null,
+    matching_notes:     (row.matching_notes as string | null) ?? null,
+    created_at:         row.created_at as string,
+    updated_at:         row.updated_at as string,
+    diamond_a:          parseSummary(row.diamond_a as Record<string, unknown> | null),
+    diamond_b:          parseSummary(row.diamond_b as Record<string, unknown> | null),
+  };
+}
+
+/**
+ * List all pairs for admin view, ordered newest-first.
+ * Includes matching_notes and constituent diamond summaries.
+ * Never exposes held_by_cart.
+ */
+export async function listPairsAdmin(): Promise<DiamondPairAdmin[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('diamond_pairs')
+    .select(`
+      id, pair_sku, diamond_id_a, diamond_id_b, shape,
+      diamond_category, colour_family, colour, clarity,
+      colour_intensity, colour_description, total_carat, carat_per_stone,
+      pair_price_gbp, status, is_published, held_until, matching_notes,
+      created_at, updated_at,
+      diamond_a:diamonds!diamond_id_a(id, sku, cut, carat, colour, clarity, status, is_published),
+      diamond_b:diamonds!diamond_id_b(id, sku, cut, carat, colour, clarity, status, is_published)
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(`listPairsAdmin: ${error.message}`);
+  return (data ?? []).map(r => parseDiamondPairAdmin(r as Record<string, unknown>));
+}
+
+/**
+ * Fetch a single pair for admin edit view.
+ * Returns null when not found.
+ */
+export async function getPairAdmin(id: string): Promise<DiamondPairAdmin | null> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('diamond_pairs')
+    .select(`
+      id, pair_sku, diamond_id_a, diamond_id_b, shape,
+      diamond_category, colour_family, colour, clarity,
+      colour_intensity, colour_description, total_carat, carat_per_stone,
+      pair_price_gbp, status, is_published, held_until, matching_notes,
+      created_at, updated_at,
+      diamond_a:diamonds!diamond_id_a(id, sku, cut, carat, colour, clarity, status, is_published),
+      diamond_b:diamonds!diamond_id_b(id, sku, cut, carat, colour, clarity, status, is_published)
+    `)
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw new Error(`getPairAdmin: ${error.message}`);
+  if (!data) return null;
+  return parseDiamondPairAdmin(data as Record<string, unknown>);
+}
+
+// ── Admin pair write operations ───────────────────────────────────────────────
+
+/**
+ * Update mutable pair metadata.
+ * is_published is NOT updatable here — use publishPair() / unpublishPair().
+ */
+export async function updatePair(id: string, patch: UpdatePairInput): Promise<DiamondPair> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('diamond_pairs')
+    .update(patch)
+    .eq('id', id)
+    .select('*')
+    .single();
+  if (error) throw new Error(`updatePair: ${error.message}`);
+  return parseDiamondPair(data);
+}
+
+/**
+ * Delete a diamond pair.  Only allowed when the pair is not locking its
+ * diamonds (i.e., it is an unpublished, unreserved draft).
+ * Throws a safe validation error for available, reserved, and sold pairs.
+ */
+export async function deletePair(id: string): Promise<void> {
+  const supabase = createAdminClient();
+  const { data: pair, error: fetchErr } = await supabase
+    .from('diamond_pairs')
+    .select('id, status, is_published, held_until')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (fetchErr) throw new Error(`deletePair: ${fetchErr.message}`);
+  if (!pair) throw new Error(`deletePair: pair ${id} not found`);
+
+  const lockInput = { status: pair.status as 'available' | 'reserved' | 'sold', is_published: pair.is_published as boolean, held_until: pair.held_until as string | null };
+
+  if (!canDeletePair(lockInput)) {
+    throw new Error(
+      `deletePair: pair ${id} cannot be deleted — status is ${pair.status}, published=${pair.is_published}. ` +
+      'Only unreserved draft pairs (unpublished and not locking) may be deleted.',
+    );
+  }
+
+  const { error } = await supabase.from('diamond_pairs').delete().eq('id', id);
+  if (error) throw new Error(`deletePair: ${error.message}`);
+}
+
+/**
+ * Full validated publication: runs all eligibility + availability checks,
+ * then publishes the pair if all pass.
+ * Returns validation errors as a string array on failure (empty = success).
+ */
+export async function publishPairValidated(pairId: string): Promise<string[]> {
+  const supabase = createAdminClient();
+  const now      = new Date().toISOString();
+
+  const { data: pair, error: pairErr } = await supabase
+    .from('diamond_pairs')
+    .select('*, da:diamonds!diamond_id_a(*), db:diamonds!diamond_id_b(*)')
+    .eq('id', pairId)
+    .single();
+
+  if (pairErr || !pair) return [`Pair ${pairId} not found`];
+
+  const da = pair.da as Record<string, unknown>;
+  const db = pair.db as Record<string, unknown>;
+
+  if (!da || !db) return ['One or both constituent diamonds could not be found'];
+
+  // Check if either diamond is locked by another active pair (not this pair itself)
+  const pairIds = [pair.diamond_id_a as string, pair.diamond_id_b as string];
+
+  const { data: conflictPairs } = await supabase
+    .from('diamond_pairs')
+    .select('id, diamond_id_a, diamond_id_b')
+    .neq('id', pairId)
+    .or(
+      `status.eq.sold,` +
+      `and(is_published.eq.true,status.eq.available),` +
+      `and(status.eq.reserved,held_until.gt.${now})`
+    );
+
+  const lockedIds = new Set<string>();
+  for (const p of conflictPairs ?? []) {
+    lockedIds.add(p.diamond_id_a as string);
+    lockedIds.add(p.diamond_id_b as string);
+  }
+
+  const memberA = {
+    cut:          da.cut as string,
+    cut_grade:    (da.cut_grade as string | null) ?? null,
+    polish:       (da.polish as string | null) ?? null,
+    symmetry:     (da.symmetry as string | null) ?? null,
+    fluorescence: (da.fluorescence as string) ?? 'none',
+    eclat_approved: da.eclat_approved as boolean,
+    status:       da.status as 'available' | 'reserved' | 'sold',
+    is_published: da.is_published as boolean,
+    hasValidIndividualReservation:
+      da.status === 'reserved' && da.held_until != null && (da.held_until as string) > now,
+    isLockedByAnotherActivePair: lockedIds.has(pairIds[0]),
+  };
+
+  const memberB = {
+    cut:          db.cut as string,
+    cut_grade:    (db.cut_grade as string | null) ?? null,
+    polish:       (db.polish as string | null) ?? null,
+    symmetry:     (db.symmetry as string | null) ?? null,
+    fluorescence: (db.fluorescence as string) ?? 'none',
+    eclat_approved: db.eclat_approved as boolean,
+    status:       db.status as 'available' | 'reserved' | 'sold',
+    is_published: db.is_published as boolean,
+    hasValidIndividualReservation:
+      db.status === 'reserved' && db.held_until != null && (db.held_until as string) > now,
+    isLockedByAnotherActivePair: lockedIds.has(pairIds[1]),
+  };
+
+  const errors = validatePairForPublication(
+    { diamond_id_a: pairIds[0], diamond_id_b: pairIds[1], pair_price_gbp: parseFloat(pair.pair_price_gbp as string) },
+    memberA,
+    memberB,
+  );
+
+  if (errors.length > 0) return errors;
+
+  await publishPair(pairId);
+  return [];
 }

@@ -136,6 +136,15 @@ export async function createJewelleryProduct(
   return parseJewelleryProduct(data as JewelleryProductRecord)
 }
 
+export async function setEarringType(id: string, earringType: string | null): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('jewellery_products')
+    .update({ earring_type: earringType })
+    .eq('id', id)
+  if (error) throw new Error(`setEarringType: ${error.message}`)
+}
+
 export async function setJewelleryGallery(id: string, galleryConfig: unknown): Promise<void> {
   const admin = createAdminClient()
   const { error } = await admin

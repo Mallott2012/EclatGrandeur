@@ -5,6 +5,8 @@ import { parseGalleryConfig, parseMetalVariants } from '@/lib/gallery/types';
 import { uploadJewelleryMedia, deleteJewelleryMedia } from '@/lib/storage/jewellery';
 import { requireStaffRole } from '@/lib/staff';
 import { AdminProductEditor } from '@/components/admin/AdminProductEditor';
+import { listSlotsForProduct, countCompatiblePairsForSlot } from '@/lib/pairs/service';
+import { EarringConfigSection } from '@/components/admin/earrings/EarringConfigSection';
 import {
   updateProductAction,
   togglePublishAction,
@@ -15,6 +17,10 @@ import {
   updateDiamondAction,
   deleteDiamondAction,
   listDiamonds,
+  saveEarringTypeAction,
+  createSlotAction,
+  updateSlotAction,
+  deleteSlotAction,
 } from './actions';
 import type { DiamondRow } from '@/components/admin/DiamondPanel';
 
@@ -29,6 +35,22 @@ export default async function AdminEARRINGEditPage({ params }: Props) {
   ]);
 
   if (!product) notFound();
+
+  // Earring-specific: fetch stone slots and compatible pair counts
+  const slots = await listSlotsForProduct(id).catch(() => []);
+  const pairCounts = await Promise.all(
+    slots.map(s =>
+      s.selection_mode === 'matched_pair'
+        ? countCompatiblePairsForSlot({
+            shapes:          s.compatible_shapes,
+            min_carat:       s.min_carat,
+            max_carat:       s.max_carat,
+            categories:      s.allowed_diamond_categories,
+            colour_families: s.allowed_colour_families,
+          }).catch(() => 0)
+        : Promise.resolve(null)
+    )
+  );
 
   const mediaItems = product.media
     .sort((a, b) => a.display_order - b.display_order)
@@ -51,6 +73,7 @@ export default async function AdminEARRINGEditPage({ params }: Props) {
   const metalVariants = parseMetalVariants(product.metal_variants);
 
   return (
+    <>
     <AdminProductEditor
       id={product.id}
       name={product.name}
@@ -156,5 +179,18 @@ export default async function AdminEARRINGEditPage({ params }: Props) {
       backHref="/admin/earrings"
       backLabel="All Earrings"
     />
+
+    {/* Earring-specific configuration — stone slots, earring type, pair counts */}
+    <EarringConfigSection
+      productId={product.id}
+      earringType={product.earring_type}
+      slots={slots}
+      pairCounts={pairCounts}
+      saveTypeAction={async (pid, type) => { 'use server'; await saveEarringTypeAction(pid, type); }}
+      createSlotAction={async (input) => { 'use server'; return await createSlotAction(input); }}
+      updateSlotAction={async (slotId, patch) => { 'use server'; return await updateSlotAction(slotId, patch, id); }}
+      deleteSlotAction={async (slotId) => { 'use server'; await deleteSlotAction(slotId, id); }}
+    />
+    </>
   );
 }

@@ -178,6 +178,81 @@ export interface CreatePairInput {
   pair_sku?:          string;           // omit to auto-generate
 }
 
+// ── Update input type ─────────────────────────────────────────────────────────
+
+export interface UpdatePairInput {
+  pair_sku?:          string;
+  pair_price_gbp?:    number;
+  total_carat?:       number;
+  carat_per_stone?:   number | null;
+  colour?:            string | null;
+  clarity?:           string | null;
+  colour_intensity?:  ColourIntensity | null;
+  colour_description?: string | null;
+  matching_notes?:    string | null;
+  // is_published is not here — use publishPair() / unpublishPair() instead
+}
+
+// ── Admin view type (includes matching_notes + constituent summaries) ──────────
+
+export interface DiamondSummary {
+  id:           string;
+  sku:          string;
+  cut:          string;
+  carat:        number;
+  colour:       string | null;
+  clarity:      string | null;
+  status:       PairStatus;
+  is_published: boolean;
+}
+
+/**
+ * Admin-only view of a diamond pair.
+ * Includes matching_notes (intentionally excluded from public DiamondPair).
+ * Optionally includes constituent diamond summaries from a join.
+ */
+export interface DiamondPairAdmin {
+  id:                 string;
+  pair_sku:           string;
+  diamond_id_a:       string;
+  diamond_id_b:       string;
+  shape:              string;
+  diamond_category:   DiamondCategory;
+  colour_family:      ColourFamily | null;
+  colour:             string | null;
+  clarity:            string | null;
+  colour_intensity:   ColourIntensity | null;
+  colour_description: string | null;
+  total_carat:        number;
+  carat_per_stone:    number | null;
+  pair_price_gbp:     number;
+  status:             PairStatus;
+  is_published:       boolean;
+  held_until:         string | null;
+  matching_notes:     string | null;
+  created_at:         string;
+  updated_at:         string;
+  diamond_a?:         DiamondSummary;
+  diamond_b?:         DiamondSummary;
+}
+
+export interface UpdateSlotInput {
+  slot_key?:                  string;
+  label?:                     string;
+  display_order?:             number;
+  role?:                      StoneSlotRole;
+  selection_mode?:            SlotSelectionMode;
+  required?:                  boolean;
+  quantity?:                  number;
+  compatible_shapes?:         string[];
+  min_carat?:                 number | null;
+  max_carat?:                 number | null;
+  allowed_diamond_categories?: DiamondCategory[];
+  allowed_colour_families?:   ColourFamily[] | null;
+  price_mode?:                SlotPriceMode;
+  fixed_stone_description?:   string | null;
+}
+
 export interface CreateSlotInput {
   jewellery_product_id:       string;
   slot_key:                   string;
