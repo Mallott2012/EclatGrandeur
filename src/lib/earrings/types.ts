@@ -2,11 +2,10 @@ import type { DiamondCategory, ColourFamily, ColourIntensity } from '@/lib/diamo
 import type { SlotSelectionMode } from '@/lib/pairs/types';
 
 // ── Public-safe pair card (Part A result) ─────────────────────────────────────
-// Does NOT include matching_notes, held_by_cart, approval fields, or DB internals.
+// Does NOT include pair_sku, matching_notes, held_by_cart, approval fields, or DB internals.
 
 export interface CompatiblePairCard {
   id:                 string;
-  pair_sku:           string;
   shape:              string;
   total_carat:        number;
   carat_per_stone:    number | null;

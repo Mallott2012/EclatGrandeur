@@ -122,7 +122,7 @@ export async function listCompatiblePairsForSlot(opts: {
   let q = supabase
     .from('diamond_pairs')
     .select(`
-      id, pair_sku, shape, diamond_category, colour_family, colour, clarity,
+      id, shape, diamond_category, colour_family, colour, clarity,
       colour_intensity, colour_description, total_carat, carat_per_stone,
       pair_price_gbp, status, is_published, held_until,
       diamond_a:diamonds!diamond_id_a(
@@ -174,7 +174,6 @@ export async function listCompatiblePairsForSlot(opts: {
 
     results.push({
       id:                 row.id as string,
-      pair_sku:           row.pair_sku as string,
       shape:              row.shape as string,
       total_carat:        parseFloat(row.total_carat as string),
       carat_per_stone:    row.carat_per_stone != null ? parseFloat(row.carat_per_stone as string) : null,

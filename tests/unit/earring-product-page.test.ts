@@ -26,13 +26,13 @@ function singleSlot(slot_key: string): SlotDescriptor {
 }
 
 const PAIR_A: CompatiblePairCard = {
-  id: 'pair-a', pair_sku: 'SKU-A', shape: 'round', total_carat: 2.0, carat_per_stone: 1.0,
+  id: 'pair-a', shape: 'round', total_carat: 2.0, carat_per_stone: 1.0,
   colour: 'D', clarity: 'VS1', colour_family: null, colour_intensity: null,
   colour_description: null, pair_price_gbp: 8000, diamond_category: 'white',
 };
 
 const PAIR_B: CompatiblePairCard = {
-  id: 'pair-b', pair_sku: 'SKU-B', shape: 'oval', total_carat: 3.0, carat_per_stone: 1.5,
+  id: 'pair-b', shape: 'oval', total_carat: 3.0, carat_per_stone: 1.5,
   colour: 'E', clarity: 'VS2', colour_family: null, colour_intensity: null,
   colour_description: null, pair_price_gbp: 10000, diamond_category: 'white',
 };
@@ -263,13 +263,13 @@ describe('E4-T12: CompatiblePairCard interface excludes internal fields', () => 
     const card: CompatiblePairCard = { ...PAIR_A };
     const keys = Object.keys(card);
 
-    // Must contain
+    // Must contain public display fields
     expect(keys).toContain('id');
-    expect(keys).toContain('pair_sku');
     expect(keys).toContain('total_carat');
     expect(keys).toContain('pair_price_gbp');
 
-    // Must NOT contain internal fields
+    // Must NOT contain internal fields (pair_sku removed in E6-D1 fix)
+    expect(keys).not.toContain('pair_sku');
     expect(keys).not.toContain('matching_notes');
     expect(keys).not.toContain('held_by_cart');
     expect(keys).not.toContain('hold_token');

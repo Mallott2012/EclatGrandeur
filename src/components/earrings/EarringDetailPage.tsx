@@ -187,6 +187,9 @@ export function EarringDetailPage({
     setSelectedPairs(prev => { const n = new Map(prev); n.set(activeSelectorSlot!, pair); return n; });
     updateUrl({ [activeSelectorSlot]: pair.id });
     setActiveSelectorSlot(null);
+    // Reset CTA state so the updated configuration can be added fresh
+    setAddToCartState('idle');
+    setAddToCartError(null);
   }
 
   // ── Add to Cart ──────────────────────────────────────────────────────────────
