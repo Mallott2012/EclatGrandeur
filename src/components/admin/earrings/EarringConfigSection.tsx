@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import type { EarringType } from '@/lib/jewellery/types';
 import type { JewelleryStoneSlot } from '@/lib/pairs/types';
+import type { EarringConfigurationAvailability } from '@/lib/earrings/types';
 import type { CreateSlotInput, UpdateSlotInput, StoneSlotRole, SlotSelectionMode, SlotPriceMode } from '@/lib/pairs/types';
 import { validateSlotConfig, validateSlotsForProduct } from '@/lib/pairs/validation';
 
@@ -27,14 +28,15 @@ const PRICE_MODES: SlotPriceMode[]         = ['selected_inventory', 'included_in
 const SHAPES = ['round','oval','cushion','emerald','pear','radiant','princess','marquise','asscher','heart'];
 
 interface Props {
-  productId:         string;
-  earringType:       EarringType | null;
-  slots:             JewelleryStoneSlot[];
-  pairCounts:        (number | null)[];  // parallel to slots; null for non-matched_pair slots
-  saveTypeAction:    (productId: string, type: EarringType | null) => Promise<void>;
-  createSlotAction:  (input: CreateSlotInput) => Promise<{ error?: string }>;
-  updateSlotAction:  (slotId: string, patch: UpdateSlotInput) => Promise<{ error?: string }>;
-  deleteSlotAction:  (slotId: string) => Promise<void>;
+  productId:          string;
+  earringType:        EarringType | null;
+  slots:              JewelleryStoneSlot[];
+  pairCounts:         (number | null)[];  // parallel to slots; null for non-matched_pair slots
+  configAvailability: EarringConfigurationAvailability | null;
+  saveTypeAction:     (productId: string, type: EarringType | null) => Promise<void>;
+  createSlotAction:   (input: CreateSlotInput) => Promise<{ error?: string }>;
+  updateSlotAction:   (slotId: string, patch: UpdateSlotInput) => Promise<{ error?: string }>;
+  deleteSlotAction:   (slotId: string) => Promise<void>;
 }
 
 type SlotFormState = {
@@ -119,6 +121,7 @@ export function EarringConfigSection({
   earringType,
   slots,
   pairCounts,
+  configAvailability,
   saveTypeAction,
   createSlotAction,
   updateSlotAction,
@@ -370,6 +373,15 @@ export function EarringConfigSection({
             >
               + Add Slot
             </button>
+          )}
+
+          {/* Configuration completability (Part D) */}
+          {configAvailability && configAvailability.requiredSlotCount > 0 && (
+            <p className="font-sans mt-3 pt-3" style={{ fontSize: 10, borderTop: `1px solid ${BORDER}`, color: configAvailability.isCompletable ? '#4a9e6b' : '#c9a84c' }}>
+              {configAvailability.isCompletable
+                ? 'Complete configuration currently possible'
+                : 'No complete configuration currently available'}
+            </p>
           )}
 
           {/* Slot form */}

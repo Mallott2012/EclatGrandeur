@@ -6,6 +6,7 @@ import { uploadJewelleryMedia, deleteJewelleryMedia } from '@/lib/storage/jewell
 import { requireStaffRole } from '@/lib/staff';
 import { AdminProductEditor } from '@/components/admin/AdminProductEditor';
 import { listSlotsForProduct, countCompatiblePairsForSlot } from '@/lib/pairs/service';
+import { getEarringConfigurationAvailability } from '@/lib/earrings/configuration';
 import { EarringConfigSection } from '@/components/admin/earrings/EarringConfigSection';
 import {
   updateProductAction,
@@ -36,21 +37,24 @@ export default async function AdminEARRINGEditPage({ params }: Props) {
 
   if (!product) notFound();
 
-  // Earring-specific: fetch stone slots and compatible pair counts
+  // Earring-specific: fetch stone slots, compatible pair counts, and completability
   const slots = await listSlotsForProduct(id).catch(() => []);
-  const pairCounts = await Promise.all(
-    slots.map(s =>
-      s.selection_mode === 'matched_pair'
-        ? countCompatiblePairsForSlot({
-            shapes:          s.compatible_shapes,
-            min_carat:       s.min_carat,
-            max_carat:       s.max_carat,
-            categories:      s.allowed_diamond_categories,
-            colour_families: s.allowed_colour_families,
-          }).catch(() => 0)
-        : Promise.resolve(null)
-    )
-  );
+  const [pairCounts, configAvailability] = await Promise.all([
+    Promise.all(
+      slots.map(s =>
+        s.selection_mode === 'matched_pair'
+          ? countCompatiblePairsForSlot({
+              shapes:          s.compatible_shapes,
+              min_carat:       s.min_carat,
+              max_carat:       s.max_carat,
+              categories:      s.allowed_diamond_categories,
+              colour_families: s.allowed_colour_families,
+            }).catch(() => 0)
+          : Promise.resolve(null)
+      )
+    ),
+    getEarringConfigurationAvailability(id).catch(() => null),
+  ]);
 
   const mediaItems = product.media
     .sort((a, b) => a.display_order - b.display_order)
@@ -186,6 +190,7 @@ export default async function AdminEARRINGEditPage({ params }: Props) {
       earringType={product.earring_type}
       slots={slots}
       pairCounts={pairCounts}
+      configAvailability={configAvailability}
       saveTypeAction={async (pid, type) => { 'use server'; await saveEarringTypeAction(pid, type); }}
       createSlotAction={async (input) => { 'use server'; return await createSlotAction(input); }}
       updateSlotAction={async (slotId, patch) => { 'use server'; return await updateSlotAction(slotId, patch, id); }}
