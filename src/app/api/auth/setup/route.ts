@@ -4,12 +4,23 @@ import { createAdminClient } from '@/lib/supabase/admin';
 /**
  * POST /api/auth/setup
  *
- * One-time route to create the very first super_admin user.
- * It is automatically disabled once any super_admin row exists in staff_roles.
- * No auth is required — anyone can call it — but it is a no-op after the first
- * super admin is created, so it is safe to leave in place.
+ * One-time route used to create the very first super_admin user.
+ *
+ * DISABLED BY DEFAULT. To re-enable for a fresh setup, set:
+ *   SETUP_ENABLED=true
+ * in your local .env.local (server-only, never NEXT_PUBLIC_).
+ * Remove or unset SETUP_ENABLED immediately after use.
+ *
+ * The route also self-blocks once any super_admin row exists in staff_roles,
+ * providing a second layer of protection even when SETUP_ENABLED is set.
  */
 export async function POST(request: Request) {
+  // Hard-disabled unless SETUP_ENABLED=true is explicitly set server-side.
+  // Defaults to off — no client can override this.
+  if (process.env.SETUP_ENABLED !== 'true') {
+    return NextResponse.json({ error: 'Not found.' }, { status: 404 });
+  }
+
   const { email, password } = await request.json();
 
   if (!email || !password) {

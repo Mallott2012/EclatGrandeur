@@ -1,0 +1,8 @@
+#!/bin/sh
+# pre-commit — block commits containing likely credentials.
+# Installed automatically when 'npm install' runs (via the prepare script).
+# To install manually: git config core.hooksPath .githooks
+#
+# Scans only staged files. Reports file:line:pattern-name — never values.
+
+node scripts/check-secrets.mjs --staged
