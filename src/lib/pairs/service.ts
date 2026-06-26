@@ -131,10 +131,33 @@ export async function publishPair(pairId: string): Promise<void> {
 
 /**
  * Mark pair as unpublished (hidden from catalogue).
- * Does not change reservation status — reserved pairs remain reserved.
+ *
+ * Rejects with an error when the pair holds a valid (unexpired) reservation —
+ * unpublishing a reserved pair would break constituent-diamond locking because
+ * getActivePairDiamondIds would no longer see the pair (published=false), yet
+ * the diamonds would remain reserved with no route back to available.
+ *
+ * This check is belt-and-suspenders; the database trigger
+ * trg_prevent_unpublish_reserved (migration 0032) enforces the same rule.
  */
 export async function unpublishPair(pairId: string): Promise<void> {
   const supabase = createAdminClient();
+  const now      = new Date().toISOString();
+
+  const { data: pair, error: fetchErr } = await supabase
+    .from('diamond_pairs')
+    .select('status, held_until')
+    .eq('id', pairId)
+    .single();
+
+  if (fetchErr) throw new Error(`unpublishPair: ${fetchErr.message}`);
+
+  if (pair?.status === 'reserved' && pair.held_until && pair.held_until > now) {
+    throw new Error(
+      `unpublishPair: cannot unpublish pair ${pairId} — active reservation expires at ${pair.held_until}`,
+    );
+  }
+
   const { error } = await supabase
     .from('diamond_pairs')
     .update({ is_published: false })

@@ -1,5 +1,44 @@
 import { isEclatEligible, type EligibilityInput } from '@/lib/diamonds/eligibility';
 import type { DiamondCategory, ColourFamily, DiamondStatus } from '@/lib/diamonds/types';
+import type { PairStatus } from './types';
+
+// ── Central pair-lock definition ──────────────────────────────────────────────
+
+export interface PairLockInput {
+  status:       PairStatus;
+  is_published: boolean;
+  held_until:   string | null;
+}
+
+/**
+ * Single source of truth for whether a pair currently locks its constituent
+ * diamonds against individual use (ring selection, individual reservation, etc.).
+ *
+ * A pair locks when ANY of these three conditions is true:
+ *   1. status = 'sold'                              → permanent lock
+ *   2. is_published = true AND status = 'available' → live in catalogue
+ *   3. status = 'reserved' AND held_until > now     → unexpired reservation
+ *                                                     (regardless of is_published)
+ *
+ * A pair does NOT lock when:
+ *   - status = 'reserved' AND held_until ≤ now  (expired hold)
+ *   - is_published = false AND no valid reservation
+ *
+ * `now` is injectable so tests can control the reference time.
+ * This logic is mirrored exactly in the PostgreSQL functions (0032) and in
+ * getActivePairDiamondIds() and claimDiamond() database queries.
+ */
+export function isPairLockingDiamonds(
+  pair: PairLockInput,
+  now: Date = new Date(),
+): boolean {
+  if (pair.status === 'sold') return true;
+  if (pair.is_published && pair.status === 'available') return true;
+  if (pair.status === 'reserved' && pair.held_until !== null) {
+    return pair.held_until > now.toISOString();
+  }
+  return false;
+}
 
 // ── Input types ───────────────────────────────────────────────────────────────
 

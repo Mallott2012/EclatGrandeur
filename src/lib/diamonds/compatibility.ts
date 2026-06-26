@@ -80,19 +80,28 @@ function parseCaratBound(v: string | number | null): number | null {
 }
 
 /**
- * Returns the IDs of every diamond that belongs to an active published pair.
- * "Active published pair" = is_published=true AND status != 'sold'.
+ * Returns IDs of every diamond currently locked by an active pair.
  *
- * These diamonds must be excluded from all individual-diamond selection
- * and reservation paths.  A draft pair (is_published=false) or a sold pair
- * does NOT permanently lock its member diamonds.
+ * Uses the authoritative three-condition pair-lock definition (mirrored in
+ * migration 0032 and src/lib/pairs/eligibility.ts#isPairLockingDiamonds):
+ *   1. status = 'sold'                              → permanent
+ *   2. is_published = true AND status = 'available' → live in catalogue
+ *   3. status = 'reserved' AND held_until > now     → unexpired reservation
+ *
+ * Expired-hold pairs (held_until ≤ now) do NOT appear here, so those
+ * diamonds return to individual availability immediately upon hold expiry.
  */
 async function getActivePairDiamondIds(admin: AdminClient): Promise<string[]> {
+  const now = new Date().toISOString()
+
   const { data } = await admin
     .from('diamond_pairs')
     .select('diamond_id_a, diamond_id_b')
-    .eq('is_published', true)
-    .neq('status', 'sold')
+    .or(
+      `status.eq.sold,` +
+      `and(is_published.eq.true,status.eq.available),` +
+      `and(status.eq.reserved,held_until.gt.${now})`
+    )
 
   if (!data || data.length === 0) return []
 

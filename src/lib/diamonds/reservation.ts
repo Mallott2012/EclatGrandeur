@@ -15,21 +15,30 @@ export async function claimDiamond(
 ): Promise<boolean> {
   const admin = createAdminClient()
 
-  // Guard: reject if this diamond is a member of any active published pair.
-  // An "active published pair" is is_published=true AND status != 'sold'.
-  // Even if the pair is available (not yet reserved by any cart), the diamond
-  // must not be individually claimable — it may only be reserved as part of
-  // the pair via the atomic pair-claim functions.
+  // Guard: reject if this diamond is currently locked by an active pair.
+  //
+  // Uses the same three-condition lock definition as getActivePairDiamondIds
+  // and migration 0032:
+  //   1. status = 'sold'                              → permanent lock
+  //   2. is_published = true AND status = 'available' → live in catalogue
+  //   3. status = 'reserved' AND held_until > now     → unexpired reservation
+  //
+  // Expired-hold pairs (held_until ≤ now) do NOT block — the diamond is free
+  // for individual use once its pair's hold expires.
+  const now = new Date().toISOString()
+
   const { count: pairCount } = await admin
     .from('diamond_pairs')
     .select('id', { count: 'exact', head: true })
-    .eq('is_published', true)
-    .neq('status', 'sold')
+    .or(
+      `status.eq.sold,` +
+      `and(is_published.eq.true,status.eq.available),` +
+      `and(status.eq.reserved,held_until.gt.${now})`
+    )
     .or(`diamond_id_a.eq.${diamondId},diamond_id_b.eq.${diamondId}`)
 
   if ((pairCount ?? 0) > 0) return false
 
-  const now       = new Date().toISOString()
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString()
 
   const { data } = await admin

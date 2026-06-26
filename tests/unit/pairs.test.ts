@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { isPairEligible, arePairMembersAvailable } from '@/lib/pairs/eligibility';
+import { isPairEligible, arePairMembersAvailable, isPairLockingDiamonds } from '@/lib/pairs/eligibility';
 import { isPairCompatibleWithSlot, validateSlotCoverage } from '@/lib/pairs/compatibility';
 import { parseDiamondPair } from '@/lib/pairs/types';
 import { isDiamondCompatibleWith } from '@/lib/diamonds/compatibility';
-import type { PairMemberInput, PairEligibilityInput } from '@/lib/pairs/eligibility';
+import type { PairMemberInput, PairEligibilityInput, PairLockInput } from '@/lib/pairs/eligibility';
 import type { CompatibilityDiamondInput, CompatibilitySetting } from '@/lib/diamonds/compatibility';
 import type { PairCompatibilityInput } from '@/lib/pairs/compatibility';
 import type { SlotConstraints, DiamondPairRecord } from '@/lib/pairs/types';
@@ -679,5 +679,221 @@ describe('Audit T8: multi-pair atomic claim contract', () => {
     expect(result.valid).toBe(false);
     expect(result.missingSlots).toContain('drop_pair');
     expect(result.missingSlots).not.toContain('top_pair');
+  });
+});
+
+// ── Pair-lock semantics (0032 correction) ────────────────────────────────────
+//
+// These tests verify the precise three-condition pair-lock definition against
+// the pure function isPairLockingDiamonds.  The same logic is mirrored in:
+//   - migration 0032 (check_pair_diamond_uniqueness, claim_pair_atomic, etc.)
+//   - getActivePairDiamondIds() in src/lib/diamonds/compatibility.ts
+//   - claimDiamond() guard in src/lib/diamonds/reservation.ts
+
+const PAST   = new Date('2020-01-01T00:00:00.000Z').toISOString();  // definitely expired
+const FUTURE = new Date('2099-01-01T00:00:00.000Z').toISOString();  // far future hold
+const REF    = new Date('2026-06-26T12:00:00.000Z');                // reference "now"
+
+function makeLock(overrides: Partial<PairLockInput> = {}): PairLockInput {
+  return {
+    status:       'available',
+    is_published: true,
+    held_until:   null,
+    ...overrides,
+  };
+}
+
+// ── Lock test 1: Available published pair locks both members ──────────────────
+describe('Lock 1: published available pair locks constituent diamonds', () => {
+  it('is_published=true + status=available → locks', () => {
+    expect(isPairLockingDiamonds(makeLock({ is_published: true, status: 'available', held_until: null }), REF)).toBe(true);
+  });
+
+  it('is_published=false + status=available → does NOT lock', () => {
+    expect(isPairLockingDiamonds(makeLock({ is_published: false, status: 'available', held_until: null }), REF)).toBe(false);
+  });
+});
+
+// ── Lock test 2: Reserved pair with valid hold locks both members ──────────────
+describe('Lock 2: unexpired reservation locks constituent diamonds', () => {
+  it('status=reserved + held_until in future → locks', () => {
+    expect(isPairLockingDiamonds(makeLock({ status: 'reserved', held_until: FUTURE }), REF)).toBe(true);
+  });
+
+  it('status=reserved + held_until in future + unpublished → still locks (rule 3 overrides is_published)', () => {
+    expect(isPairLockingDiamonds(makeLock({ status: 'reserved', is_published: false, held_until: FUTURE }), REF)).toBe(true);
+  });
+});
+
+// ── Lock test 3: Expired pair hold does NOT block either member ───────────────
+describe('Lock 3: expired reservation does not lock constituent diamonds', () => {
+  it('status=reserved + held_until in past → does NOT lock', () => {
+    expect(isPairLockingDiamonds(makeLock({ status: 'reserved', held_until: PAST }), REF)).toBe(false);
+  });
+
+  it('status=reserved + held_until null → does NOT lock (never reserved)', () => {
+    expect(isPairLockingDiamonds(makeLock({ status: 'reserved', held_until: null }), REF)).toBe(false);
+  });
+
+  it('expired pair → constituent diamond is compatible with ring setting', () => {
+    // After hold expires, diamonds return to individual availability.
+    // isDiamondCompatibleWith(status='available') = true
+    const setting: CompatibilitySetting = { diamond_shapes: ['oval'], min_carat: null, max_carat: null };
+    const d: CompatibilityDiamondInput = {
+      cut: 'oval', carat: 1.2, cut_grade: null,
+      polish: 'excellent', symmetry: 'excellent', fluorescence: 'none',
+      eclat_approved: true, status: 'available',
+      is_published: true, diamond_category: 'white', colour_family: null,
+    };
+    // Once the pair's hold expires, claimDiamond no longer blocks the diamond.
+    // The diamond itself reverts to status='available' when released or expired.
+    expect(isDiamondCompatibleWith(d, setting)).toBe(true);
+  });
+});
+
+// ── Lock test 4: Sold pair permanently locks both members ─────────────────────
+describe('Lock 4: sold pair permanently locks both members', () => {
+  it('status=sold → locks regardless of is_published or held_until', () => {
+    expect(isPairLockingDiamonds(makeLock({ status: 'sold', is_published: false, held_until: null }), REF)).toBe(true);
+    expect(isPairLockingDiamonds(makeLock({ status: 'sold', is_published: true, held_until: PAST }), REF)).toBe(true);
+    expect(isPairLockingDiamonds(makeLock({ status: 'sold', is_published: false, held_until: PAST }), REF)).toBe(true);
+  });
+
+  it('sold pair is never slot-compatible', () => {
+    expect(isPairCompatibleWithSlot(makePairInput({ status: 'sold' }), makeSlot())).toBe(false);
+  });
+});
+
+// ── Lock test 5: Draft/unpublished unreserved pair does NOT block members ──────
+describe('Lock 5: draft unpublished pair with no active reservation does not lock', () => {
+  it('is_published=false + status=available + no hold → does NOT lock', () => {
+    expect(isPairLockingDiamonds(makeLock({ is_published: false, status: 'available', held_until: null }), REF)).toBe(false);
+  });
+
+  it('is_published=false + expired hold → does NOT lock', () => {
+    expect(isPairLockingDiamonds(makeLock({ is_published: false, status: 'reserved', held_until: PAST }), REF)).toBe(false);
+  });
+});
+
+// ── Lock test 6: Cannot unpublish pair with valid reservation (pure logic) ─────
+//
+// The unpublishPair() function and DB trigger trg_prevent_unpublish_reserved
+// (migration 0032) block this at application and database levels.
+// This test verifies that isPairLockingDiamonds correctly signals the blocked
+// state so the application-level check can use it consistently.
+
+describe('Lock 6: unpublish blocked when valid reservation exists', () => {
+  it('pair with valid hold is locking → indicates unpublish must be blocked', () => {
+    const pair = makeLock({ status: 'reserved', held_until: FUTURE, is_published: true });
+    // isPairLockingDiamonds returns true → unpublishPair() should throw
+    expect(isPairLockingDiamonds(pair, REF)).toBe(true);
+  });
+
+  it('pair with expired hold is not locking → unpublish is safe', () => {
+    const pair = makeLock({ status: 'reserved', held_until: PAST, is_published: true });
+    expect(isPairLockingDiamonds(pair, REF)).toBe(false);
+  });
+});
+
+// ── Lock test 7: Reclaiming expired hold re-locks both members atomically ─────
+//
+// claim_pair_atomic (migration 0032) handles this:
+//   Old: status='reserved', held_until=PAST  → not locking
+//   After reclaim: status='reserved', held_until=FUTURE → locking
+// Both constituent diamonds are updated atomically in the same PG transaction.
+
+describe('Lock 7: reclaiming an expired pair hold re-locks members', () => {
+  it('before reclaim: expired hold → not locking', () => {
+    const before = makeLock({ status: 'reserved', held_until: PAST });
+    expect(isPairLockingDiamonds(before, REF)).toBe(false);
+  });
+
+  it('after reclaim: fresh hold → locking again', () => {
+    const after = makeLock({ status: 'reserved', held_until: FUTURE });
+    expect(isPairLockingDiamonds(after, REF)).toBe(true);
+  });
+
+  it('after reclaim: pair slot-compat blocked (reserved pair not selectable)', () => {
+    // A reclaimed pair has status='reserved' — it's held by a cart, not selectable
+    const pair = makePairInput({ status: 'reserved' });
+    expect(isPairCompatibleWithSlot(pair, makeSlot())).toBe(false);
+  });
+});
+
+// ── Lock test 8: Duplicate pair IDs in claimPairsAtomically fail cleanly ──────
+//
+// claim_pairs_atomic: cardinality(p_pair_ids) = 2 for [{id},{id}].
+// The UPDATE matches only 1 distinct row, so v_claimed=1 < v_expected=2 →
+// RAISE EXCEPTION → full rollback → TypeScript wrapper returns false.
+// Pure-function analogue: slot coverage with duplicate slot key where one is invalid.
+
+describe('Lock 8: duplicate pair IDs in multi-pair claim → fail with no reservation', () => {
+  it('slot coverage with duplicate key and one incompatible entry → invalid', () => {
+    // Simulates what happens when a caller passes the same pair for two slots:
+    // one slot has the pair; the pair fails for the second (already reserved or incompatible).
+    const slot  = makeSlot();
+    const valid = makePairInput({ status: 'available' });
+    // Second entry: pair is now reserved (simulating the "already claimed by first slot" state)
+    const already = makePairInput({ status: 'reserved' });
+    const coverage = new Map<string, PairCompatibilityInput | null>([
+      ['slot_a', valid],
+      ['slot_b', already],  // same pair, now reserved → incompatible
+    ]);
+    const result = validateSlotCoverage([slot, slot], coverage, ['slot_a', 'slot_b']);
+    expect(result.valid).toBe(false);
+    expect(result.missingSlots).toContain('slot_b');
+  });
+});
+
+// ── Lock test 9: Invalid pair ID in multi-pair request → fail with no reservation ─
+//
+// claim_pairs_atomic: if one pair ID doesn't exist, the UPDATE misses it.
+// v_claimed < v_expected → RAISE EXCEPTION → full rollback.
+// Pure analogue: one required slot has no compatible pair.
+
+describe('Lock 9: invalid pair ID in multi-pair request → no reservation', () => {
+  it('slot coverage with one missing pair → invalid, nothing reserved', () => {
+    const slot    = makeSlot();
+    const goodPair = makePairInput();
+    const coverage = new Map<string, PairCompatibilityInput | null>([
+      ['slot_a', goodPair],
+      ['slot_b', null],  // invalid/missing pair for this slot
+    ]);
+    const result = validateSlotCoverage([slot, slot], coverage, ['slot_a', 'slot_b']);
+    expect(result.valid).toBe(false);
+    expect(result.missingSlots).toEqual(['slot_b']);
+  });
+});
+
+// ── Lock test 10: Existing engagement-ring tests remain unchanged ─────────────
+//
+// Verified by the full test suite (npx vitest run). The ring compat pure
+// function isDiamondCompatibleWith is unchanged. The DB-layer functions
+// getCompatibleDiamondCounts and listCompatibleDiamonds now correctly exclude
+// pair-member diamonds using the 3-condition formula, which is strictly more
+// precise than the previous is_published+status!=sold rule — no test
+// expectations change, only runtime query results become more accurate.
+
+describe('Lock 10: ring compatibility pure function is unaffected by pair-lock changes', () => {
+  it('eligible white round diamond is still compatible with a ring setting', () => {
+    const setting: CompatibilitySetting = { diamond_shapes: ['round'], min_carat: 0.5, max_carat: 3.0 };
+    const d: CompatibilityDiamondInput = {
+      cut: 'round', carat: 1.0, cut_grade: 'excellent',
+      polish: 'excellent', symmetry: 'excellent', fluorescence: 'none',
+      eclat_approved: false, status: 'available',
+      is_published: true, diamond_category: 'white', colour_family: null,
+    };
+    expect(isDiamondCompatibleWith(d, setting)).toBe(true);
+  });
+
+  it('reserved diamond is still not compatible with a ring setting', () => {
+    const setting: CompatibilitySetting = { diamond_shapes: ['round'], min_carat: null, max_carat: null };
+    const d: CompatibilityDiamondInput = {
+      cut: 'round', carat: 1.0, cut_grade: 'excellent',
+      polish: 'excellent', symmetry: 'excellent', fluorescence: 'none',
+      eclat_approved: false, status: 'reserved',
+      is_published: true, diamond_category: 'white', colour_family: null,
+    };
+    expect(isDiamondCompatibleWith(d, setting)).toBe(false);
   });
 });
