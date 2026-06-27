@@ -220,6 +220,9 @@ export interface AdminProductData {
     headStyle?:                  string | null;
   }) => Promise<void>;
   // diamond management (full CRUD + assignment)
+  // Earrings are pair-based: they hide this individual-diamond panel and manage
+  // matched pairs via the diamond-pairs admin + earring slot configuration instead.
+  showDiamondPanel?:   boolean;   // default true
   assignedDiamondIds:  string[];
   allDiamonds:         DiamondRow[];
   // callbacks (server actions)
@@ -1129,32 +1132,38 @@ export function AdminProductEditor(props: AdminProductData) {
             </div>
           )}
 
-          {/* Diamond row — matches frontend display */}
-          <div className="flex items-center justify-between py-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
-            <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
-              Diamond
-            </span>
-            <button
-              type="button"
-              onClick={() => setDiamondPanelOpen(v => !v)}
-              className="font-sans"
-              style={{ fontSize: 13, color: G, fontWeight: 300, textDecoration: 'underline', textUnderlineOffset: 3 }}
-            >
-              {props.assignedDiamondIds.length === 0
-                ? 'None assigned — click to manage'
-                : `${props.assignedDiamondIds.length} diamond${props.assignedDiamondIds.length === 1 ? '' : 's'} assigned`}
-            </button>
-          </div>
+          {/* Diamond assignment — hidden for pair-based products (e.g. earrings).
+              Earrings manage matched pairs via the diamond-pairs admin + slot config. */}
+          {props.showDiamondPanel !== false && (
+            <>
+              {/* Diamond row — matches frontend display */}
+              <div className="flex items-center justify-between py-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
+                <span className="font-sans uppercase" style={{ fontSize: 11, letterSpacing: '0.16em', color: '#999' }}>
+                  Diamond
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setDiamondPanelOpen(v => !v)}
+                  className="font-sans"
+                  style={{ fontSize: 13, color: G, fontWeight: 300, textDecoration: 'underline', textUnderlineOffset: 3 }}
+                >
+                  {props.assignedDiamondIds.length === 0
+                    ? 'None assigned — click to manage'
+                    : `${props.assignedDiamondIds.length} diamond${props.assignedDiamondIds.length === 1 ? '' : 's'} assigned`}
+                </button>
+              </div>
 
-          {/* SELECT A DIAMOND — same dark full-width button as frontend */}
-          <button
-            type="button"
-            onClick={() => setDiamondPanelOpen(v => !v)}
-            className="w-full font-sans uppercase mt-8 py-4"
-            style={{ fontSize: 11, letterSpacing: '0.28em', backgroundColor: G, color: '#fff' }}
-          >
-            Manage Diamonds
-          </button>
+              {/* SELECT A DIAMOND — same dark full-width button as frontend */}
+              <button
+                type="button"
+                onClick={() => setDiamondPanelOpen(v => !v)}
+                className="w-full font-sans uppercase mt-8 py-4"
+                style={{ fontSize: 11, letterSpacing: '0.28em', backgroundColor: G, color: '#fff' }}
+              >
+                Manage Diamonds
+              </button>
+            </>
+          )}
 
           {/* Save to Shortlist — same style, non-functional in admin (just for visual parity) */}
           <button
@@ -1223,7 +1232,8 @@ export function AdminProductEditor(props: AdminProductData) {
         </div>
       </div>
 
-      {/* ── DIAMOND DRAWER — fixed slide-over, opens immediately on button click ── */}
+      {/* ── DIAMOND DRAWER — fixed slide-over (hidden for pair-based products) ── */}
+      {props.showDiamondPanel !== false && (<>
       {/* Backdrop */}
       {diamondPanelOpen && (
         <div
@@ -1278,6 +1288,7 @@ export function AdminProductEditor(props: AdminProductData) {
           />
         </div>
       </div>
+      </>)}
     </div>
   );
 }

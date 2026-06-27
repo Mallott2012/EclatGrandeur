@@ -87,6 +87,7 @@ export default async function AdminEARRINGEditPage({ params }: Props) {
       metals={product.metals}
       mediaItems={mediaItems}
       published={product.is_published}
+      showDiamondPanel={false}
       assignedDiamondIds={assignedIds}
       allDiamonds={diamondRows}
       onSave={async (patch) => { 'use server'; await updateProductAction(id, patch as Record<string, unknown>); }}
