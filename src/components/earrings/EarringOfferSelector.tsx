@@ -1,7 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
-import useSWR from 'swr';
+import { useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import { EarringOfferCard } from './EarringOfferCard';
 import { clarityLabel, type PublicEarringOffer } from '@/lib/earrings/offer-types';
@@ -12,11 +11,9 @@ const BORDER = '#e8e8e8';
 const CLARITY_RANK = ['VS2', 'VS1', 'VVS2', 'VVS1', 'IF', 'FL'];
 const INITIAL_DISPLAY = 12;
 
-const fetcher = (url: string): Promise<PublicEarringOffer[]> =>
-  fetch(url).then(r => r.json()).then(d => Array.isArray(d?.offers) ? d.offers : []);
-
 interface Props {
-  productId:        string;
+  /** All published offers for the product, provided by the server (instant — no fetch). */
+  offers:           PublicEarringOffer[];
   metal:            string | null;
   selectedOfferId:  string | null;
   onSelect:         (offer: PublicEarringOffer) => void;
@@ -62,12 +59,14 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
   );
 }
 
-export function EarringOfferSelector({ productId, metal, selectedOfferId, onSelect, onClose }: Props) {
-  const url = `/api/earrings/${productId}/offers${metal ? `?metal=${encodeURIComponent(metal)}` : ''}`;
-  const { data: offers = [], isLoading } = useSWR<PublicEarringOffer[]>(url, fetcher, { revalidateOnFocus: false });
+export function EarringOfferSelector({ offers, metal, selectedOfferId, onSelect, onClose }: Props) {
+  // Offers are already loaded with the page — filter by metal instantly, no fetch.
+  const metalOffers = useMemo(
+    () => offers.filter(o => o.supported_metals.length === 0 || !metal || o.supported_metals.includes(metal)),
+    [offers, metal],
+  );
 
-  // Carat bounds from the available offers.
-  const caratValues = useMemo(() => offers.map(o => o.total_carat), [offers]);
+  const caratValues = useMemo(() => metalOffers.map(o => o.total_carat), [metalOffers]);
   const caratMin = caratValues.length ? Math.min(...caratValues) : 0.5;
   const caratMax = caratValues.length ? Math.max(...caratValues) : 5;
 
@@ -77,20 +76,17 @@ export function EarringOfferSelector({ productId, metal, selectedOfferId, onSele
   const [pendingId, setPendingId] = useState<string | null>(selectedOfferId);
   const [displayLimit, setDisplayLimit] = useState(INITIAL_DISPLAY);
 
-  // Keep the carat range in sync once offers load.
-  useEffect(() => { setCaratRange([caratMin, caratMax]); }, [caratMin, caratMax]);
+  const colourOpts  = useMemo(() => [...new Set(metalOffers.map(o => o.colour))].sort(), [metalOffers]);
+  const clarityOpts = useMemo(() => [...new Set(metalOffers.map(o => o.clarity))].sort((a, b) => CLARITY_RANK.indexOf(a) - CLARITY_RANK.indexOf(b)), [metalOffers]);
 
-  const colourOpts  = useMemo(() => [...new Set(offers.map(o => o.colour))].sort(), [offers]);
-  const clarityOpts = useMemo(() => [...new Set(offers.map(o => o.clarity))].sort((a, b) => CLARITY_RANK.indexOf(a) - CLARITY_RANK.indexOf(b)), [offers]);
-
-  const filtered = useMemo(() => offers.filter(o =>
+  const filtered = useMemo(() => metalOffers.filter(o =>
     o.total_carat >= caratRange[0] - 1e-9 && o.total_carat <= caratRange[1] + 1e-9 &&
     (activeColours.length === 0 || activeColours.includes(o.colour)) &&
     (activeClarities.length === 0 || activeClarities.includes(o.clarity))
-  ), [offers, caratRange, activeColours, activeClarities]);
+  ), [metalOffers, caratRange, activeColours, activeClarities]);
 
   const displayed = filtered.slice(0, displayLimit);
-  const pendingOffer = offers.find(o => o.id === pendingId) ?? null;
+  const pendingOffer = metalOffers.find(o => o.id === pendingId) ?? null;
 
   function toggle(arr: string[], v: string, set: (x: string[]) => void) {
     set(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
@@ -143,7 +139,7 @@ export function EarringOfferSelector({ productId, metal, selectedOfferId, onSele
       <div className="px-7 pt-3 pb-2" style={{ borderBottom: `1px solid ${BORDER}` }}>
         <div className="flex items-center justify-between mb-1.5">
           <span className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.24em', color: '#bbb' }}>
-            {isLoading ? 'Loading…' : `${filtered.length} ${filtered.length === 1 ? 'Pair' : 'Pairs'}`}
+            {`${filtered.length} ${filtered.length === 1 ? 'Pair' : 'Pairs'}`}
           </span>
           <button type="button" onClick={resetFilters} className="font-sans" style={{ fontSize: 10, color: '#bbb', textDecoration: 'underline', textUnderlineOffset: 3 }}>Reset</button>
         </div>
@@ -154,9 +150,7 @@ export function EarringOfferSelector({ productId, metal, selectedOfferId, onSele
 
       {/* Card grid */}
       <div className="flex-1 overflow-y-auto px-7 py-5">
-        {isLoading ? (
-          <div className="py-16 text-center"><p className="font-sans" style={{ fontSize: 12, color: '#ccc' }}>Loading pairs…</p></div>
-        ) : filtered.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className="py-16 text-center">
             <p className="font-sans" style={{ fontSize: 12, color: '#ccc' }}>No diamond pairs match your filters.</p>
             <button type="button" onClick={resetFilters} className="font-sans mt-3 underline" style={{ fontSize: 11, color: '#bbb', textUnderlineOffset: 3 }}>Clear filters</button>

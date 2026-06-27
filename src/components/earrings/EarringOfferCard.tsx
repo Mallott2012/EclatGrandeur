@@ -18,18 +18,6 @@ function cutName(cut: string): string {
   return cut.charAt(0).toUpperCase() + cut.slice(1);
 }
 
-/** Small diamond glyph — two are shown together so the card reads as a pair. */
-function DiamondGlyph() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 44 44" aria-hidden="true">
-      <g fill="none" stroke="#c9b886" strokeWidth="1.4" strokeLinejoin="round">
-        <path d="M9 16 L22 6 L35 16 L22 39 Z" fill="#faf8f3" />
-        <path d="M9 16 L35 16" />
-      </g>
-    </svg>
-  );
-}
-
 /**
  * Compact matched-pair result card. Matches the engagement-ring DiamondCard
  * dimensions, typography, selection radio and price treatment — but shows two
@@ -59,11 +47,8 @@ export function EarringOfferCard({ offer, selected, onSelect }: Props) {
         {selected && <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#fff', display: 'block' }} />}
       </span>
 
-      {/* Two diamonds together + subtle pair label */}
-      <span className="flex items-center gap-2" style={{ marginBottom: 6 }}>
-        <span className="flex items-center gap-1"><DiamondGlyph /><DiamondGlyph /></span>
-        <span className="font-sans uppercase" style={{ fontSize: 8, letterSpacing: '0.18em', color: '#b08d57' }}>Matched pair</span>
-      </span>
+      {/* Subtle pair label */}
+      <span className="font-sans uppercase" style={{ fontSize: 8, letterSpacing: '0.18em', color: '#b08d57', marginBottom: 5 }}>Matched pair</span>
 
       {/* Headline */}
       <span className="font-sans" style={{ fontSize: 12, color: G, fontWeight: 400, lineHeight: 1.4, paddingRight: 20 }}>

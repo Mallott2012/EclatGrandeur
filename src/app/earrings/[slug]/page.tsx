@@ -6,7 +6,7 @@ import { JewelleryDetailPage, type JewelleryDetailProduct } from '@/components/j
 import { EarringDetailPage } from '@/components/earrings/EarringDetailPage';
 import { EarringConsultationNotice } from '@/components/earrings/EarringConsultationNotice';
 import { getJewelleryProductBySlug } from '@/lib/jewellery/service';
-import { countPublishedOffers } from '@/lib/earrings/offers';
+import { listPublishedOffers } from '@/lib/earrings/offers';
 import { resolveEarringRenderMode } from '@/lib/earrings/route-mode';
 import { METAL_LABELS } from '@/lib/diamonds/types';
 import { parseGalleryConfig, parseMetalVariants, buildDefaultVariants } from '@/lib/gallery/types';
@@ -30,9 +30,10 @@ export default async function Page({ params }: Props) {
   const earringType   = (p.earring_type as string | null) ?? null;
 
   // The active customer model is editable Earring Diamond Offers (admin-managed).
-  const offerCount = await countPublishedOffers(p.id).catch(() => 0);
+  // Fetch them server-side so the "Choose Your Diamonds" selector opens instantly.
+  const offers = await listPublishedOffers(p.id).catch(() => []);
   const mode = resolveEarringRenderMode({
-    hasPublishedOffers: offerCount > 0,
+    hasPublishedOffers: offers.length > 0,
     earringType,
     legacyShowDiamond:  Boolean(p.show_diamond),
     legacyIsPair:       Boolean(p.is_pair),
@@ -50,6 +51,7 @@ export default async function Page({ params }: Props) {
           productDescription={p.description ?? ''}
           earringType={earringType ?? 'other'}
           fixedDesignNote={fixedDesignNoteFor(earringType)}
+          offers={offers}
           galleryConfig={galleryConfig}
           metalVariants={metalVariants}
           config={{ categoryLabel: 'Earrings', categoryPath: '/earrings' }}

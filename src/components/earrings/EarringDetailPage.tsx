@@ -29,6 +29,8 @@ export interface EarringDetailPageProps {
   productDescription: string;
   earringType:        string;
   fixedDesignNote:    string | null;
+  /** All published offers, fetched server-side so the selector opens instantly. */
+  offers:             PublicEarringOffer[];
   galleryConfig:      GalleryData;
   metalVariants:      MetalVariant[] | null;
   config:             JewelleryDetailConfig;
@@ -38,7 +40,7 @@ type AddState = 'idle' | 'reserving' | 'success' | 'error';
 
 export function EarringDetailPage({
   productId, productSlug, productName, productSubtitle, productDescription,
-  earringType, fixedDesignNote, galleryConfig, metalVariants, config,
+  earringType, fixedDesignNote, offers, galleryConfig, metalVariants, config,
 }: EarringDetailPageProps) {
   void earringType;
   const { add: addToCart, cartToken, setOpen: setCartOpen } = useCart();
@@ -70,7 +72,10 @@ export function EarringDetailPage({
     setAddState('idle'); setAddError(null);
   }
 
-  const priceLabel = offer ? `£${offer.price_gbp.toLocaleString('en-GB')}` : '';
+  const minOfferPrice = offers.length ? Math.min(...offers.map(o => o.price_gbp)) : null;
+  const priceLabel = offer
+    ? `£${offer.price_gbp.toLocaleString('en-GB')}`
+    : (minOfferPrice !== null ? `From £${minOfferPrice.toLocaleString('en-GB')}` : '');
 
   async function handleAdd() {
     if (!offer || addState === 'reserving') return;
@@ -176,12 +181,6 @@ export function EarringDetailPage({
           {offer && (
             <div className="mt-8 pt-6" style={{ borderTop: `1px solid ${BORDER}` }}>
               <p className="font-sans uppercase mb-4" style={{ fontSize: 10, letterSpacing: '0.22em', color: '#999' }}>Your Earrings</p>
-              {/* Two diamonds visual */}
-              <div className="flex items-center gap-3 mb-3">
-                <svg width="34" height="34" viewBox="0 0 44 44" aria-hidden="true"><g fill="none" stroke="#c9b886" strokeWidth="1" strokeLinejoin="round"><path d="M9 16 L22 6 L35 16 L22 39 Z" fill="#faf8f3" /><path d="M9 16 L35 16" /><path d="M15 16 L22 6 M29 16 L22 6" /></g></svg>
-                <svg width="34" height="34" viewBox="0 0 44 44" aria-hidden="true"><g fill="none" stroke="#c9b886" strokeWidth="1" strokeLinejoin="round"><path d="M9 16 L22 6 L35 16 L22 39 Z" fill="#faf8f3" /><path d="M9 16 L35 16" /><path d="M15 16 L22 6 M29 16 L22 6" /></g></svg>
-                <span className="font-sans uppercase" style={{ fontSize: 9, letterSpacing: '0.2em', color: '#b08d57' }}>Matched pair</span>
-              </div>
               {([
                 ['Selected diamond pair', cutLabel(offer.cut)],
                 ['Total carat', `${offer.total_carat.toFixed(2)}ct`],
@@ -236,7 +235,7 @@ export function EarringDetailPage({
           <div className="absolute inset-0 bg-black/5" />
           <div className="absolute right-0 top-0 bottom-0 flex flex-col bg-white" style={{ width: 'min(520px, 96vw)', boxShadow: '-4px 0 40px rgba(0,0,0,0.10)' }}>
             <EarringOfferSelector
-              productId={productId}
+              offers={offers}
               metal={metal}
               selectedOfferId={offer?.id ?? null}
               onSelect={chooseOffer}

@@ -87,9 +87,10 @@ describe('customer earring flow is offer-driven and isolated from ring diamonds'
     expect(src).not.toMatch(/\/api\/diamonds/);
   });
 
-  it('the offer selector filters by carat/colour/clarity and uses the offers API', () => {
+  it('the offer selector receives offers as a prop (instant, no on-open fetch) and filters them', () => {
     const src = read('src/components/earrings/EarringOfferSelector.tsx');
-    expect(src).toMatch(/\/offers/);
+    expect(src).toMatch(/offers:\s*PublicEarringOffer\[\]/); // provided by the server, no fetch
+    expect(src).not.toMatch(/useSWR/);
     expect(src).toMatch(/Carat/);
     expect(src).toMatch(/Colour/);
     expect(src).toMatch(/Clarity/);
@@ -99,12 +100,13 @@ describe('customer earring flow is offer-driven and isolated from ring diamonds'
 
 // ── Offer card is a dual-diamond matched pair ──────────────────────────────────
 
-describe('EarringOfferCard is a compact dual-diamond card (matches DiamondCard format)', () => {
+describe('EarringOfferCard is a compact matched-pair card (matches DiamondCard format)', () => {
   const src = read('src/components/earrings/EarringOfferCard.tsx');
-  it('shows two diamond glyphs and a subtle "Matched pair" label', () => {
-    expect((src.match(/<DiamondGlyph\s*\/>/g) ?? []).length).toBeGreaterThanOrEqual(2);
+  it('has no diamond symbol glyphs, just a subtle "Matched pair" label + "{cut} Pair" headline', () => {
+    expect(src).not.toMatch(/DiamondGlyph/);
+    expect(src).not.toMatch(/<svg/);            // diamond symbols removed
     expect(src).toMatch(/Matched pair/i);
-    expect(src).toMatch(/Pair/); // "{cut} Pair" headline
+    expect(src).toMatch(/Pair/);
   });
   it('uses the DiamondCard compact format (selection radio, no giant per-card button)', () => {
     expect(src).toMatch(/padding: '14px 13px'/);          // same card padding as DiamondCard
