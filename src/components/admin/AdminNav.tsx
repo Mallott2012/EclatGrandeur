@@ -23,6 +23,8 @@ const NAV: NavItem[] = [
   { label: 'Necklaces',        href: '/admin/necklaces'          },
   { label: 'Bracelets',        href: '/admin/bracelets'          },
   { label: 'Earrings',         href: '/admin/earrings'           },
+  // Earring pairs
+  { label: 'Diamond Pairs',    href: '/admin/diamond-pairs'      },
   // Client & commerce
   { label: 'Enquiries',        href: '/admin/enquiries'          },
   { label: 'Orders',           href: '/admin/orders',   soon: true },

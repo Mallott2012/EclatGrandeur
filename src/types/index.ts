@@ -189,31 +189,34 @@ export interface Setting {
 }
 
 /** One selected diamond pair occupying a stone slot in a configured earring. */
+export interface ConfiguredEarringSlot {
+  slotKey:         string;
+  slotLabel:       string;
+  pairId:          string;
+  /** Customer-safe description, e.g. "1.00ct × 2 · Oval · D · VS1". */
+  pairDescription: string;
+  pairPrice:       number;   // pence (minor units)
+}
+
 /**
- * A fully validated, server-locked earring configuration (variant model).
+ * A fully validated, server-locked earring configuration.
  * All prices are in MINOR units (pence) to match CartItem.price: Money.
- * Created by validateAndReserveEarringVariant() and stored in CartItem.earringConfig.
- *
- * The customer chooses a finished earring set (metal/carat/colour/clarity) that
- * maps to exactly one earring_variants row. No individual diamonds or pairs.
+ * Created by validateAndReserveEarringConfiguration() and stored in CartItem.earringConfig.
  */
 export interface ConfiguredEarring {
   productId:            string;
   productSlug:          string;
   productName:          string;
-  productMedia:         string;        // URL of the first gallery image (or '')
-  variantId:            string;
-  metalVariantId:       string | null; // metal key, e.g. 'yellow-gold-18k'
+  productMedia:         string;     // URL of the first gallery image (or '')
+  metalVariantId:       string | null;
   metalLabel:           string;
-  earringType:          string;        // 'classic_studs' | 'halo_studs' | 'drop_earrings' | …
-  totalCarat:           number;        // ct
-  colour:               string;        // 'D' | 'E' | 'F'
-  clarity:              string;        // 'VS2' | 'VS1' | 'VVS2' | 'VVS1' | 'IF' | 'FL'
-  availability:         string;        // 'available' | 'made_to_order'
-  totalPrice:           number;        // pence (minor units)
-  currency:             string;        // 'GBP'
-  reservationExpiresAt: string | null; // ISO timestamp; null for made-to-order (no hold)
-  addedAt:              string;        // ISO timestamp
+  earringType:          string;     // 'classic_studs' | 'halo_studs' | 'drop_earrings' etc.
+  settingPrice:         number;     // pence (minor units)
+  selectedSlots:        ConfiguredEarringSlot[];
+  totalPrice:           number;     // pence (minor units)
+  currency:             string;     // 'GBP'
+  reservationExpiresAt: string;     // ISO timestamp
+  addedAt:              string;     // ISO timestamp
 }
 
 /**

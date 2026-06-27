@@ -9,7 +9,7 @@ import { Button }         from '@/components/ui/Button';
 import { EnquiryModal }   from '@/components/enquiry/EnquiryModal';
 import { formatMoney }    from '@/lib/utils';
 import { trackEvent }     from '@/lib/analytics';
-import { getVariantIdFromEarringConfig, clarityLabel } from '@/lib/earrings/cart-helpers';
+import { getPairIdsFromEarringConfig } from '@/lib/earrings/cart-helpers';
 
 export default function CartPage() {
   const { items, remove, setQty, cartToken } = useCart();
@@ -28,14 +28,12 @@ export default function CartPage() {
     const expired = new Set<string>();
     Promise.all(
       earringItems.map(async (item) => {
-        const ec = item.earringConfig!;
-        // Made-to-order variants carry no exclusive hold and never expire.
-        if (ec.availability === 'made_to_order') return;
+        const pairIds = getPairIdsFromEarringConfig(item.earringConfig!);
         try {
           const res  = await fetch('/api/earrings/validate-cart-line', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ productId: ec.productId, variantId: ec.variantId, cartToken }),
+            body:    JSON.stringify({ pairIds, cartToken }),
           });
           const data = await res.json() as { valid: boolean };
           if (!data.valid) expired.add(item.id);
@@ -71,11 +69,14 @@ export default function CartPage() {
       });
     }
     if (item.earringConfig) {
-      fetch('/api/earrings/release', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ variantId: getVariantIdFromEarringConfig(item.earringConfig), cartToken }),
-      }).catch(console.error);
+      const pairIds = getPairIdsFromEarringConfig(item.earringConfig);
+      if (pairIds.length > 0) {
+        fetch('/api/earrings/release', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ pairIds, cartToken }),
+        }).catch(console.error);
+      }
       setExpiredLines(prev => { const n = new Set(prev); n.delete(item.id); return n; });
     }
     remove(item.id);
@@ -147,18 +148,23 @@ export default function CartPage() {
                     <div className="mt-2 flex items-start gap-2 rounded bg-amber-50 px-3 py-2">
                       <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" strokeWidth={1.5} />
                       <span className="text-xs font-light text-amber-800">
-                        This earring is no longer reserved. Please review your selection.
+                        Your selected diamond pair is no longer reserved. Please review your selection.
                       </span>
                     </div>
                   )}
                   <span className="mt-1 text-xs font-light text-ink/50">{item.earringConfig.metalLabel}</span>
-                  <span className="mt-0.5 text-xs font-light text-ink/50">
-                    {item.earringConfig.totalCarat.toFixed(2)}ct total · Colour {item.earringConfig.colour} · {clarityLabel(item.earringConfig.clarity)}
-                  </span>
-                  {item.earringConfig.availability === 'made_to_order' && (
-                    <span className="mt-0.5 text-[10px] uppercase tracking-luxe text-champagne-deep">Available to order</span>
-                  )}
+                  {/* Slot breakdown */}
                   <dl className="mt-3 flex flex-col gap-1 text-xs font-light text-ink/60">
+                    <div className="flex justify-between">
+                      <dt>Setting</dt>
+                      <dd>{formatMoney({ amount: item.earringConfig.settingPrice, currency: 'GBP' })}</dd>
+                    </div>
+                    {item.earringConfig.selectedSlots.map(s => (
+                      <div key={s.slotKey} className="flex justify-between">
+                        <dt>{s.slotLabel}</dt>
+                        <dd>{formatMoney({ amount: s.pairPrice, currency: 'GBP' })}</dd>
+                      </div>
+                    ))}
                     <div className="flex justify-between border-t border-ink/10 pt-1 text-sm font-normal text-ink/80">
                       <dt>Total</dt>
                       <dd>{formatMoney(item.price)}</dd>

@@ -1,14 +1,14 @@
-import { NextResponse }    from 'next/server';
-import { releaseVariant }  from '@/lib/earrings/variants';
+import { NextResponse }  from 'next/server';
+import { releasePair }   from '@/lib/pairs/reservation';
 
 /**
  * POST /api/earrings/release
  *
- * Releases the reservation hold on an earring variant when removed from the bag.
+ * Releases all pair reservations belonging to a configured earring cart item.
  * Wrong-token calls are silent no-ops (DB function guards ownership).
- * Idempotent — safe on already-released / made-to-order variants.
+ * Idempotent — safe to call on already-expired or already-released pairs.
  *
- * Body: { variantId: string, cartToken: string }
+ * Body: { pairIds: string[], cartToken: string }
  */
 export async function POST(request: Request) {
   try {
@@ -16,16 +16,20 @@ export async function POST(request: Request) {
     try { body = await request.json(); } catch { return NextResponse.json({ ok: false, error: 'Invalid body' }, { status: 400 }); }
 
     const raw = body as Record<string, unknown>;
-    const variantId = raw.variantId;
+    const pairIds   = raw.pairIds;
     const cartToken = raw.cartToken;
 
-    if (typeof variantId !== 'string' || typeof cartToken !== 'string') {
-      return NextResponse.json({ ok: false, error: 'variantId and cartToken are required' }, { status: 400 });
+    if (!Array.isArray(pairIds) || typeof cartToken !== 'string') {
+      return NextResponse.json({ ok: false, error: 'pairIds (array) and cartToken (string) are required' }, { status: 400 });
     }
 
-    await releaseVariant(variantId, cartToken).catch(() => {});
+    const validIds = pairIds.filter((id): id is string => typeof id === 'string' && id.length > 0);
+
+    // Release all pairs in parallel; wrong-token or expired pairs are silent no-ops
+    await Promise.all(validIds.map(id => releasePair(id, cartToken).catch(() => {})));
+
     return NextResponse.json({ ok: true });
   } catch {
-    return NextResponse.json({ ok: false, error: 'Failed to release reservation' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'Failed to release reservations' }, { status: 500 });
   }
 }

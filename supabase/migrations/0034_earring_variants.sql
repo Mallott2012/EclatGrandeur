@@ -1,21 +1,21 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 0034_earring_variants.sql
 --
--- New, simpler earring sales model (replaces the matched-pair customer journey).
+-- DORMANT / RESERVED — NOT the active earring model.
 --
--- A customer configures a finished earring set by choosing METAL, TOTAL CARAT,
--- COLOUR (D/E/F) and CLARITY (VS2..FL). Each genuinely sellable combination is a
--- single `earring_variants` row, controlled entirely by admin. Customers never
--- select individual diamonds, left/right stones, matched pairs, or stone slots.
+-- This table was applied to the canonical database during an earlier, since-
+-- reversed direction. The ACTIVE earring architecture is the matched-pair model
+-- (diamond_pairs + jewellery_stone_slots, migrations 0029–0033), driven by a
+-- setting/style-led configurator: the customer selects metal/cut/colour/clarity/
+-- total-carat, then chooses a real curated matched pair.
 --
--- NOTE ON 0029–0033: the matched-pair / stone-slot schema (diamond_pairs,
--- jewellery_stone_slots, jewellery_products.earring_type, pair reservation/lock
--- functions) is DEPRECATED. Those migrations were applied legitimately and are
--- intentionally RETAINED, empty and dormant, to preserve migration-history
--- integrity. No active application code reads them after this migration.
--- jewellery_products.earring_type (added by 0033) is REUSED here as the product
--- classification (classic_studs, halo_studs, drop_earrings, pave_hoops,
--- fixed_composition, other) — it is not pair-specific.
+-- This migration is intentionally RETAINED, empty and dormant, to preserve
+-- migration-history integrity (the table is applied in the DB). No active
+-- application code reads earring_variants. Do not drop it without an explicit
+-- forward migration decision.
+--
+-- jewellery_products.earring_type (added by 0033) is the product classification
+-- (classic_studs, halo_studs, drop_earrings, pave_hoops, fixed_composition, other).
 --
 -- Creates:
 --   public.earring_variants_sku_seq     sequence

@@ -6,14 +6,15 @@ import { JewelleryDetailPage, type JewelleryDetailProduct } from '@/components/j
 import { EarringDetailPage } from '@/components/earrings/EarringDetailPage';
 import { EarringConsultationNotice } from '@/components/earrings/EarringConsultationNotice';
 import { getJewelleryProductBySlug } from '@/lib/jewellery/service';
-import { listPurchasableVariants } from '@/lib/earrings/variants';
+import { listSlotsForProduct } from '@/lib/pairs/service';
+import { getEarringConfigurationAvailability } from '@/lib/earrings/configuration';
 import { resolveEarringRenderMode } from '@/lib/earrings/route-mode';
 import { METAL_LABELS } from '@/lib/diamonds/types';
 import { parseGalleryConfig, parseMetalVariants, buildDefaultVariants } from '@/lib/gallery/types';
 
 interface Props { params: Promise<{ slug: string }>; }
 
-/** Halo classification → a short, generic fixed-design note (no invented specifics). */
+/** Short fixed-design note for a halo/pavé setting — only generic, never invented specs. */
 function fixedDesignNoteFor(earringType: string | null): string | null {
   if (earringType === 'halo_studs') return 'Finished with a refined pavé halo setting.';
   if (earringType === 'pave_hoops') return 'Finished with a continuous pavé-set diamond line.';
@@ -27,19 +28,23 @@ export default async function Page({ params }: Props) {
 
   const galleryConfig = parseGalleryConfig(p.gallery_config);
   const metalVariants = parseMetalVariants(p.metal_variants) ?? buildDefaultVariants(galleryConfig);
+  const earringType   = (p.earring_type as string | null) ?? null;
 
-  // Earring variants drive everything. Earrings never use the individual-diamond
-  // selector and never call /api/diamonds.
-  const variants     = await listPurchasableVariants(p.id).catch(() => []);
-  const earringType  = (p.earring_type as string | null) ?? null;
+  const slots = await listSlotsForProduct(p.id).catch(() => []);
+  const hasMatchedPairSlots = slots.some(s => s.selection_mode === 'matched_pair');
+  const availability = hasMatchedPairSlots
+    ? await getEarringConfigurationAvailability(p.id).catch(() => null)
+    : null;
+
   const mode = resolveEarringRenderMode({
+    hasMatchedPairSlots,
+    isCompletable:     availability?.isCompletable ?? false,
     earringType,
-    purchasableVariantCount: variants.length,
-    legacyShowDiamond:       Boolean(p.show_diamond),
-    legacyIsPair:            Boolean(p.is_pair),
+    legacyShowDiamond: Boolean(p.show_diamond),
+    legacyIsPair:      Boolean(p.is_pair),
   });
 
-  // ── Configurable: the metal/carat/colour/clarity variant configurator ─────────
+  // ── Configurable: setting-led configurator → curated matched pair ─────────────
   if (mode.kind === 'configurable') {
     return (
       <Suspense>
@@ -49,8 +54,10 @@ export default async function Page({ params }: Props) {
           productName={p.name}
           productSubtitle={p.subtitle ?? ''}
           productDescription={p.description ?? ''}
+          basePrice={p.base_price_gbp}
           earringType={earringType ?? 'other'}
           fixedDesignNote={fixedDesignNoteFor(earringType)}
+          slots={slots}
           galleryConfig={galleryConfig}
           metalVariants={metalVariants}
           config={{ categoryLabel: 'Earrings', categoryPath: '/earrings' }}
@@ -59,7 +66,7 @@ export default async function Page({ params }: Props) {
     );
   }
 
-  // ── Consultation-only: configurable-intent product with no live variants ──────
+  // ── Consultation-only: configurable-intent setting with no live pair inventory ─
   if (mode.kind === 'consultation') {
     return (
       <EarringConsultationNotice
