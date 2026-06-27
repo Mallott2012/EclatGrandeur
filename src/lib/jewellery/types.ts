@@ -77,6 +77,13 @@ export interface JewelleryProduct {
 
 // ── Conversion helper ─────────────────────────────────────────────────────────
 
+// DB `ring_metal` enum uses '…_18ct' / '…_9ct'; the app uses '…_18k' / '…_9k'.
+// Normalise stored values back to the app convention on read.
+const METAL_FROM_DB: Record<string, string> = {
+  white_gold_18ct: 'white_gold_18k', yellow_gold_18ct: 'yellow_gold_18k', rose_gold_18ct: 'rose_gold_18k',
+  white_gold_9ct:  'white_gold_9k',  yellow_gold_9ct:  'yellow_gold_9k',  rose_gold_9ct:  'rose_gold_9k',
+}
+
 export function parseJewelleryProduct(
   r: JewelleryProductRecord,
   media: JewelleryProductMediaRecord[] = [],
@@ -84,6 +91,7 @@ export function parseJewelleryProduct(
   return {
     ...r,
     base_price_gbp: parseFloat(r.base_price_gbp),
+    metals:         (r.metals ?? []).map(m => (METAL_FROM_DB[m] ?? m) as RingMetal),
     gallery_config:  r.gallery_config  ?? null,
     metal_variants:  r.metal_variants  ?? null,
     earring_type:   r.earring_type ?? null,

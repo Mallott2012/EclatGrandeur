@@ -11,6 +11,18 @@ import {
 } from './types'
 import type { CreateJewelleryProductInput, UpdateJewelleryProductInput } from './schemas'
 
+// ── Metal enum boundary ─────────────────────────────────────────────────────────
+// The app uses metal ids like 'white_gold_18k'; the DB `ring_metal` enum uses
+// 'white_gold_18ct'. Map app → DB on write (reads are normalised in parseJewelleryProduct).
+const METAL_TO_DB: Record<string, string> = {
+  white_gold_18k: 'white_gold_18ct', yellow_gold_18k: 'yellow_gold_18ct', rose_gold_18k: 'rose_gold_18ct',
+  white_gold_9k:  'white_gold_9ct',  yellow_gold_9k:  'yellow_gold_9ct',  rose_gold_9k:  'rose_gold_9ct',
+}
+function withDbMetals<T extends { metals?: string[] }>(obj: T): T {
+  if (!Array.isArray(obj.metals)) return obj
+  return { ...obj, metals: obj.metals.map(m => METAL_TO_DB[m] ?? m) }
+}
+
 // ── Audit helper ──────────────────────────────────────────────────────────────
 
 async function writeAudit(
@@ -128,7 +140,7 @@ export async function createJewelleryProduct(
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('jewellery_products')
-    .insert({ ...input, created_by: actor.id, updated_by: actor.id })
+    .insert({ ...withDbMetals(input), created_by: actor.id, updated_by: actor.id })
     .select()
     .single()
   if (error || !data) throw new Error(error?.message ?? 'Failed to create jewellery product')
@@ -171,7 +183,7 @@ export async function updateJewelleryProduct(
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('jewellery_products')
-    .update({ ...patch, updated_by: actor.id })
+    .update({ ...withDbMetals(patch), updated_by: actor.id })
     .eq('id', id)
     .select()
     .single()
