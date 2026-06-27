@@ -221,7 +221,7 @@ export interface AdminProductData {
   }) => Promise<void>;
   // diamond management (full CRUD + assignment)
   // Earrings are pair-based: they hide this individual-diamond panel and manage
-  // matched pairs via the diamond-pairs admin + earring slot configuration instead.
+  // Earring Diamond Offers (in the earring product editor) instead.
   showDiamondPanel?:   boolean;   // default true
   assignedDiamondIds:  string[];
   allDiamonds:         DiamondRow[];
@@ -1133,7 +1133,7 @@ export function AdminProductEditor(props: AdminProductData) {
           )}
 
           {/* Diamond assignment — hidden for pair-based products (e.g. earrings).
-              Earrings manage matched pairs via the diamond-pairs admin + slot config. */}
+              Earrings are configured via Earring Diamond Offers in the product editor. */}
           {props.showDiamondPanel !== false && (
             <>
               {/* Diamond row — matches frontend display */}
