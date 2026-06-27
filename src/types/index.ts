@@ -189,34 +189,30 @@ export interface Setting {
 }
 
 /** One selected diamond pair occupying a stone slot in a configured earring. */
-export interface ConfiguredEarringSlot {
-  slotKey:         string;
-  slotLabel:       string;
-  pairId:          string;
-  /** Customer-safe description, e.g. "1.00ct × 2 · Oval · D · VS1". */
-  pairDescription: string;
-  pairPrice:       number;   // pence (minor units)
-}
-
 /**
- * A fully validated, server-locked earring configuration.
- * All prices are in MINOR units (pence) to match CartItem.price: Money.
- * Created by validateAndReserveEarringConfiguration() and stored in CartItem.earringConfig.
+ * A fully validated, server-locked earring configuration (offer model).
+ * The customer selects a completed Earring Diamond Offer (a matched-pair
+ * specification) — never individual diamonds. No physical reservation/hold.
+ * Prices are MINOR units (pence). Stored in CartItem.earringConfig.
  */
 export interface ConfiguredEarring {
-  productId:            string;
-  productSlug:          string;
-  productName:          string;
-  productMedia:         string;     // URL of the first gallery image (or '')
-  metalVariantId:       string | null;
-  metalLabel:           string;
-  earringType:          string;     // 'classic_studs' | 'halo_studs' | 'drop_earrings' etc.
-  settingPrice:         number;     // pence (minor units)
-  selectedSlots:        ConfiguredEarringSlot[];
-  totalPrice:           number;     // pence (minor units)
-  currency:             string;     // 'GBP'
-  reservationExpiresAt: string;     // ISO timestamp
-  addedAt:              string;     // ISO timestamp
+  productId:      string;
+  productSlug:    string;
+  productName:    string;
+  productMedia:   string;        // URL of the first gallery image (or '')
+  offerId:        string;
+  metalVariantId: string | null; // metal key, e.g. 'yellow-gold-18k'
+  metalLabel:     string;
+  earringType:    string;        // 'classic_studs' | 'halo_studs' | 'drop_earrings' | …
+  cut:            string;        // diamond cut/shape
+  totalCarat:     number;        // ct
+  caratPerStone:  number | null; // ct each (null if not applicable)
+  colour:         string;        // 'D' | 'E' | 'F'
+  clarity:        string;        // 'VS2' … 'FL' (FL shown as "Flawless")
+  availability:   string;        // 'available' | 'made_to_order'
+  totalPrice:     number;        // pence (minor units)
+  currency:       string;        // 'GBP'
+  addedAt:        string;        // ISO timestamp
 }
 
 /**

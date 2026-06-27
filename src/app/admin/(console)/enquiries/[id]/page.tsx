@@ -182,41 +182,22 @@ export default async function EnquiryDetailPage({ params }: Props) {
                 typeof pence === 'number'
                   ? `£${(pence / 100).toLocaleString('en-GB', { minimumFractionDigits: 2 })}`
                   : '—'
-              const slots = Array.isArray(c.selectedSlots) ? (c.selectedSlots as Array<Record<string, unknown>>) : []
+              const ct = typeof c.totalCarat === 'number' ? `${(c.totalCarat as number).toFixed(2)}ct` : '—'
               return (
                 <dl className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <Field label="PRODUCT"   value={String(c.productName ?? '—')} />
-                    <Field label="METAL"     value={String(c.metalLabel ?? '—')} />
-                    <Field label="TYPE"      value={String(c.earringType ?? '—')} />
-                    <Field label="SETTING PRICE" value={fmt(c.settingPrice)} />
+                    <Field label="PRODUCT"      value={String(c.productName ?? '—')} />
+                    <Field label="METAL"        value={String(c.metalLabel ?? '—')} />
+                    <Field label="TYPE"         value={String(c.earringType ?? '—')} />
+                    <Field label="OFFER"        value={String(c.offerId ?? '—')} />
+                    <Field label="DIAMOND CUT"  value={String(c.cut ?? '—')} />
+                    <Field label="TOTAL CARAT"  value={ct} />
+                    <Field label="COLOUR"       value={String(c.colour ?? '—')} />
+                    <Field label="CLARITY"      value={String(c.clarity ?? '—')} />
+                    <Field label="AVAILABILITY" value={String(c.availability ?? '—')} />
                   </div>
-                  {slots.length > 0 && (
-                    <div>
-                      <dt className="text-[11px] tracking-widest text-stone-400 mb-2">SELECTED PAIRS</dt>
-                      <div className="space-y-2">
-                        {slots.map((s, i) => (
-                          <div key={String(s.slotKey ?? i)} className="flex items-start justify-between rounded border border-stone-200 bg-stone-50 px-3 py-2">
-                            <div>
-                              <p className="text-[11px] font-semibold tracking-widest text-stone-500">{String(s.slotLabel ?? s.slotKey ?? '—')}</p>
-                              <p className="text-sm text-stone-800">{String(s.pairDescription ?? '—')}</p>
-                              <p className="text-[11px] text-stone-400">Pair ID: {String(s.pairId ?? '—')}</p>
-                            </div>
-                            <span className="ml-4 shrink-0 text-sm text-stone-700">{fmt(s.pairPrice)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                   <div className="grid grid-cols-2 gap-4 border-t border-stone-200 pt-3">
                     <Field label="TOTAL (VALIDATED)" value={fmt(c.totalPrice)} />
-                    <Field label="RESERVATION EXPIRES" value={
-                      c.reservationExpiresAt
-                        ? new Date(String(c.reservationExpiresAt)).toLocaleString('en-GB', {
-                            day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-                          })
-                        : '—'
-                    } />
                   </div>
                 </dl>
               )

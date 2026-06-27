@@ -9,7 +9,7 @@ import { Button }      from '@/components/ui/Button';
 import { formatMoney } from '@/lib/utils';
 import { cn }          from '@/lib/utils';
 import { trackEvent }  from '@/lib/analytics';
-import { getPairIdsFromEarringConfig } from '@/lib/earrings/cart-helpers';
+import { buildOfferDescription } from '@/lib/earrings/cart-helpers';
 
 export function CartDrawer() {
   const { items, open, setOpen, remove, setQty, cartToken } = useCart();
@@ -41,16 +41,8 @@ export function CartDrawer() {
         diamondId: item.ringConfig.diamondId,
       });
     }
-    if (item.earringConfig) {
-      const pairIds = getPairIdsFromEarringConfig(item.earringConfig);
-      if (pairIds.length > 0) {
-        fetch('/api/earrings/release', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ pairIds, cartToken }),
-        }).catch(console.error);
-      }
-    }
+    // Earring offers are not physically reserved — nothing to release.
+    void cartToken;
     remove(item.id);
   }
 
@@ -128,11 +120,12 @@ export function CartDrawer() {
                       <span className="mt-0.5 text-xs font-light text-ink/50">
                         {item.earringConfig.metalLabel}
                       </span>
-                      {item.earringConfig.selectedSlots.map(s => (
-                        <span key={s.slotKey} className="mt-0.5 text-xs font-light text-ink/50">
-                          {item.earringConfig!.selectedSlots.length > 1 ? `${s.slotLabel}: ` : ''}{s.pairDescription}
-                        </span>
-                      ))}
+                      <span className="mt-0.5 text-xs font-light text-ink/50">
+                        {buildOfferDescription(item.earringConfig)}
+                      </span>
+                      {item.earringConfig.availability === 'made_to_order' && (
+                        <span className="mt-0.5 text-[10px] uppercase tracking-luxe text-champagne-deep">Available to order</span>
+                      )}
                       <span className="mt-1 text-sm text-ink/80">{formatMoney(item.price)}</span>
                       <div className="mt-auto flex justify-end pt-3">
                         <button className="text-[10px] uppercase tracking-luxe text-ink/40 hover:text-ink" onClick={() => handleRemove(item)}>

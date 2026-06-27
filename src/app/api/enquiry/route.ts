@@ -5,7 +5,8 @@ import { createEnquiry }    from '@/lib/enquiries/service';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { isEclatEligible }  from '@/lib/diamonds/eligibility';
 import { parseMetalVariants } from '@/lib/gallery/types';
-import { validateEarringConfiguration, calculateEarringConfigurationPrice } from '@/lib/earrings/configuration';
+import { getOfferForSale } from '@/lib/earrings/offers';
+import { toPence } from '@/lib/earrings/cart-helpers';
 
 export async function POST(req: Request) {
   const body   = await req.json().catch(() => null);
@@ -99,65 +100,22 @@ export async function POST(req: Request) {
     }
   }
 
-  // ── Phase E5: revalidation for configured earrings ─────────────────────────
+  // ── Revalidation for configured earring offers ─────────────────────────────
 
-  if (data.earringConfig && data.cartToken) {
-    const ec    = data.earringConfig;
-    const admin = createAdminClient();
-    const now   = new Date().toISOString();
+  if (data.earringConfig) {
+    const ec = data.earringConfig;
 
-    // 1–2. All selected pairs must be reserved by this cart token with a valid hold
-    const pairIds = ec.selectedSlots.map(s => s.pairId);
-    const { data: pairRows } = await admin
-      .from('diamond_pairs')
-      .select('id, status, held_by_cart, held_until')
-      .in('id', pairIds);
-
-    if (!pairRows || pairRows.length !== pairIds.length) {
+    // Offer must still exist, be published and purchasable.
+    const offer = await getOfferForSale(ec.productId, ec.offerId);
+    if (!offer || !offer.is_published) {
       return NextResponse.json(
-        { ok: false, error: 'One or more selected diamond pairs are no longer available.' },
+        { ok: false, error: 'This diamond pair offer is no longer available.' },
         { status: 409 },
       );
     }
 
-    for (const pair of pairRows) {
-      if (pair.status !== 'reserved' || pair.held_by_cart !== data.cartToken) {
-        return NextResponse.json(
-          { ok: false, error: 'Your diamond pair reservation has expired. Please review your selection.' },
-          { status: 409 },
-        );
-      }
-      if (!pair.held_until || pair.held_until <= now) {
-        return NextResponse.json(
-          { ok: false, error: 'Your diamond pair reservation has expired. Please review your selection.' },
-          { status: 409 },
-        );
-      }
-    }
-
-    // 3. Configuration still valid (slot compatibility, product published, etc.)
-    const earringValidation = await validateEarringConfiguration({
-      jewelleryProductId: ec.productId,
-      metalVariantId:     ec.metalVariantId ?? undefined,
-      selectedPairs:      ec.selectedSlots.map(s => ({ slotKey: s.slotKey, pairId: s.pairId })),
-    });
-
-    if (!earringValidation.valid) {
-      return NextResponse.json(
-        { ok: false, error: 'Your earring configuration is no longer valid.' },
-        { status: 409 },
-      );
-    }
-
-    // 4. Price integrity — recalculate server-side and compare (pence)
-    const recalc = await calculateEarringConfigurationPrice({
-      jewelleryProductId: ec.productId,
-      metalVariantId:     ec.metalVariantId ?? undefined,
-      selectedPairs:      ec.selectedSlots.map(s => ({ slotKey: s.slotKey, pairId: s.pairId })),
-    });
-
-    const expectedPence = Math.round(recalc.totalPrice * 100);
-    if (ec.totalPrice !== expectedPence) {
+    // Price integrity — compare the server offer price (pence) to the snapshot.
+    if (ec.totalPrice !== toPence(offer.price_gbp)) {
       return NextResponse.json(
         { ok: false, error: 'The price has changed since your session started. Please refresh and try again.' },
         { status: 409 },

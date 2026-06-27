@@ -5,9 +5,8 @@ import { parseGalleryConfig, parseMetalVariants } from '@/lib/gallery/types';
 import { uploadJewelleryMedia, deleteJewelleryMedia } from '@/lib/storage/jewellery';
 import { requireStaffRole } from '@/lib/staff';
 import { AdminProductEditor } from '@/components/admin/AdminProductEditor';
-import { listSlotsForProduct, countCompatiblePairsForSlot } from '@/lib/pairs/service';
-import { getEarringConfigurationAvailability } from '@/lib/earrings/configuration';
-import { EarringConfigSection } from '@/components/admin/earrings/EarringConfigSection';
+import { listOffersAdmin, countPublishedOffers } from '@/lib/earrings/offers';
+import { EarringOffersSection } from '@/components/admin/earrings/EarringOffersSection';
 import {
   updateProductAction,
   togglePublishAction,
@@ -19,11 +18,13 @@ import {
   deleteDiamondAction,
   listDiamonds,
   saveEarringTypeAction,
-  createSlotAction,
-  updateSlotAction,
-  deleteSlotAction,
+  createOfferAction,
+  updateOfferAction,
+  deleteOfferAction,
+  duplicateOfferAction,
 } from './actions';
 import type { DiamondRow } from '@/components/admin/DiamondPanel';
+import type { EarringType } from '@/lib/jewellery/types';
 
 interface Props { params: Promise<{ id: string }> }
 
@@ -37,23 +38,10 @@ export default async function AdminEARRINGEditPage({ params }: Props) {
 
   if (!product) notFound();
 
-  // Earring-specific: fetch stone slots, compatible pair counts, and completability
-  const slots = await listSlotsForProduct(id).catch(() => []);
-  const [pairCounts, configAvailability] = await Promise.all([
-    Promise.all(
-      slots.map(s =>
-        s.selection_mode === 'matched_pair'
-          ? countCompatiblePairsForSlot({
-              shapes:          s.compatible_shapes,
-              min_carat:       s.min_carat,
-              max_carat:       s.max_carat,
-              categories:      s.allowed_diamond_categories,
-              colour_families: s.allowed_colour_families,
-            }).catch(() => 0)
-          : Promise.resolve(null)
-      )
-    ),
-    getEarringConfigurationAvailability(id).catch(() => null),
+  // Earring-specific: editable Earring Diamond Offers + live-offer check
+  const [offers, liveOfferCount] = await Promise.all([
+    listOffersAdmin(id).catch(() => []),
+    countPublishedOffers(id).catch(() => 0),
   ]);
 
   const mediaItems = product.media
@@ -185,17 +173,17 @@ export default async function AdminEARRINGEditPage({ params }: Props) {
       backLabel="All Earrings"
     />
 
-    {/* Earring-specific configuration — stone slots, earring type, pair counts */}
-    <EarringConfigSection
+    {/* Earring-specific configuration — product type + editable diamond pair offers */}
+    <EarringOffersSection
       productId={product.id}
-      earringType={product.earring_type}
-      slots={slots}
-      pairCounts={pairCounts}
-      configAvailability={configAvailability}
+      earringType={(product.earring_type as EarringType | null) ?? null}
+      offers={offers}
+      hasLiveOffer={liveOfferCount > 0}
       saveTypeAction={async (pid, type) => { 'use server'; await saveEarringTypeAction(pid, type); }}
-      createSlotAction={async (input) => { 'use server'; return await createSlotAction(input); }}
-      updateSlotAction={async (slotId, patch) => { 'use server'; return await updateSlotAction(slotId, patch, id); }}
-      deleteSlotAction={async (slotId) => { 'use server'; await deleteSlotAction(slotId, id); }}
+      createOfferAction={async (input) => { 'use server'; return await createOfferAction(input); }}
+      updateOfferAction={async (offerId, patch) => { 'use server'; return await updateOfferAction(offerId, patch, id); }}
+      deleteOfferAction={async (offerId) => { 'use server'; await deleteOfferAction(offerId, id); }}
+      duplicateOfferAction={async (offerId) => { 'use server'; return await duplicateOfferAction(offerId, id); }}
     />
     </>
   );

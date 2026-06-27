@@ -86,9 +86,9 @@ describe('Earring isolation from the engagement-ring DiamondSelector', () => {
     expect(src).toMatch(/EarringDetailPage/);
   });
 
-  it('3c: configurable earrings render EarringPairSelector (not DiamondSelector)', () => {
+  it('3c: configurable earrings render the earring offer selector (not DiamondSelector)', () => {
     const src = readFileSync(join(ROOT, 'src/components/earrings/EarringDetailPage.tsx'), 'utf8');
-    expect(src).toMatch(/EarringPairSelector/);
+    expect(src).toMatch(/EarringOfferSelector/);
     expect(src).not.toMatch(/DiamondSelector/);
   });
 });
